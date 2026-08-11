@@ -1,0 +1,26 @@
+{
+  "name": "xowaak",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "corepack pnpm --filter @xowaak/web dev",
+    "build": "corepack pnpm --filter @xowaak/web build",
+    "start": "corepack pnpm --filter @xowaak/web start",
+    "lint": "corepack pnpm --filter @xowaak/web lint",
+    "typecheck": "corepack pnpm --filter @xowaak/web typecheck",
+    "test": "corepack pnpm --filter @xowaak/web test",
+    "test:watch": "corepack pnpm --filter @xowaak/web test:watch",
+    "test:coverage": "corepack pnpm --filter @xowaak/web test:coverage",
+    "test:e2e": "corepack pnpm --filter @xowaak/web test:e2e",
+    "supabase:types": "node apps/web/scripts/generate-database-types.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
+}

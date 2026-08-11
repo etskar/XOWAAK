@@ -1,0 +1,43 @@
+export const postsMessages = {
+  composer: {
+    title: "إنشاء منشور",
+    placeholder: "شارك شيئاً مع XOWAAK...",
+    visibility: "الظهور",
+    public: "عام",
+    followers: "المتابعون",
+    private: "خاص",
+    submit: "نشر المنشور",
+    savedDraft: "تم حفظ المسودة.",
+    created: "تم نشر المنشور.",
+    mediaImage: "صورة",
+    mediaVideo: "فيديو",
+  },
+  card: {
+    viewPost: "عرض المنشور",
+    edit: "تعديل",
+    delete: "حذف",
+    deleted: "تم حذف المنشور.",
+    updated: "تم تحديث المنشور.",
+    editUnavailable: "التعديل غير متاح حتى تتم تهيئة Supabase.",
+  },
+  pages: {
+    home: "الرئيسية",
+    detail: "المنشور",
+    noPosts: "لا توجد منشورات بعد.",
+    loading: "جارٍ تحميل المنشورات",
+    failed: "تعذر تحميل المنشورات.",
+    unavailable: "المنشورات غير متاحة حتى تتم تهيئة Supabase.",
+    loadMore: "تحميل المزيد من المنشورات",
+    notFound: "تعذر العثور على هذا المنشور.",
+  },
+  validation: {
+    empty: "اكتب شيئاً أو أرفق وسائط قبل النشر.",
+    tooLong: "محتوى المنشور طويل جداً.",
+  },
+  confirmation: {
+    deleteTitle: "حذف هذا المنشور؟",
+    deleteDescription: "سيتم إخفاء هذا المنشور من الخلاصات العادية.",
+    confirmDelete: "حذف المنشور",
+    cancel: "إلغاء",
+  },
+} as const;

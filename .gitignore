@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Tooling and logs
+.turbo/
+*.log
+*.tsbuildinfo
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+.vercel
+.env*

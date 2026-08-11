@@ -1,0 +1,12 @@
+# Local Supabase configuration foundation for XOWAAK.
+# Remote linking and database startup require the Supabase CLI and a configured environment.
+project_id = "xowaak-local"
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[storage]
+enabled = true

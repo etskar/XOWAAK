@@ -1,0 +1,17 @@
+export const semanticTokens = {
+  background: "var(--color-background)",
+  surface: "var(--color-surface)",
+  surfaceElevated: "var(--color-surface-elevated)",
+  text: "var(--color-text)",
+  textMuted: "var(--color-text-muted)",
+  textSubtle: "var(--color-text-subtle)",
+  border: "var(--color-border)",
+  primary: "var(--color-primary)",
+  secondary: "var(--color-secondary)",
+  success: "var(--color-success)",
+  warning: "var(--color-warning)",
+  error: "var(--color-error)",
+  info: "var(--color-info)",
+  focus: "var(--color-focus)",
+  overlay: "var(--color-overlay)",
+} as const;

@@ -1,0 +1,37 @@
+export const primitiveTokens = {
+  colors: {
+    brandGreen: "#00C853",
+    brandIndigo: "#3F51B5",
+    brandCyan: "#00BCD4",
+    brandMagenta: "#B30A7C",
+    brandSlate: "#46555B",
+    brandWhite: "#FFFFFF",
+  },
+  spacing: [
+    "0",
+    "0.25rem",
+    "0.5rem",
+    "0.75rem",
+    "1rem",
+    "1.25rem",
+    "1.5rem",
+    "2rem",
+    "2.5rem",
+    "3rem",
+    "4rem",
+    "5rem",
+    "6rem",
+  ],
+  radius: ["0", "0.375rem", "0.625rem", "0.875rem", "1.25rem", "9999px"],
+  motion: {
+    durationFast: "120ms",
+    durationNormal: "180ms",
+    durationSlow: "280ms",
+  },
+  breakpoints: {
+    sm: "40rem",
+    md: "48rem",
+    lg: "64rem",
+    xl: "80rem",
+  },
+} as const;

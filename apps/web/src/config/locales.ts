@@ -1,0 +1,57 @@
+export type TextDirection = "ltr" | "rtl";
+
+export type LocaleConfig = {
+  code: string;
+  name: string;
+  nativeName: string;
+  direction: TextDirection;
+  enabled: boolean;
+};
+
+export const localeConfigs = {
+  en: {
+    code: "en",
+    name: "English",
+    nativeName: "English",
+    direction: "ltr",
+    enabled: true,
+  },
+  ar: {
+    code: "ar",
+    name: "Arabic",
+    nativeName: "العربية",
+    direction: "rtl",
+    enabled: true,
+  },
+} as const satisfies Record<string, LocaleConfig>;
+
+export const locales = ["en", "ar"] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = "en";
+
+export const localeDirections: Record<Locale, TextDirection> = {
+  en: localeConfigs.en.direction,
+  ar: localeConfigs.ar.direction,
+};
+
+export function isLocale(value: string): value is Locale {
+  return locales.includes(value as Locale) && localeConfigs[value as Locale].enabled;
+}
+
+export const isSupportedLocale = isLocale;
+
+export function getLocaleConfig(locale: Locale): LocaleConfig {
+  return localeConfigs[locale];
+}
+
+export function getDirection(locale: Locale): TextDirection {
+  return getLocaleConfig(locale).direction;
+}
+
+export function isRTL(locale: Locale) {
+  return getDirection(locale) === "rtl";
+}
+
+export function isLTR(locale: Locale) {
+  return getDirection(locale) === "ltr";
+}

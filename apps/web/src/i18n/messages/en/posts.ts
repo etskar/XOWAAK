@@ -1,0 +1,43 @@
+export const postsMessages = {
+  composer: {
+    title: "Create a post",
+    placeholder: "Share something with XOWAAK...",
+    visibility: "Visibility",
+    public: "Public",
+    followers: "Followers",
+    private: "Private",
+    submit: "Publish post",
+    savedDraft: "Draft saved.",
+    created: "Post published.",
+    mediaImage: "Image",
+    mediaVideo: "Video",
+  },
+  card: {
+    viewPost: "View post",
+    edit: "Edit",
+    delete: "Delete",
+    deleted: "Post deleted.",
+    updated: "Post updated.",
+    editUnavailable: "Editing is unavailable until Supabase is configured.",
+  },
+  pages: {
+    home: "Home",
+    detail: "Post",
+    noPosts: "No posts yet.",
+    loading: "Loading posts",
+    failed: "Failed to load posts.",
+    unavailable: "Posts are unavailable until Supabase is configured.",
+    loadMore: "Load more posts",
+    notFound: "This post could not be found.",
+  },
+  validation: {
+    empty: "Write something or attach media before publishing.",
+    tooLong: "Post content is too long.",
+  },
+  confirmation: {
+    deleteTitle: "Delete this post?",
+    deleteDescription: "This post will be removed from normal feeds.",
+    confirmDelete: "Delete post",
+    cancel: "Cancel",
+  },
+} as const;
