@@ -56,7 +56,7 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
   }
 
   return (
-    <form className="post-composer" onSubmit={submit}>
+    <form id="post-composer" className="post-composer" onSubmit={submit}>
       <Stack gap={4}>
         <div className="post-composer__header">
           <div>

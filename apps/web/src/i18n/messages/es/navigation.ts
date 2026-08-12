@@ -15,4 +15,13 @@ export const navigationMessages = {
   createAccount: "Crear cuenta",
   switchLanguage: "Cambiar idioma",
   productNavigation: "Navegación del producto",
+  search: "Buscar",
+  products: "Productos",
+  services: "Servicios",
+  jobs: "Empleo",
+  groups: "Grupos",
+  map: "Mapa",
+  favorites: "Favoritos",
+  create: "Crear",
+  account: "Cuenta",
 } as const;

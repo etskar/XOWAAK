@@ -8,6 +8,7 @@ import { requireCurrentUser } from "@/server/auth/session";
 import { FeedView } from "@/features/posts/feed-view";
 import { getFeed } from "@/server/posts/queries";
 import { getPostsMessages } from "@/i18n/posts-messages";
+import { getOwnProfile } from "@/server/identity/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -38,11 +39,25 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   }
 
   const user = await requireCurrentUser(locale);
+  let profile = null;
+  try {
+    profile = await getOwnProfile();
+  } catch {
+    profile = null;
+  }
+  const profileComplete = Boolean(profile?.username && profile.display_name.trim());
   const query = searchParams ? await searchParams : {};
   const cursorValue = Array.isArray(query.cursor) ? query.cursor[0] : query.cursor;
   const feed = await getFeed(cursorValue, 20);
   const result =
     feed.status === "unauthenticated" ? { status: "error" as const, data: null } : feed;
 
-  return <FeedView locale={locale} viewerId={user.id} result={result} />;
+  return (
+    <FeedView
+      locale={locale}
+      viewerId={user.id}
+      result={result}
+      profileComplete={profileComplete}
+    />
+  );
 }

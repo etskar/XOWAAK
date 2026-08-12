@@ -15,4 +15,13 @@ export const navigationMessages = {
   createAccount: "创建账户",
   switchLanguage: "切换语言",
   productNavigation: "产品导航",
+  search: "搜索",
+  products: "产品",
+  services: "服务",
+  jobs: "工作",
+  groups: "群组",
+  map: "地图",
+  favorites: "收藏",
+  create: "创建",
+  account: "账户",
 } as const;

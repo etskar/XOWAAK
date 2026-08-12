@@ -129,8 +129,9 @@ test("opens the mobile navigation without horizontal movement", async ({ page })
   await page.goto("/en");
 
   await page.getByRole("button", { name: "Open navigation" }).click();
-  await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Create account" }).last()).toBeVisible();
+  const mobileNavigation = page.locator("#mobile-product-navigation");
+  await expect(mobileNavigation.getByRole("link", { name: "About XOWAAK" })).toBeVisible();
+  await expect(mobileNavigation.getByRole("link", { name: "Create account" })).toBeVisible();
 });
 
 test("exposes an installable PWA shell", async ({ page, request }) => {
@@ -212,6 +213,12 @@ test("covers the localized auth and settings route matrix", async ({ page }) => 
     "/ar/settings/security",
     "/en/settings/devices",
     "/ar/settings/devices",
+    "/en/search",
+    "/ar/search",
+    "/en/messages",
+    "/ar/messages",
+    "/en/notifications",
+    "/ar/notifications",
   ];
 
   for (const route of protectedRoutes) {

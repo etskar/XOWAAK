@@ -1,6 +1,14 @@
 import type { Locale } from "@/config/locales";
 
-const protectedSuffixes = ["/home", "/admin", "/settings", "/followers/requests"] as const;
+const protectedSuffixes = [
+  "/home",
+  "/admin",
+  "/settings",
+  "/followers/requests",
+  "/search",
+  "/messages",
+  "/notifications",
+] as const;
 
 export function isProtectedPath(pathname: string, locale: Locale) {
   return protectedSuffixes.some((suffix) => {

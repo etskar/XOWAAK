@@ -15,4 +15,13 @@ export const navigationMessages = {
   createAccount: "Hesap oluştur",
   switchLanguage: "Dili değiştir",
   productNavigation: "Ürün navigasyonu",
+  search: "Ara",
+  products: "Ürünler",
+  services: "Hizmetler",
+  jobs: "İşler",
+  groups: "Gruplar",
+  map: "Harita",
+  favorites: "Favoriler",
+  create: "Oluştur",
+  account: "Hesap",
 } as const;
