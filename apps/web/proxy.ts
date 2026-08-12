@@ -71,5 +71,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/(en|ar)", "/(en|ar)/:path*"],
+  matcher: ["/(en|ar|es|fr|de|tr|pt|zh)", "/(en|ar|es|fr|de|tr|pt|zh)/:path*"],
 };

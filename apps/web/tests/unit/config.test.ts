@@ -11,7 +11,8 @@ describe("application foundation", () => {
   it("recognizes the initial locale foundation", () => {
     expect(isLocale("en")).toBe(true);
     expect(isLocale("ar")).toBe(true);
-    expect(isLocale("fr")).toBe(false);
+    expect(isLocale("fr")).toBe(true);
+    expect(isLocale("zh")).toBe(true);
     expect(getDirection("ar")).toBe("rtl");
   });
 });

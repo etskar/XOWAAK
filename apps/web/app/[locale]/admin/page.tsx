@@ -1,10 +1,11 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
 import { notFound } from "next/navigation";
 
 import { isLocale, type Locale } from "@/config/locales";
 import { hasSupabasePublicEnv } from "@/config/public-env";
 import { requireRole } from "@/server/auth/session";
 import { createTranslator } from "@/i18n/translate";
+import { ProductUnavailablePage } from "@/features/showcase/showcase-page";
+import { AdminDashboard } from "@/features/admin/admin-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,8 @@ export default async function AdminPage({ params }: AdminPageProps) {
 
   if (hasSupabasePublicEnv()) {
     await requireRole(locale, "admin");
+    return <AdminDashboard locale={locale} />;
   }
 
-  return <RoutePlaceholder locale={locale} title={t("navigation.admin")} />;
+  return <ProductUnavailablePage locale={locale} title={t("navigation.admin")} />;
 }

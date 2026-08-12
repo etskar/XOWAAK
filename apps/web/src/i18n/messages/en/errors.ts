@@ -3,4 +3,5 @@ export const errorMessages = {
   unexpected: "Something went wrong.",
   reload: "Reload this route and try again.",
   unavailable: "This service is currently unavailable.",
+  backHome: "Return to the home page.",
 } as const;

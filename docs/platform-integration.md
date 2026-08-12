@@ -6,10 +6,10 @@
 - Vercel: connected — project `etskar1/xowaak` (ID `prj_J9mvfPn2R6yakoIoI1PwzEZsMvk4`), auto-deploy from `main`.
   Project settings: Root Directory `apps/web`, Framework Next.js, Build Command `next build`,
   Install Command `pnpm install --frozen-lockfile`.
-- Supabase: connection string and project reference (`jareawpuydpcudytcebl`) provided by the owner;
-  `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_APP_NAME` configured locally and on Vercel
-  (Development/Preview/Production). Publishable key and service-role key are still required from
-  Supabase Dashboard -> Settings -> API before Supabase features are live.
+- Supabase: project reference `jareawpuydpcudytcebl` is synchronized with the five repository
+  migrations. Local app configuration contains the public URL, publishable key, and server-only
+  service-role key; the same variables are configured in the existing Vercel project for its
+  Development/Preview/Production environments. Values are never committed or printed.
 
 ## Local Environment
 
@@ -35,13 +35,17 @@ SUPABASE_SERVICE_ROLE_KEY
 The service-role key is server-only and must never use the `NEXT_PUBLIC_` prefix. Migrations are
 versioned under `supabase/migrations/`. Never run a destructive reset against production.
 
-After installing the Supabase CLI and linking the project:
+After installing/authenticating the Supabase CLI and linking the project:
 
 ```bash
 supabase link --project-ref jareawpuydpcudytcebl
 supabase db push
 pnpm supabase:types
 ```
+
+Type generation requires Docker/Podman for the database-url fallback used by the local script, or
+an authenticated linked-project CLI workflow. The application deliberately keeps the placeholder
+types until official generation succeeds.
 
 ## Vercel
 

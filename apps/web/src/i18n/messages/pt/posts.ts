@@ -1,0 +1,43 @@
+export const postsMessages = {
+  composer: {
+    title: "Criar uma publicação",
+    placeholder: "Compartilhe algo com a XOWAAK...",
+    visibility: "Visibilidade",
+    public: "Público",
+    followers: "Seguidores",
+    private: "Privado",
+    submit: "Publicar",
+    savedDraft: "Rascunho salvo.",
+    created: "Publicação publicada.",
+    mediaImage: "Imagem",
+    mediaVideo: "Vídeo",
+  },
+  card: {
+    viewPost: "Ver publicação",
+    edit: "Editar",
+    delete: "Excluir",
+    deleted: "Publicação excluída.",
+    updated: "Publicação atualizada.",
+    editUnavailable: "A edição fica disponível após configurar o Supabase.",
+  },
+  pages: {
+    home: "Início",
+    detail: "Publicação",
+    noPosts: "Ainda não há publicações.",
+    loading: "Carregando publicações",
+    failed: "Não foi possível carregar as publicações.",
+    unavailable: "As publicações ficam indisponíveis até configurar o Supabase.",
+    loadMore: "Carregar mais",
+    notFound: "Esta publicação não foi encontrada.",
+  },
+  validation: {
+    empty: "Escreva algo ou anexe uma mídia antes de publicar.",
+    tooLong: "O conteúdo é muito longo.",
+  },
+  confirmation: {
+    deleteTitle: "Excluir esta publicação?",
+    deleteDescription: "Ela será removida dos feeds normais.",
+    confirmDelete: "Excluir publicação",
+    cancel: "Cancelar",
+  },
+} as const;

@@ -1,0 +1,18 @@
+export const navigationMessages = {
+  home: "首页",
+  about: "关于 XOWAAK",
+  discover: "探索",
+  messages: "消息",
+  notifications: "通知",
+  profile: "个人资料",
+  settings: "设置",
+  admin: "管理",
+  signIn: "登录",
+  signUp: "注册",
+  signOut: "退出登录",
+  landing: "概览",
+  followRequests: "关注请求",
+  createAccount: "创建账户",
+  switchLanguage: "切换语言",
+  productNavigation: "产品导航",
+} as const;

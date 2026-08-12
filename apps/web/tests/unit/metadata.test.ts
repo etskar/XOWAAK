@@ -8,14 +8,16 @@ describe("site metadata", () => {
 
     expect(metadata.title).toBe("XOWAAK");
     expect(metadata.applicationName).toBe("XOWAAK");
-    expect(metadata.description).toBe("XOWAAK digital ecosystem foundation");
-    expect(metadata.icons).toBeUndefined();
+    expect(metadata.description).toBe(
+      "A considered digital ecosystem for identity, connection, and room to move.",
+    );
+    expect(metadata.icons).toMatchObject({ apple: "/icons/icon-192.png" });
   });
 
   it("provides localized Arabic metadata", () => {
     const metadata = getSiteMetadata("ar");
 
-    expect(metadata.description).toBe("الأساس التقني لمنظومة XOWAAK الرقمية");
+    expect(metadata.description).toBe("منظومة رقمية مدروسة للهوية والتواصل ومساحة للحركة.");
     expect(metadata.openGraph).toMatchObject({ locale: "ar", siteName: "XOWAAK" });
   });
 });

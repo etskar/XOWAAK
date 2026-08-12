@@ -35,12 +35,18 @@
 }
 
 .ds-button--primary {
-  background: var(--color-primary);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    color-mix(in srgb, var(--color-primary) 72%, var(--color-accent))
+  );
   color: var(--color-on-primary);
+  box-shadow: 0 0.45rem 1.2rem color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 .ds-button--primary:hover:not([data-disabled]) {
   background: var(--color-primary-hover);
+  box-shadow: 0 0.7rem 1.5rem color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
 
 .ds-button--secondary {
@@ -88,6 +94,10 @@
 .ds-button[data-disabled] {
   cursor: not-allowed;
   opacity: 0.56;
+}
+
+.ds-button[data-pending] {
+  cursor: progress;
 }
 
 .ds-button[data-focus-visible],
@@ -154,6 +164,7 @@
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+  font-size: 1rem;
   padding-inline: var(--input-padding-inline);
   transition:
     border-color var(--motion-duration-normal) var(--motion-ease-standard),
@@ -609,12 +620,21 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   padding: var(--card-padding);
+  transition:
+    border-color var(--motion-duration-normal) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-normal) var(--motion-ease-standard),
+    transform var(--motion-duration-normal) var(--motion-ease-standard);
 }
 
 .ds-card--elevated {
   border-color: transparent;
-  background: var(--color-surface-elevated);
+  background: color-mix(in srgb, var(--color-surface-glass) 88%, transparent);
   box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+}
+
+.ds-card--elevated:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 .ds-separator {

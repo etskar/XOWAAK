@@ -1,6 +1,9 @@
+import Link from "next/link";
+import type { Route } from "next";
+
 import { defaultLocale, type Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
-import { LocaleSwitcher } from "@/features/localization/locale-switcher";
+import { Badge, Card, Container } from "@/design-system";
 
 type RoutePlaceholderProps = {
   title: string;
@@ -16,13 +19,31 @@ export function RoutePlaceholder({
   const { t } = createTranslator(locale);
 
   return (
-    <main className="page-shell" aria-labelledby="route-title">
-      <div className="page-card">
-        <LocaleSwitcher locale={locale} />
-        <p className="eyebrow">{t("common.routeShell")}</p>
-        <h1 id="route-title">{title}</h1>
-        <p>{description ?? t("common.reserved")}</p>
-      </div>
+    <main className="product-state-page" aria-labelledby="route-title">
+      <Container size="md">
+        <Card className="product-state-card">
+          <span className="product-state-card__mark" aria-hidden="true">
+            X
+          </span>
+          <Badge variant="warning">{t("common.configurationTitle")}</Badge>
+          <h1 id="route-title" className="ds-text-h2">
+            {title}
+          </h1>
+          <p>{description ?? t("common.reserved")}</p>
+          <p className="product-state-card__description">{t("common.configurationDescription")}</p>
+          <div className="showcase-actions">
+            <Link className="showcase-button showcase-button--primary" href={`/${locale}` as Route}>
+              {t("common.backToHome")}
+            </Link>
+            <Link
+              className="showcase-button showcase-button--secondary"
+              href={`/${locale}/auth/sign-up` as Route}
+            >
+              {t("navigation.createAccount")}
+            </Link>
+          </div>
+        </Card>
+      </Container>
     </main>
   );
 }

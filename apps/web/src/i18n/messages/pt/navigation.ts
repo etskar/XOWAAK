@@ -1,0 +1,18 @@
+export const navigationMessages = {
+  home: "Início",
+  about: "Sobre a XOWAAK",
+  discover: "Descobrir",
+  messages: "Mensagens",
+  notifications: "Notificações",
+  profile: "Perfil",
+  settings: "Configurações",
+  admin: "Administração",
+  signIn: "Entrar",
+  signUp: "Criar conta",
+  signOut: "Sair",
+  landing: "Visão geral",
+  followRequests: "Solicitações de seguimento",
+  createAccount: "Criar conta",
+  switchLanguage: "Mudar idioma",
+  productNavigation: "Navegação do produto",
+} as const;

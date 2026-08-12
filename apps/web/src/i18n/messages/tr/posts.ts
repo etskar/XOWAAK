@@ -1,0 +1,43 @@
+export const postsMessages = {
+  composer: {
+    title: "Gönderi oluştur",
+    placeholder: "XOWAAK ile bir şey paylaş...",
+    visibility: "Görünürlük",
+    public: "Herkese açık",
+    followers: "Takipçiler",
+    private: "Özel",
+    submit: "Gönderiyi yayınla",
+    savedDraft: "Taslak kaydedildi.",
+    created: "Gönderi yayınlandı.",
+    mediaImage: "Görsel",
+    mediaVideo: "Video",
+  },
+  card: {
+    viewPost: "Gönderiyi gör",
+    edit: "Düzenle",
+    delete: "Sil",
+    deleted: "Gönderi silindi.",
+    updated: "Gönderi güncellendi.",
+    editUnavailable: "Supabase yapılandırılana kadar düzenleme kullanılamaz.",
+  },
+  pages: {
+    home: "Ana sayfa",
+    detail: "Gönderi",
+    noPosts: "Henüz gönderi yok.",
+    loading: "Gönderiler yükleniyor",
+    failed: "Gönderiler yüklenemedi.",
+    unavailable: "Gönderiler Supabase yapılandırılana kadar kullanılamaz.",
+    loadMore: "Daha fazla gönderi yükle",
+    notFound: "Bu gönderi bulunamadı.",
+  },
+  validation: {
+    empty: "Yayınlamadan önce bir şey yaz veya medya ekle.",
+    tooLong: "Gönderi içeriği çok uzun.",
+  },
+  confirmation: {
+    deleteTitle: "Bu gönderi silinsin mi?",
+    deleteDescription: "Normal akışlardan kaldırılacak.",
+    confirmDelete: "Gönderiyi sil",
+    cancel: "İptal",
+  },
+} as const;

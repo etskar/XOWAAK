@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { getAuthSchemas } from "@/auth/validation";
 import { Button, Card, EmptyState, Input, Select, Stack } from "@/design-system";
 import { createSupabaseBrowserClient } from "@/supabase/browser";
-import type { Locale } from "@/config/locales";
+import { getLocaleConfig, locales, type Locale } from "@/config/locales";
 import { getAuthMessages } from "@/i18n/auth-messages";
 import { getIdentitySchemas } from "@/domains/identity/validation";
 import type { IdentityMessages } from "@/i18n/identity-messages";
@@ -52,11 +52,22 @@ type PreferencesFormProps = {
 export function PreferencesForm({ locale, messages, settings, unavailable }: PreferencesFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedLocale, setSelectedLocale] = useState<"en" | "ar">(settings?.locale ?? locale);
+  const [selectedLocale, setSelectedLocale] = useState<Locale>(settings?.locale ?? locale);
   const [themePreference, setThemePreference] = useState<"system" | "light" | "dark">(
     settings?.theme_preference ?? "system",
   );
   const [status, setStatus] = useState<string | null>(null);
+
+  function applyTheme(nextTheme: "system" | "light" | "dark") {
+    const resolvedTheme =
+      nextTheme === "system"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        : nextTheme;
+    document.documentElement.dataset.theme = resolvedTheme;
+    window.localStorage.setItem("xowaak-theme", resolvedTheme);
+  }
 
   function savePreferences() {
     const result = getIdentitySchemas(messages).settings.safeParse({
@@ -68,6 +79,8 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
       setStatus(messages.common.error);
       return;
     }
+
+    applyTheme(themePreference);
 
     startTransition(() => {
       void (async () => {
@@ -87,12 +100,12 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
         </div>
         <Select
           label={messages.common.language}
-          options={[
-            { id: "en", label: messages.common.english },
-            { id: "ar", label: messages.common.arabic },
-          ]}
+          options={locales.map((option) => ({
+            id: option,
+            label: getLocaleConfig(option).nativeName,
+          }))}
           selectedKey={selectedLocale}
-          onSelectionChange={(key) => setSelectedLocale(String(key) as "en" | "ar")}
+          onSelectionChange={(key) => setSelectedLocale(String(key) as Locale)}
           isDisabled={unavailable || isPending}
         />
         <Select
@@ -103,9 +116,11 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
             { id: "dark", label: messages.common.dark },
           ]}
           selectedKey={themePreference}
-          onSelectionChange={(key) =>
-            setThemePreference(String(key) as "system" | "light" | "dark")
-          }
+          onSelectionChange={(key) => {
+            const nextTheme = String(key) as "system" | "light" | "dark";
+            setThemePreference(nextTheme);
+            applyTheme(nextTheme);
+          }}
           isDisabled={unavailable || isPending}
         />
         <Button

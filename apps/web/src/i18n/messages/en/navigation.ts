@@ -10,4 +10,9 @@ export const navigationMessages = {
   signIn: "Sign in",
   signUp: "Sign up",
   signOut: "Sign out",
+  landing: "Overview",
+  followRequests: "Follow requests",
+  createAccount: "Create account",
+  switchLanguage: "Switch language",
+  productNavigation: "Product navigation",
 } as const;

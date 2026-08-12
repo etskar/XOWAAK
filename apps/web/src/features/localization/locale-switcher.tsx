@@ -9,9 +9,10 @@ import { getLocaleFromPathname, replacePathLocale } from "@/i18n/routing";
 
 type LocaleSwitcherProps = {
   locale: Locale;
+  compact?: boolean;
 };
 
-export function LocaleSwitcher({ locale }: LocaleSwitcherProps) {
+export function LocaleSwitcher({ locale, compact = false }: LocaleSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname() ?? `/${locale}`;
   const searchParams = useSearchParams();
@@ -36,7 +37,7 @@ export function LocaleSwitcher({ locale }: LocaleSwitcherProps) {
           const config = getLocaleConfig(option);
           return (
             <option key={config.code} value={config.code}>
-              {config.nativeName}
+              {compact ? config.code.toUpperCase() : config.nativeName}
             </option>
           );
         })}

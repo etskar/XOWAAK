@@ -24,7 +24,8 @@ describe("localization infrastructure", () => {
     expect(getDirection("ar")).toBe("rtl");
     expect(isLTR("en")).toBe(true);
     expect(isRTL("ar")).toBe(true);
-    expect(isLocale("fr")).toBe(false);
+    expect(isLocale("fr")).toBe(true);
+    expect(getLocaleConfig("zh").nativeName).toBe("中文");
   });
 
   it("resolves typed namespaced translations and predictable missing keys", () => {

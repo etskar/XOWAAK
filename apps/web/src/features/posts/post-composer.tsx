@@ -58,7 +58,15 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
   return (
     <form className="post-composer" onSubmit={submit}>
       <Stack gap={4}>
-        <h2 className="settings-section-title">{messages.composer.title}</h2>
+        <div className="post-composer__header">
+          <div>
+            <p className="showcase-eyebrow">{messages.composer.title}</p>
+            <h2 className="settings-section-title">{messages.composer.title}</h2>
+          </div>
+          <span className="post-composer__counter" aria-live="polite">
+            {content.length}/5000
+          </span>
+        </div>
         <Textarea
           label={messages.composer.title}
           placeholder={messages.composer.placeholder}

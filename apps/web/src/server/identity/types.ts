@@ -16,7 +16,7 @@ export type ProfileRecord = {
 export type UserSettingsRecord = {
   user_id: string;
   theme_preference: "system" | "light" | "dark";
-  locale: "en" | "ar";
+  locale: Locale;
   discoverability: "discoverable" | "not_discoverable";
   contact_privacy: "anyone" | "authenticated" | "nobody";
   notification_preferences: Record<string, unknown>;
@@ -50,3 +50,4 @@ export type IdentityActionResult<T = undefined> =
       ok: false;
       code: "unauthenticated" | "unavailable" | "validation" | "conflict" | "forbidden" | "error";
     };
+import type { Locale } from "@/config/locales";

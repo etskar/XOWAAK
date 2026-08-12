@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { EmptyState, ErrorState } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getPostsMessages } from "@/i18n/posts-messages";
+import { createTranslator } from "@/i18n/translate";
 import { PostCard } from "@/features/posts/post-card";
 import type { PostListResult } from "@/server/posts/types";
 
@@ -27,9 +28,23 @@ export function PostList({
   paginationPath,
 }: PostListProps) {
   const messages = getPostsMessages(locale);
+  const { t } = createTranslator(locale);
 
   if (error) {
-    return <ErrorState title={messages.pages.failed} description={messages.pages.unavailable} />;
+    return (
+      <ErrorState
+        title={messages.pages.failed}
+        description={messages.pages.unavailable}
+        action={
+          <Link
+            className="showcase-button showcase-button--secondary"
+            href={`/${locale}/home` as Route}
+          >
+            {t("common.retry")}
+          </Link>
+        }
+      />
+    );
   }
 
   if (!result || result.items.length === 0) {

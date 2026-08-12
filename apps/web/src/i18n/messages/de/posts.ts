@@ -1,0 +1,43 @@
+export const postsMessages = {
+  composer: {
+    title: "Beitrag erstellen",
+    placeholder: "Teile etwas mit XOWAAK...",
+    visibility: "Sichtbarkeit",
+    public: "Öffentlich",
+    followers: "Follower",
+    private: "Privat",
+    submit: "Veröffentlichen",
+    savedDraft: "Entwurf gespeichert.",
+    created: "Beitrag veröffentlicht.",
+    mediaImage: "Bild",
+    mediaVideo: "Video",
+  },
+  card: {
+    viewPost: "Beitrag ansehen",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    deleted: "Beitrag gelöscht.",
+    updated: "Beitrag aktualisiert.",
+    editUnavailable: "Bearbeiten ist möglich, sobald Supabase konfiguriert ist.",
+  },
+  pages: {
+    home: "Startseite",
+    detail: "Beitrag",
+    noPosts: "Noch keine Beiträge.",
+    loading: "Beiträge werden geladen",
+    failed: "Beiträge konnten nicht geladen werden.",
+    unavailable: "Beiträge sind verfügbar, sobald Supabase konfiguriert ist.",
+    loadMore: "Mehr Beiträge laden",
+    notFound: "Dieser Beitrag wurde nicht gefunden.",
+  },
+  validation: {
+    empty: "Schreibe etwas oder füge Medien hinzu.",
+    tooLong: "Der Inhalt ist zu lang.",
+  },
+  confirmation: {
+    deleteTitle: "Diesen Beitrag löschen?",
+    deleteDescription: "Er wird aus normalen Feeds entfernt.",
+    confirmDelete: "Beitrag löschen",
+    cancel: "Abbrechen",
+  },
+} as const;

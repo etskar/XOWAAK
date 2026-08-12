@@ -100,6 +100,7 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
           onChange={(value) => setValues((current) => ({ ...current, bio: value }))}
           error={fieldErrors.bio}
           isInvalid={Boolean(fieldErrors.bio)}
+          isDisabled={unavailable || isPending}
         />
         <Input
           label={messages.profile.location}

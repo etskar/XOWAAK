@@ -1,11 +1,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 
-import { Avatar, Card, EmptyState } from "@/design-system";
+import { Avatar, Badge, Card, Container, EmptyState } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
 import { getSocialMessages } from "@/i18n/social-messages";
-import { LocaleSwitcher } from "@/features/localization/locale-switcher";
 import { RelationshipActions } from "@/features/social/relationship-actions";
 import type { SocialUser } from "@/server/social/types";
 
@@ -81,26 +80,34 @@ export function SocialListPage({
 
   return (
     <main className="social-list-page" data-locale={locale}>
-      <LocaleSwitcher locale={locale} />
-      <div className="social-list-page__header">
-        <h1 className="ds-text-h3">{title}</h1>
-        <p>{description}</p>
-      </div>
-      <SocialUserList
-        locale={locale}
-        items={items}
-        emptyTitle={emptyTitle}
-        emptyDescription={emptyDescription}
-      />
-      {(previous || next) && (
-        <nav
-          className="social-pagination"
-          aria-label={resource === "followers" ? social.pages.followers : social.pages.following}
-        >
-          {previous && <Link href={previous as Route}>{t("common.previous")}</Link>}
-          {next && <Link href={next as Route}>{t("common.next")}</Link>}
-        </nav>
-      )}
+      <Container size="md">
+        <div className="social-list-page__topline">
+          <Link href={`/${locale}/u/${profileUsername}` as Route}>{t("common.backToHome")}</Link>
+          <Badge variant="primary">
+            {resource === "followers" ? social.pages.followers : social.pages.following}
+          </Badge>
+        </div>
+        <div className="social-list-page__header">
+          <p className="showcase-eyebrow">XOWAAK / @{profileUsername}</p>
+          <h1 className="ds-text-h2">{title}</h1>
+          <p>{description}</p>
+        </div>
+        <SocialUserList
+          locale={locale}
+          items={items}
+          emptyTitle={emptyTitle}
+          emptyDescription={emptyDescription}
+        />
+        {(previous || next) && (
+          <nav
+            className="social-pagination"
+            aria-label={resource === "followers" ? social.pages.followers : social.pages.following}
+          >
+            {previous && <Link href={previous as Route}>{t("common.previous")}</Link>}
+            {next && <Link href={next as Route}>{t("common.next")}</Link>}
+          </nav>
+        )}
+      </Container>
     </main>
   );
 }

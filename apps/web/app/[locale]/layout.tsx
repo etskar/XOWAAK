@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { appConfig } from "@/config/app";
 import { getDirection, isLocale, locales, type Locale } from "@/config/locales";
 import { getSiteMetadata } from "@/config/metadata";
+import { createTranslator } from "@/i18n/translate";
+import { SiteFooter, SiteHeader } from "@/features/navigation/site-header";
+import { PwaRegister } from "@/features/pwa/pwa-register";
 import "../globals.css";
 
 export const viewport: Viewport = {
@@ -41,14 +45,22 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   }
 
   const locale = localeParam as Locale;
+  const { t } = createTranslator(locale);
 
   return (
     <html lang={locale} dir={getDirection(locale)} data-theme="light">
       <body>
-        <a className="skip-link" href="#route-title">
-          Skip to content
+        <a className="skip-link" href="#main-content">
+          {t("common.skipToContent")}
         </a>
-        <div data-app-name={appConfig.name}>{children}</div>
+        <div className="site-root" data-app-name={appConfig.name}>
+          <PwaRegister />
+          <Suspense fallback={<div className="site-header__fallback" aria-hidden="true" />}>
+            <SiteHeader locale={locale} />
+          </Suspense>
+          <div id="main-content">{children}</div>
+          <SiteFooter locale={locale} />
+        </div>
       </body>
     </html>
   );

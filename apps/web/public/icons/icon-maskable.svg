@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>XOWAAK</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b7f58a"/>
+      <stop offset="0.5" stop-color="#00c853"/>
+      <stop offset="1" stop-color="#3f51b5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#101a2e"/>
+  <rect x="96" y="96" width="320" height="320" rx="94" fill="url(#g)"/>
+  <g fill="#101a2e" transform="rotate(-8 256 256)">
+    <rect x="185" y="186" width="38" height="142" rx="19" transform="skewX(-12)"/>
+    <rect x="237" y="164" width="38" height="184" rx="19" transform="skewX(-12)"/>
+    <rect x="289" y="182" width="38" height="150" rx="19" transform="skewX(-12)"/>
+  </g>
+</svg>

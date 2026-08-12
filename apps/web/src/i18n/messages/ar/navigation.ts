@@ -10,4 +10,9 @@ export const navigationMessages = {
   signIn: "تسجيل الدخول",
   signUp: "إنشاء حساب",
   signOut: "تسجيل الخروج",
+  landing: "نظرة عامة",
+  followRequests: "طلبات المتابعة",
+  createAccount: "إنشاء حساب",
+  switchLanguage: "تغيير اللغة",
+  productNavigation: "تنقل المنتج",
 } as const;
