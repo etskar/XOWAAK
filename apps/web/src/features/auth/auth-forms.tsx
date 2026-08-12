@@ -10,9 +10,10 @@ import { getAuthErrorMessage } from "@/auth/errors";
 import { buildAuthCallbackPath, getSafeInternalPath } from "@/auth/redirects";
 import { getAuthSchemas, getValidationErrors } from "@/auth/validation";
 import { Button, Input, Stack } from "@/design-system";
-import { createSupabaseBrowserClient } from "@/supabase/browser";
 import type { Locale } from "@/config/locales";
 import type { AuthMessages } from "@/i18n/auth-messages";
+import { confirmSignupEmail } from "@/server/auth/actions";
+import { createSupabaseBrowserClient } from "@/supabase/browser";
 
 type AuthFormProps = {
   locale: Locale;
@@ -172,6 +173,25 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
           if (data.session) {
             router.replace(`/${locale}/home`);
             return;
+          }
+
+          if (data.user) {
+            const confirmed = await confirmSignupEmail({
+              userId: data.user.id,
+              email: result.data.email,
+            });
+
+            if (confirmed.ok) {
+              const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: result.data.email,
+                password: result.data.password,
+              });
+
+              if (!signInError) {
+                router.replace(`/${locale}/home`);
+                return;
+              }
+            }
           }
 
           setStatus({ kind: "success", message: messages.signUp.success });

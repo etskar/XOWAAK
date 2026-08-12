@@ -81,6 +81,16 @@ export function PostEngagement({
         setEngagement((current) => ({
           ...current,
           commentCount: current.commentCount + 1,
+          comments: [
+            ...current.comments,
+            {
+              id: result.data.id,
+              authorId: "self",
+              authorName: messages.engagement.you,
+              body: comment,
+              createdAt: new Date().toISOString(),
+            },
+          ],
         }));
       });
     });

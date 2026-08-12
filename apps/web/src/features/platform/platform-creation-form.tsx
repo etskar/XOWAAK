@@ -233,9 +233,9 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
         <MediaUpload
           locale={locale}
           bucket="platform-media"
-          label={messages.title}
+          label={messages.image}
           helpText={messages.coordinatesHint}
-          uploadLabel={messages.title}
+          uploadLabel={messages.image}
           failedLabel={messages.saveError}
           accept="image/*"
           multiple={false}

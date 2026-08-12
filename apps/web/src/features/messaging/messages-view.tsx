@@ -219,8 +219,8 @@ export function MessagesView({
                     <MediaUpload
                       locale={locale}
                       bucket="message-media"
-                      label={messages.messagePlaceholder}
-                      uploadLabel={messages.messagePlaceholder}
+                      label={messages.attachment}
+                      uploadLabel={messages.attachment}
                       failedLabel={messages.failed}
                       accept="image/*,video/*"
                       multiple={false}

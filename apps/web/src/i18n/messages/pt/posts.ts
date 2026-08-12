@@ -22,6 +22,7 @@ export const postsMessages = {
     writeComment: "Escreva um comentário...",
     submitComment: "Adicionar comentário",
     emptyComments: "Ainda não há comentários.",
+    you: "Você",
     actionFailed: "Esta ação não está disponível agora.",
   },
   card: {

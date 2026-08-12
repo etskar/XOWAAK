@@ -22,6 +22,7 @@ export const postsMessages = {
     writeComment: "写下评论...",
     submitComment: "添加评论",
     emptyComments: "还没有评论。",
+    you: "你",
     actionFailed: "此操作暂时不可用。",
   },
   card: {

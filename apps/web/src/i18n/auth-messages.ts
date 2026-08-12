@@ -30,8 +30,8 @@ export const authMessages = {
       description: "Create an account to continue.",
       alreadyHaveAccount: "Already have an account?",
       signInLink: "Sign in",
-      verification: "If the address can receive mail, verification instructions will be sent.",
-      success: "Check your email for verification instructions.",
+      verification: "You will be able to sign in immediately after creating your account.",
+      success: "Your account was created. You can sign in now.",
     },
     recovery: {
       title: "Recover your account",
@@ -93,8 +93,8 @@ export const authMessages = {
       description: "أنشئ حساباً للمتابعة.",
       alreadyHaveAccount: "لديك حساب بالفعل؟",
       signInLink: "تسجيل الدخول",
-      verification: "إذا كان البريد قابلاً للاستلام، فسترسل تعليمات التحقق.",
-      success: "تحقق من بريدك الإلكتروني للحصول على التعليمات.",
+      verification: "ستتمكن من تسجيل الدخول فور إنشاء حسابك.",
+      success: "تم إنشاء حسابك. يمكنك تسجيل الدخول الآن.",
     },
     recovery: {
       title: "استعادة الحساب",
@@ -156,9 +156,8 @@ export const authMessages = {
       description: "Crea una cuenta para continuar.",
       alreadyHaveAccount: "¿Ya tienes una cuenta?",
       signInLink: "Inicia sesión",
-      verification:
-        "Si el correo puede recibir mensajes, enviaremos instrucciones de verificación.",
-      success: "Revisa tu correo para ver las instrucciones.",
+      verification: "Podrás iniciar sesión inmediatamente después de crear tu cuenta.",
+      success: "Tu cuenta fue creada. Ya puedes iniciar sesión.",
     },
     recovery: {
       title: "Recupera tu cuenta",
@@ -220,9 +219,8 @@ export const authMessages = {
       description: "Créez un compte pour continuer.",
       alreadyHaveAccount: "Vous avez déjà un compte ?",
       signInLink: "Se connecter",
-      verification:
-        "Si cette adresse reçoit des e-mails, les instructions de vérification seront envoyées.",
-      success: "Consultez votre e-mail pour les instructions.",
+      verification: "Vous pourrez vous connecter immédiatement après la création de votre compte.",
+      success: "Votre compte a été créé. Vous pouvez vous connecter.",
     },
     recovery: {
       title: "Récupérer votre compte",
@@ -284,8 +282,8 @@ export const authMessages = {
       description: "Erstelle ein Konto, um fortzufahren.",
       alreadyHaveAccount: "Du hast bereits ein Konto?",
       signInLink: "Anmelden",
-      verification: "Wenn die Adresse E-Mails empfangen kann, senden wir eine Bestätigung.",
-      success: "Prüfe deine E-Mails auf die Anleitung.",
+      verification: "Du kannst dich direkt nach der Kontoerstellung anmelden.",
+      success: "Dein Konto wurde erstellt. Du kannst dich jetzt anmelden.",
     },
     recovery: {
       title: "Konto wiederherstellen",
@@ -347,8 +345,8 @@ export const authMessages = {
       description: "Devam etmek için hesap oluştur.",
       alreadyHaveAccount: "Zaten hesabın var mı?",
       signInLink: "Giriş yap",
-      verification: "Adres e-posta alabiliyorsa doğrulama talimatları gönderilir.",
-      success: "Talimatlar için e-postanı kontrol et.",
+      verification: "Hesabını oluşturduktan hemen sonra giriş yapabilirsin.",
+      success: "Hesabın oluşturuldu. Şimdi giriş yapabilirsin.",
     },
     recovery: {
       title: "Hesabını kurtar",
@@ -410,8 +408,8 @@ export const authMessages = {
       description: "Crie uma conta para continuar.",
       alreadyHaveAccount: "Já tem uma conta?",
       signInLink: "Entrar",
-      verification: "Se o endereço receber e-mails, enviaremos instruções de verificação.",
-      success: "Confira seu e-mail para ver as instruções.",
+      verification: "Você poderá entrar imediatamente após criar sua conta.",
+      success: "Sua conta foi criada. Você já pode entrar.",
     },
     recovery: {
       title: "Recupere sua conta",
@@ -473,8 +471,8 @@ export const authMessages = {
       description: "创建账户以继续。",
       alreadyHaveAccount: "已经有账户？",
       signInLink: "登录",
-      verification: "如果邮箱可以接收邮件，我们会发送验证说明。",
-      success: "请查看邮箱中的验证说明。",
+      verification: "创建账户后即可立即登录。",
+      success: "账户已创建，现在可以登录。",
     },
     recovery: {
       title: "恢复账户",

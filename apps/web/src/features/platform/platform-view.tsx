@@ -242,6 +242,19 @@ export async function PlatformDetail({
           <h1 className="ds-text-h2">{itemTitle}</h1>
           {description && <p>{description}</p>}
           {owner && <Link href={`/${locale}/u/${owner.username}` as Route}>@{owner.username}</Link>}
+          <FavoriteButton
+            locale={locale}
+            targetType={
+              kind === "groups"
+                ? "group"
+                : kind === "products"
+                  ? "product"
+                  : kind === "services"
+                    ? "service"
+                    : "job"
+            }
+            targetId={item.id}
+          />
           {isGroup && (
             <p>
               {group.memberCount} {app.groupsTitle}

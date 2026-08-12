@@ -22,6 +22,7 @@ export const postsMessages = {
     writeComment: "Yorum yaz...",
     submitComment: "Yorum ekle",
     emptyComments: "Henüz yorum yok.",
+    you: "Sen",
     actionFailed: "Bu işlem şu anda kullanılamıyor.",
   },
   card: {
