@@ -4,6 +4,7 @@ export type ProfileRecord = {
   display_name: string;
   bio: string | null;
   avatar_media_id: string | null;
+  avatar_url?: string | null;
   location_label: string | null;
   visibility: "public" | "private";
   locale: string;

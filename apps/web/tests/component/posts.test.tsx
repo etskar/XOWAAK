@@ -16,6 +16,17 @@ vi.mock("@/server/posts/actions", () => ({
   updatePost: vi.fn(),
 }));
 
+vi.mock("@/server/posts/interaction-actions", () => ({
+  addPostComment: vi.fn(),
+  togglePostLike: vi.fn(),
+  togglePostShare: vi.fn(),
+}));
+
+vi.mock("@/server/media/actions", () => ({
+  markMediaAssetsDeleted: vi.fn(),
+  registerMediaAsset: vi.fn(),
+}));
+
 const post: PostRecord = {
   id: "00000000-0000-0000-0000-000000000001",
   authorId: "00000000-0000-0000-0000-000000000002",

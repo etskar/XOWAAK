@@ -15,7 +15,15 @@ export function PostMedia({ locale, media }: PostMediaProps) {
     <div className="post-media-grid" aria-label={messages.composer.mediaImage}>
       {media.map((item) => (
         <figure key={item.id} className="post-media-placeholder">
-          <span aria-hidden="true">{item.mediaType === "image" ? "IMG" : "VIDEO"}</span>
+          {item.url && item.mediaType === "image" ? (
+            // Signed URLs are generated on the server for visible posts only.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.url} alt={messages.composer.mediaImage} />
+          ) : item.url && item.mediaType === "video" ? (
+            <video src={item.url} controls preload="metadata" />
+          ) : (
+            <span aria-hidden="true">{item.mediaType === "image" ? "IMG" : "VIDEO"}</span>
+          )}
           <figcaption>
             {item.mediaType === "image"
               ? messages.composer.mediaImage

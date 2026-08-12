@@ -4,6 +4,8 @@ import { hasSupabasePublicEnv } from "@/config/public-env";
 import { getCurrentUser } from "@/server/auth/session";
 import { createSupabaseServerClient } from "@/server/supabase/client";
 import { decodePostCursor, encodePostCursor } from "@/server/posts/pagination";
+import { getPostEngagement } from "@/server/posts/engagement";
+import { getMediaSignedUrls } from "@/server/media/urls";
 import type { PostListResult, PostMedia, PostQueryResult, PostRecord } from "@/server/posts/types";
 
 const defaultLimit = 20;
@@ -35,6 +37,8 @@ async function hydratePosts(rows: Array<Record<string, unknown>>): Promise<PostR
   if (profileError || mediaError) throw new Error("post_hydration_failed");
 
   const profileById = new Map((profiles ?? []).map((profile) => [String(profile.id), profile]));
+  const mediaAssetIds = (media ?? []).map((item) => String(item.media_asset_id));
+  const mediaUrls = await getMediaSignedUrls(mediaAssetIds);
   const mediaByPost = new Map<string, PostMedia[]>();
   for (const item of media ?? []) {
     const postId = String(item.post_id);
@@ -44,9 +48,12 @@ async function hydratePosts(rows: Array<Record<string, unknown>>): Promise<PostR
       mediaAssetId: String(item.media_asset_id),
       mediaType: item.media_type as "image" | "video",
       position: Number(item.position),
+      url: mediaUrls.get(String(item.media_asset_id)) ?? null,
     });
     mediaByPost.set(postId, list);
   }
+
+  const engagementByPost = await getPostEngagement(postIds);
 
   return rows.flatMap((row) => {
     const authorId = String(row.author_id);
@@ -70,6 +77,7 @@ async function hydratePosts(rows: Array<Record<string, unknown>>): Promise<PostR
           avatarMediaId: profile.avatar_media_id ? String(profile.avatar_media_id) : null,
         },
         media: mediaByPost.get(String(row.id)) ?? [],
+        engagement: engagementByPost.get(String(row.id)),
       },
     ];
   });

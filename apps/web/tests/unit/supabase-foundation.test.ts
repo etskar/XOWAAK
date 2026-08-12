@@ -91,4 +91,21 @@ describe("Supabase foundation", () => {
     expect(migration).toContain("posts_select_visible");
     expect(migration).toContain("post_media_insert_owner");
   });
+
+  it("keeps Prompt 3 interactions and messaging additive and owner-scoped", () => {
+    const interactions = readMigration("20260814000000_interactions_messaging_media.sql");
+    const notifications = readMigration("20260814000001_interaction_notifications.sql");
+    const messaging = readMigration("20260814000002_messaging_group_workflows.sql");
+
+    expect(interactions).toContain("create table if not exists public.post_likes");
+    expect(interactions).toContain("create table if not exists public.post_comments");
+    expect(interactions).toContain("create table if not exists public.notifications");
+    expect(interactions).toContain("create table if not exists public.conversations");
+    expect(interactions).toContain("bucket_id = 'platform-media'");
+    expect(notifications).toContain("create trigger post_likes_notify");
+    expect(notifications).toContain("profiles_select_active_public");
+    expect(messaging).toContain("create or replace function public.create_direct_conversation");
+    expect(messaging).toContain("create or replace function public.create_group_invitation");
+    expect(interactions).toContain("alter publication supabase_realtime add table public.messages");
+  });
 });

@@ -6,7 +6,10 @@ export type PostMedia = {
   mediaAssetId: string;
   mediaType: "image" | "video";
   position: number;
+  url?: string | null;
 };
+
+export type PostEngagement = import("@/server/posts/engagement").PostEngagement;
 
 export type PostAuthor = {
   id: string;
@@ -26,6 +29,7 @@ export type PostRecord = {
   deletedAt: string | null;
   author: PostAuthor;
   media: PostMedia[];
+  engagement?: PostEngagement;
 };
 
 export type PostCursor = {

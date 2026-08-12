@@ -6,6 +6,7 @@ import type { Locale } from "@/config/locales";
 import { formatDateTime } from "@/i18n/format";
 import { getPostsMessages } from "@/i18n/posts-messages";
 import { PostActions } from "@/features/posts/post-actions";
+import { PostEngagement } from "@/features/posts/post-engagement";
 import { PostMedia } from "@/features/posts/post-media";
 import type { PostRecord } from "@/server/posts/types";
 
@@ -48,6 +49,7 @@ export function PostCard({ locale, post, isOwner }: PostCardProps) {
           </p>
         )}
         <PostMedia locale={locale} media={post.media} />
+        <PostEngagement locale={locale} postId={post.id} initial={post.engagement} />
         <div className="post-card__footer">
           <Link href={`/${locale}/posts/${post.id}` as Route}>{messages.card.viewPost}</Link>
           <PostActions locale={locale} post={post} isOwner={isOwner} />

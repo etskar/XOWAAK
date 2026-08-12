@@ -1,19 +1,23 @@
 import "server-only";
 
 import { hasSupabasePublicEnv } from "@/config/public-env";
+import { getCurrentUser } from "@/server/auth/session";
 import { createSupabaseServerClient } from "@/server/supabase/client";
 import type {
   GroupMessageRecord,
+  GroupMemberRecord,
   GroupRecord,
   JobRecord,
   LocationRecord,
   PlatformOwner,
+  ProfilePlatformRecords,
   PlatformResult,
   ProductRecord,
   SearchResult,
   SearchResultSet,
   ServiceRecord,
 } from "@/server/platform/types";
+import { getMediaSignedUrls } from "@/server/media/urls";
 
 const ownerSelect = "id, username, display_name";
 
@@ -50,6 +54,7 @@ function productRecord(
     longitude: row.longitude === null || row.longitude === undefined ? null : Number(row.longitude),
     status: row.status as ProductRecord["status"],
     createdAt: String(row.created_at),
+    imageUrl: row.image_url ? String(row.image_url) : null,
     owner: owner(profile),
   };
 }
@@ -71,6 +76,7 @@ function serviceRecord(
     longitude: product.longitude,
     status: product.status,
     createdAt: product.createdAt,
+    imageUrl: product.imageUrl,
     providerUserId: String(row.provider_user_id),
     provider: owner(profile),
   };
@@ -105,19 +111,28 @@ export async function getProducts(limit = 24): Promise<PlatformResult<ProductRec
     const { data, error } = await supabase
       .from("products")
       .select(
-        "id, owner_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at",
+        "id, owner_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) return { status: "error", data: null };
     const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const mediaUrls = await getMediaSignedUrls(
+      rows.flatMap((row) => (row.image_media_asset_id ? [String(row.image_media_asset_id)] : [])),
+    );
+    const rowsWithMedia: Array<Record<string, unknown>> = rows.map((row) => ({
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    }));
     const profiles = await getProfiles(
       supabase,
-      rows.map((row) => String(row.owner_user_id)),
+      rowsWithMedia.map((row) => String(row.owner_user_id)),
     );
     return {
       status: "ok",
-      data: rows.map((row) => productRecord(row, profiles.get(String(row.owner_user_id)))),
+      data: rowsWithMedia.map((row) => productRecord(row, profiles.get(String(row.owner_user_id)))),
     };
   } catch {
     return { status: "error", data: null };
@@ -131,15 +146,27 @@ export async function getProduct(id: string): Promise<PlatformResult<ProductReco
     const { data, error } = await supabase
       .from("products")
       .select(
-        "id, owner_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at",
+        "id, owner_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .eq("id", id)
       .maybeSingle();
     if (error) return { status: "error", data: null };
     const row = data as Record<string, unknown> | null;
     if (!row) return { status: "ok", data: null };
-    const profiles = await getProfiles(supabase, [String(row.owner_user_id)]);
-    return { status: "ok", data: productRecord(row, profiles.get(String(row.owner_user_id))) };
+    const mediaUrls = await getMediaSignedUrls(
+      row.image_media_asset_id ? [String(row.image_media_asset_id)] : [],
+    );
+    const rowWithMedia: Record<string, unknown> = {
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    };
+    const profiles = await getProfiles(supabase, [String(rowWithMedia.owner_user_id)]);
+    return {
+      status: "ok",
+      data: productRecord(rowWithMedia, profiles.get(String(rowWithMedia.owner_user_id))),
+    };
   } catch {
     return { status: "error", data: null };
   }
@@ -152,19 +179,30 @@ export async function getServices(limit = 24): Promise<PlatformResult<ServiceRec
     const { data, error } = await supabase
       .from("services")
       .select(
-        "id, provider_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at",
+        "id, provider_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) return { status: "error", data: null };
     const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const mediaUrls = await getMediaSignedUrls(
+      rows.flatMap((row) => (row.image_media_asset_id ? [String(row.image_media_asset_id)] : [])),
+    );
+    const rowsWithMedia: Array<Record<string, unknown>> = rows.map((row) => ({
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    }));
     const profiles = await getProfiles(
       supabase,
-      rows.map((row) => String(row.provider_user_id)),
+      rowsWithMedia.map((row) => String(row.provider_user_id)),
     );
     return {
       status: "ok",
-      data: rows.map((row) => serviceRecord(row, profiles.get(String(row.provider_user_id)))),
+      data: rowsWithMedia.map((row) =>
+        serviceRecord(row, profiles.get(String(row.provider_user_id))),
+      ),
     };
   } catch {
     return { status: "error", data: null };
@@ -178,15 +216,27 @@ export async function getServicesById(id: string): Promise<PlatformResult<Servic
     const { data, error } = await supabase
       .from("services")
       .select(
-        "id, provider_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at",
+        "id, provider_user_id, title, description, category, price, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .eq("id", id)
       .maybeSingle();
     if (error) return { status: "error", data: null };
     const row = data as Record<string, unknown> | null;
     if (!row) return { status: "ok", data: null };
-    const profiles = await getProfiles(supabase, [String(row.provider_user_id)]);
-    return { status: "ok", data: serviceRecord(row, profiles.get(String(row.provider_user_id))) };
+    const mediaUrls = await getMediaSignedUrls(
+      row.image_media_asset_id ? [String(row.image_media_asset_id)] : [],
+    );
+    const rowWithMedia: Record<string, unknown> = {
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    };
+    const profiles = await getProfiles(supabase, [String(rowWithMedia.provider_user_id)]);
+    return {
+      status: "ok",
+      data: serviceRecord(rowWithMedia, profiles.get(String(rowWithMedia.provider_user_id))),
+    };
   } catch {
     return { status: "error", data: null };
   }
@@ -199,19 +249,28 @@ export async function getJobs(limit = 24): Promise<PlatformResult<JobRecord[]>> 
     const { data, error } = await supabase
       .from("jobs")
       .select(
-        "id, owner_user_id, title, employer_name, description, requirements, job_type, salary_min, salary_max, currency, location_label, latitude, longitude, status, created_at",
+        "id, owner_user_id, title, employer_name, description, requirements, job_type, salary_min, salary_max, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) return { status: "error", data: null };
     const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const mediaUrls = await getMediaSignedUrls(
+      rows.flatMap((row) => (row.image_media_asset_id ? [String(row.image_media_asset_id)] : [])),
+    );
+    const rowsWithMedia: Array<Record<string, unknown>> = rows.map((row) => ({
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    }));
     const profiles = await getProfiles(
       supabase,
-      rows.map((row) => String(row.owner_user_id)),
+      rowsWithMedia.map((row) => String(row.owner_user_id)),
     );
     return {
       status: "ok",
-      data: rows.map((row) => jobRecord(row, profiles.get(String(row.owner_user_id)))),
+      data: rowsWithMedia.map((row) => jobRecord(row, profiles.get(String(row.owner_user_id)))),
     };
   } catch {
     return { status: "error", data: null };
@@ -225,15 +284,27 @@ export async function getJob(id: string): Promise<PlatformResult<JobRecord | nul
     const { data, error } = await supabase
       .from("jobs")
       .select(
-        "id, owner_user_id, title, employer_name, description, requirements, job_type, salary_min, salary_max, currency, location_label, latitude, longitude, status, created_at",
+        "id, owner_user_id, title, employer_name, description, requirements, job_type, salary_min, salary_max, currency, location_label, latitude, longitude, status, created_at, image_media_asset_id",
       )
       .eq("id", id)
       .maybeSingle();
     if (error) return { status: "error", data: null };
     const row = data as Record<string, unknown> | null;
     if (!row) return { status: "ok", data: null };
-    const profiles = await getProfiles(supabase, [String(row.owner_user_id)]);
-    return { status: "ok", data: jobRecord(row, profiles.get(String(row.owner_user_id))) };
+    const mediaUrls = await getMediaSignedUrls(
+      row.image_media_asset_id ? [String(row.image_media_asset_id)] : [],
+    );
+    const rowWithMedia: Record<string, unknown> = {
+      ...row,
+      image_url: row.image_media_asset_id
+        ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+        : null,
+    };
+    const profiles = await getProfiles(supabase, [String(rowWithMedia.owner_user_id)]);
+    return {
+      status: "ok",
+      data: jobRecord(rowWithMedia, profiles.get(String(rowWithMedia.owner_user_id))),
+    };
   } catch {
     return { status: "error", data: null };
   }
@@ -245,11 +316,16 @@ export async function getGroups(limit = 24): Promise<PlatformResult<GroupRecord[
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("groups")
-      .select("id, owner_user_id, name, description, visibility, status, created_at")
+      .select(
+        "id, owner_user_id, name, description, visibility, status, created_at, image_media_asset_id",
+      )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) return { status: "error", data: null };
     const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const mediaUrls = await getMediaSignedUrls(
+      rows.flatMap((row) => (row.image_media_asset_id ? [String(row.image_media_asset_id)] : [])),
+    );
     const profiles = await getProfiles(
       supabase,
       rows.map((row) => String(row.owner_user_id)),
@@ -275,6 +351,9 @@ export async function getGroups(limit = 24): Promise<PlatformResult<GroupRecord[
         visibility: row.visibility as GroupRecord["visibility"],
         status: row.status as GroupRecord["status"],
         createdAt: String(row.created_at),
+        imageUrl: row.image_media_asset_id
+          ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+          : null,
         owner: owner(profiles.get(String(row.owner_user_id))),
         memberCount: counts.get(String(row.id)) ?? 0,
       })),
@@ -290,12 +369,17 @@ export async function getGroup(id: string): Promise<PlatformResult<GroupRecord |
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("groups")
-      .select("id, owner_user_id, name, description, visibility, status, created_at")
+      .select(
+        "id, owner_user_id, name, description, visibility, status, created_at, image_media_asset_id",
+      )
       .eq("id", id)
       .maybeSingle();
     if (error) return { status: "error", data: null };
     const row = data as Record<string, unknown> | null;
     if (!row) return { status: "ok", data: null };
+    const mediaUrls = await getMediaSignedUrls(
+      row.image_media_asset_id ? [String(row.image_media_asset_id)] : [],
+    );
     const profiles = await getProfiles(supabase, [String(row.owner_user_id)]);
     const { count } = await supabase
       .from("group_members")
@@ -312,6 +396,9 @@ export async function getGroup(id: string): Promise<PlatformResult<GroupRecord |
         visibility: row.visibility as GroupRecord["visibility"],
         status: row.status as GroupRecord["status"],
         createdAt: String(row.created_at),
+        imageUrl: row.image_media_asset_id
+          ? (mediaUrls.get(String(row.image_media_asset_id)) ?? null)
+          : null,
         owner: owner(profiles.get(String(row.owner_user_id))),
         memberCount: count ?? 0,
       },
@@ -405,6 +492,73 @@ export async function getGroupMessages(
   }
 }
 
+export async function getGroupMembers(
+  groupId: string,
+): Promise<PlatformResult<GroupMemberRecord[]>> {
+  if (!hasSupabasePublicEnv()) return { status: "unavailable", data: null };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const user = await getCurrentUser();
+    if (!user) return { status: "ok", data: [] };
+    const { data, error } = await supabase
+      .from("group_members")
+      .select("group_id, user_id, role, status")
+      .eq("group_id", groupId)
+      .in("status", ["invited", "active"])
+      .order("joined_at", { ascending: true });
+    if (error) return { status: "error", data: null };
+    const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const profiles = await getProfiles(
+      supabase,
+      rows.map((row) => String(row.user_id)),
+    );
+    return {
+      status: "ok",
+      data: rows.flatMap((row) => {
+        const profile = profiles.get(String(row.user_id));
+        if (!profile) return [];
+        return [
+          {
+            groupId: String(row.group_id),
+            userId: String(row.user_id),
+            username: String(profile.username),
+            displayName: String(profile.display_name || profile.username),
+            role: row.role as GroupMemberRecord["role"],
+            status: row.status as GroupMemberRecord["status"],
+            isViewer: String(row.user_id) === user.id,
+          },
+        ];
+      }),
+    };
+  } catch {
+    return { status: "error", data: null };
+  }
+}
+
+export async function getProfilePlatformRecords(
+  ownerId: string,
+): Promise<PlatformResult<ProfilePlatformRecords>> {
+  const [products, services, jobs, groups] = await Promise.all([
+    getProducts(100),
+    getServices(100),
+    getJobs(100),
+    getGroups(100),
+  ]);
+  if ([products, services, jobs, groups].some((result) => result.status === "error"))
+    return { status: "error", data: null };
+  if ([products, services, jobs, groups].some((result) => result.status !== "ok"))
+    return { status: "unavailable", data: null };
+  return {
+    status: "ok",
+    data: {
+      products: (products.data ?? []).filter((item) => item.ownerUserId === ownerId),
+      services: (services.data ?? []).filter((item) => item.providerUserId === ownerId),
+      jobs: (jobs.data ?? []).filter((item) => item.ownerUserId === ownerId),
+      groups: (groups.data ?? []).filter((item) => item.ownerUserId === ownerId),
+    },
+  };
+}
+
 export async function searchPlatform(
   query: string,
   limit = 8,
@@ -427,34 +581,34 @@ export async function searchPlatform(
       supabase
         .from("profiles")
         .select("id, username, display_name, location_label")
-        .or(`username.ilike.${like},display_name.ilike.${like}`)
+        .or(`username.ilike.${like},display_name.ilike.${like},location_label.ilike.${like}`)
         .is("deleted_at", null)
         .limit(limit),
       supabase
         .from("products")
         .select("id, title, location_label")
-        .ilike("title", like)
+        .or(`title.ilike.${like},location_label.ilike.${like}`)
         .eq("status", "published")
         .is("deleted_at", null)
         .limit(limit),
       supabase
         .from("services")
         .select("id, title, location_label")
-        .ilike("title", like)
+        .or(`title.ilike.${like},location_label.ilike.${like}`)
         .eq("status", "published")
         .is("deleted_at", null)
         .limit(limit),
       supabase
         .from("jobs")
         .select("id, title, location_label")
-        .ilike("title", like)
+        .or(`title.ilike.${like},location_label.ilike.${like}`)
         .eq("status", "published")
         .is("deleted_at", null)
         .limit(limit),
       supabase
         .from("groups")
         .select("id, name, description")
-        .ilike("name", like)
+        .or(`name.ilike.${like},description.ilike.${like}`)
         .eq("status", "active")
         .limit(limit),
     ]);

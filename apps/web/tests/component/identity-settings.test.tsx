@@ -16,6 +16,11 @@ vi.mock("@/server/identity/actions", () => ({
   updateSettings: vi.fn(),
 }));
 
+vi.mock("@/server/media/actions", () => ({
+  markMediaAssetsDeleted: vi.fn(),
+  registerMediaAsset: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
   usePathname: () => "/en/settings",

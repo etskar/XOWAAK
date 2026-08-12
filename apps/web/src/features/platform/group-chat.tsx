@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
 import { Button, EmptyState, Input, Stack } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
 import { sendGroupMessage } from "@/server/platform/actions";
+import { createSupabaseBrowserClient } from "@/supabase/browser";
 import type { GroupMessageRecord, PlatformResult } from "@/server/platform/types";
 
 export function GroupChat({
@@ -24,6 +25,30 @@ export function GroupChat({
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    try {
+      const client = createSupabaseBrowserClient();
+      const channel = client
+        .channel(`group-messages:${groupId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "group_messages",
+            filter: `group_id=eq.${groupId}`,
+          },
+          () => router.refresh(),
+        )
+        .subscribe();
+      return () => {
+        void client.removeChannel(channel);
+      };
+    } catch {
+      return undefined;
+    }
+  }, [groupId, router]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

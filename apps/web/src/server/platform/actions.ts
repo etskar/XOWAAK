@@ -58,6 +58,7 @@ export async function createProduct(input: unknown): Promise<PlatformActionResul
         location_label: parsed.data.locationLabel || null,
         latitude: parsed.data.latitude ?? null,
         longitude: parsed.data.longitude ?? null,
+        image_media_asset_id: parsed.data.imageMediaAssetId ?? null,
         status: "published",
       })
       .select("id")
@@ -87,6 +88,7 @@ export async function createService(input: unknown): Promise<PlatformActionResul
         location_label: parsed.data.locationLabel || null,
         latitude: parsed.data.latitude ?? null,
         longitude: parsed.data.longitude ?? null,
+        image_media_asset_id: parsed.data.imageMediaAssetId ?? null,
         status: "published",
       })
       .select("id")
@@ -119,6 +121,7 @@ export async function createJob(input: unknown): Promise<PlatformActionResult> {
         location_label: parsed.data.locationLabel || null,
         latitude: parsed.data.latitude ?? null,
         longitude: parsed.data.longitude ?? null,
+        image_media_asset_id: parsed.data.imageMediaAssetId ?? null,
         status: "published",
       })
       .select("id")
@@ -143,6 +146,7 @@ export async function createGroup(input: unknown): Promise<PlatformActionResult>
         name: parsed.data.name,
         description: parsed.data.description || null,
         visibility: parsed.data.visibility,
+        image_media_asset_id: parsed.data.imageMediaAssetId ?? null,
         status: "active",
       })
       .select("id")

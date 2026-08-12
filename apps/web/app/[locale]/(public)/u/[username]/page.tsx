@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/server/auth/session";
 import { getProfileByUsername } from "@/server/identity/queries";
 import { getFollowerCount, getFollowingCount, getRelationship } from "@/server/social/queries";
 import { getUserPosts } from "@/server/posts/queries";
+import { getProfilePlatformRecords } from "@/server/platform/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +47,12 @@ export default async function PublicProfilePage({ params, searchParams }: Public
   const viewer = await getCurrentUser();
   const query = searchParams ? await searchParams : {};
   const cursor = Array.isArray(query.cursor) ? query.cursor[0] : query.cursor;
-  const [relationship, followerCount, followingCount, posts] = await Promise.all([
+  const [relationship, followerCount, followingCount, posts, platform] = await Promise.all([
     viewer ? getRelationship(viewer.id, profile.id) : Promise.resolve(null),
     getFollowerCount(profile.id),
     getFollowingCount(profile.id),
     getUserPosts(profile.id, cursor, 20),
+    getProfilePlatformRecords(profile.id),
   ]);
 
   return (
@@ -63,6 +65,7 @@ export default async function PublicProfilePage({ params, searchParams }: Public
       viewerId={viewer?.id ?? null}
       posts={posts}
       postsPaginationPath={`/${locale}/u/${profile.username}`}
+      platform={platform}
     />
   );
 }

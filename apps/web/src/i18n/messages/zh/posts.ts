@@ -12,6 +12,18 @@ export const postsMessages = {
     mediaImage: "图片",
     mediaVideo: "视频",
   },
+  engagement: {
+    like: "点赞",
+    liked: "已点赞",
+    comment: "评论",
+    share: "分享",
+    shared: "已分享",
+    comments: "评论",
+    writeComment: "写下评论...",
+    submitComment: "添加评论",
+    emptyComments: "还没有评论。",
+    actionFailed: "此操作暂时不可用。",
+  },
   card: {
     viewPost: "查看帖子",
     edit: "编辑",

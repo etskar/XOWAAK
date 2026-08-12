@@ -13,6 +13,7 @@ import { getPostsMessages } from "@/i18n/posts-messages";
 import { createTranslator } from "@/i18n/translate";
 import type { Relationship } from "@/server/social/types";
 import type { PostListResult, PostQueryResult } from "@/server/posts/types";
+import type { PlatformResult, ProfilePlatformRecords } from "@/server/platform/types";
 
 type ProfileViewProps = {
   locale: Locale;
@@ -23,6 +24,7 @@ type ProfileViewProps = {
   viewerId: string | null;
   posts: PostQueryResult<PostListResult> | null;
   postsPaginationPath: string;
+  platform: PlatformResult<ProfilePlatformRecords>;
 };
 
 export function ProfileView({
@@ -34,6 +36,7 @@ export function ProfileView({
   viewerId,
   posts,
   postsPaginationPath,
+  platform,
 }: ProfileViewProps) {
   const messages = getIdentityMessages(locale);
   const social = getSocialMessages(locale);
@@ -54,7 +57,7 @@ export function ProfileView({
           <div className="profile-cover" aria-hidden="true" />
           <div className="profile-hero-card__body">
             <div className="profile-summary">
-              <Avatar name={displayName} size="lg" />
+              <Avatar name={displayName} src={profile.avatar_url ?? undefined} size="lg" />
               <div className="profile-summary__identity">
                 <h1 className="ds-text-h3" dir="auto">
                   {displayName}
@@ -112,6 +115,62 @@ export function ProfileView({
                 paginationPath={postsPaginationPath}
               />
             )}
+            {platform.status === "ok" &&
+              platform.data.products.length +
+                platform.data.services.length +
+                platform.data.jobs.length +
+                platform.data.groups.length >
+                0 && (
+                <section
+                  className="profile-platform-section"
+                  aria-labelledby="profile-platform-title"
+                >
+                  <div className="profile-section-heading">
+                    <p className="showcase-eyebrow">XOWAAK / DIRECTORY</p>
+                    <h2 id="profile-platform-title" className="ds-text-h3">
+                      {t("navigation.products")} / {t("navigation.services")} /{" "}
+                      {t("navigation.jobs")}
+                    </h2>
+                  </div>
+                  <div className="profile-platform-grid">
+                    {[
+                      ...platform.data.products.map((item) => ({
+                        id: item.id,
+                        kind: t("navigation.products"),
+                        title: item.title,
+                        href: `/${locale}/products/${item.id}`,
+                      })),
+                      ...platform.data.services.map((item) => ({
+                        id: item.id,
+                        kind: t("navigation.services"),
+                        title: item.title,
+                        href: `/${locale}/services/${item.id}`,
+                      })),
+                      ...platform.data.jobs.map((item) => ({
+                        id: item.id,
+                        kind: t("navigation.jobs"),
+                        title: item.title,
+                        href: `/${locale}/jobs/${item.id}`,
+                      })),
+                      ...platform.data.groups.map((item) => ({
+                        id: item.id,
+                        kind: t("navigation.groups"),
+                        title: item.name,
+                        href: `/${locale}/groups/${item.id}`,
+                      })),
+                    ].map((item) => (
+                      <Link
+                        key={`${item.kind}-${item.id}`}
+                        href={item.href as Route}
+                        className="profile-platform-card"
+                      >
+                        <span>{item.kind}</span>
+                        <strong>{item.title}</strong>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
           </section>
           <aside className="profile-context-card">
             <span className="profile-context-card__mark">X</span>

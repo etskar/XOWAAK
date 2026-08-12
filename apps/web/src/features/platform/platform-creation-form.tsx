@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
 import { Button, Input, Select, Stack, Textarea } from "@/design-system";
+import { MediaUpload } from "@/features/media/media-upload";
 import type { Locale } from "@/config/locales";
 import { getPlatformMessages } from "@/i18n/platform-messages";
 import { createGroup, createJob, createProduct, createService } from "@/server/platform/actions";
@@ -16,7 +17,7 @@ type CreationValues = Record<string, string>;
 
 function initialValues(kind: PlatformKind): CreationValues {
   return kind === "groups"
-    ? { name: "", description: "", visibility: "public" }
+    ? { name: "", description: "", visibility: "public", imageMediaAssetId: "" }
     : {
         title: "",
         description: "",
@@ -31,6 +32,7 @@ function initialValues(kind: PlatformKind): CreationValues {
         jobType: "other",
         salaryMin: "",
         salaryMax: "",
+        imageMediaAssetId: "",
       };
 }
 
@@ -228,6 +230,19 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
           />
         )}
         {locationFields}
+        <MediaUpload
+          locale={locale}
+          bucket="platform-media"
+          label={messages.title}
+          helpText={messages.coordinatesHint}
+          uploadLabel={messages.title}
+          failedLabel={messages.saveError}
+          accept="image/*"
+          multiple={false}
+          maxFiles={1}
+          disabled={isPending}
+          onAssetIdsChange={(assetIds) => setValue("imageMediaAssetId", assetIds[0] ?? "")}
+        />
         <div className="platform-form__actions">
           <Link
             className="showcase-button showcase-button--secondary"

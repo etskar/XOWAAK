@@ -12,6 +12,18 @@ export const postsMessages = {
     mediaImage: "صورة",
     mediaVideo: "فيديو",
   },
+  engagement: {
+    like: "إعجاب",
+    liked: "تم الإعجاب",
+    comment: "تعليق",
+    share: "مشاركة",
+    shared: "تمت المشاركة",
+    comments: "التعليقات",
+    writeComment: "اكتب تعليقاً...",
+    submitComment: "إضافة تعليق",
+    emptyComments: "لا توجد تعليقات بعد.",
+    actionFailed: "هذا الإجراء غير متاح حالياً.",
+  },
   card: {
     viewPost: "عرض المنشور",
     edit: "تعديل",

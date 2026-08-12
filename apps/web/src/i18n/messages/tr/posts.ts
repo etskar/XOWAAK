@@ -12,6 +12,18 @@ export const postsMessages = {
     mediaImage: "Görsel",
     mediaVideo: "Video",
   },
+  engagement: {
+    like: "Beğen",
+    liked: "Beğenildi",
+    comment: "Yorum yap",
+    share: "Paylaş",
+    shared: "Paylaşıldı",
+    comments: "Yorumlar",
+    writeComment: "Yorum yaz...",
+    submitComment: "Yorum ekle",
+    emptyComments: "Henüz yorum yok.",
+    actionFailed: "Bu işlem şu anda kullanılamıyor.",
+  },
   card: {
     viewPost: "Gönderiyi gör",
     edit: "Düzenle",

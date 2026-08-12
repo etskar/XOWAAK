@@ -9,6 +9,7 @@ import { Button, Select, Stack, Textarea } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getPostsMessages } from "@/i18n/posts-messages";
 import { createPost } from "@/server/posts/actions";
+import { MediaUpload } from "@/features/media/media-upload";
 
 type PostComposerProps = {
   locale: Locale;
@@ -19,6 +20,7 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
   const router = useRouter();
   const messages = getPostsMessages(locale);
   const [content, setContent] = useState("");
+  const [mediaAssetIds, setMediaAssetIds] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<"public" | "followers" | "private">("public");
   const [status, setStatus] = useState<string | null>(
     unavailable ? messages.pages.unavailable : null,
@@ -30,11 +32,11 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
     const parsed = postSchema.safeParse({
       content,
       visibility,
-      mediaAssetIds: [],
+      mediaAssetIds,
       status: "published",
     });
 
-    if (!parsed.success || !isPostPublishable(content, [])) {
+    if (!parsed.success || !isPostPublishable(content, mediaAssetIds)) {
       setStatus(content.length > 5000 ? messages.validation.tooLong : messages.validation.empty);
       return;
     }
@@ -49,6 +51,7 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
           return;
         }
         setContent("");
+        setMediaAssetIds([]);
         setStatus(messages.composer.created);
         router.refresh();
       })();
@@ -87,6 +90,17 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
             setVisibility(String(key) as "public" | "followers" | "private")
           }
           isDisabled={unavailable || isPending}
+        />
+        <MediaUpload
+          locale={locale}
+          bucket="post-media"
+          label={messages.composer.mediaImage}
+          uploadLabel={messages.composer.mediaImage}
+          failedLabel={messages.pages.failed}
+          accept="image/*,video/*"
+          maxFiles={10}
+          disabled={unavailable || isPending}
+          onAssetIdsChange={setMediaAssetIds}
         />
         <Button type="submit" loading={isPending} isDisabled={unavailable || isPending}>
           {messages.composer.submit}

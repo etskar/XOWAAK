@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 
 import { getIdentityFieldErrors, getIdentitySchemas } from "@/domains/identity/validation";
 import { Avatar, Button, Input, Stack, Textarea } from "@/design-system";
+import { MediaUpload } from "@/features/media/media-upload";
 import type { Locale } from "@/config/locales";
 import type { IdentityMessages } from "@/i18n/identity-messages";
 import { updateProfile } from "@/server/identity/actions";
@@ -32,6 +33,7 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
     displayName: profile?.display_name ?? "",
     bio: profile?.bio ?? "",
     locationLabel: profile?.location_label ?? "",
+    avatarMediaId: profile?.avatar_media_id ?? null,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<string | null>(
@@ -53,7 +55,10 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
 
     startTransition(() => {
       void (async () => {
-        const response = await updateProfile(result.data);
+        const response = await updateProfile({
+          ...result.data,
+          avatarMediaId: values.avatarMediaId,
+        });
 
         if (!response.ok) {
           setStatus(resultMessage(response.code, messages));
@@ -76,6 +81,21 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
             <p className="settings-form__hint">{messages.profile.avatarUnavailable}</p>
           </div>
         </div>
+        <MediaUpload
+          locale={locale}
+          bucket="avatars"
+          label={messages.profile.avatar}
+          uploadLabel={messages.profile.avatar}
+          failedLabel={messages.common.error}
+          accept="image/*"
+          multiple={false}
+          maxFiles={1}
+          maxSizeBytes={5 * 1024 * 1024}
+          disabled={unavailable || isPending}
+          onAssetIdsChange={(assetIds) =>
+            setValues((current) => ({ ...current, avatarMediaId: assetIds[0] ?? null }))
+          }
+        />
         <Input
           label={messages.profile.username}
           value={values.username}

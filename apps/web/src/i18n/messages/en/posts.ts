@@ -12,6 +12,18 @@ export const postsMessages = {
     mediaImage: "Image",
     mediaVideo: "Video",
   },
+  engagement: {
+    like: "Like",
+    liked: "Liked",
+    comment: "Comment",
+    share: "Share",
+    shared: "Shared",
+    comments: "Comments",
+    writeComment: "Write a comment...",
+    submitComment: "Add comment",
+    emptyComments: "No comments yet.",
+    actionFailed: "This action is unavailable right now.",
+  },
   card: {
     viewPost: "View post",
     edit: "Edit",

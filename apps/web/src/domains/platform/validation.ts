@@ -11,8 +11,15 @@ const locationFields = {
   longitude: optionalCoordinate,
 };
 
+const mediaFields = {
+  imageMediaAssetId: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? undefined : value),
+    z.string().uuid().optional(),
+  ),
+};
+
 const withCoordinates = <T extends z.ZodRawShape>(shape: T) =>
-  z.object({ ...shape, ...locationFields }).superRefine((value, context) => {
+  z.object({ ...shape, ...locationFields, ...mediaFields }).superRefine((value, context) => {
     const coordinates = value as { latitude?: number; longitude?: number };
     const hasLatitude = coordinates.latitude !== undefined;
     const hasLongitude = coordinates.longitude !== undefined;
@@ -107,6 +114,7 @@ export const groupSchema = z.object({
   name: z.string().trim().min(1, "Enter a group name.").max(160, "Group name is too long."),
   description: z.string().trim().max(5000, "Group description is too long.").optional().default(""),
   visibility: z.enum(["public", "private"]).default("public"),
+  ...mediaFields,
 });
 
 export type PlatformLocationInput = z.infer<typeof productSchema>;

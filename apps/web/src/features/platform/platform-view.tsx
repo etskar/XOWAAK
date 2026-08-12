@@ -12,8 +12,9 @@ import type {
   ProductRecord,
   ServiceRecord,
 } from "@/server/platform/types";
-import { getGroupMessages } from "@/server/platform/queries";
+import { getGroupMembers, getGroupMessages } from "@/server/platform/queries";
 import { GroupChat } from "@/features/platform/group-chat";
+import { GroupMembers } from "@/features/platform/group-members";
 import { FavoriteButton } from "@/features/platform/favorite-button";
 
 export type PlatformKind = "products" | "services" | "jobs" | "groups";
@@ -74,7 +75,13 @@ function PlatformCard({
   return (
     <Card as="article" className="platform-card">
       <div className="platform-card__visual" aria-hidden="true">
-        <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
+        {item.imageUrl ? (
+          // Signed URLs are generated on the server for visible records only.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.imageUrl} alt="" />
+        ) : (
+          <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
+        )}
       </div>
       <div className="platform-card__body">
         <div className="platform-card__topline">
@@ -223,7 +230,13 @@ export async function PlatformDetail({
         </Link>
         <Card className="platform-detail-card">
           <div className="platform-detail-card__visual" aria-hidden="true">
-            <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
+            {item.imageUrl ? (
+              // Signed URLs are generated on the server for visible records only.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={item.imageUrl} alt="" />
+            ) : (
+              <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
+            )}
           </div>
           <Badge variant="success">{item.status}</Badge>
           <h1 className="ds-text-h2">{itemTitle}</h1>
@@ -238,7 +251,18 @@ export async function PlatformDetail({
           {!isGroup && !isJob && product.locationLabel && <p>{product.locationLabel}</p>}
         </Card>
         {isGroup && (
-          <GroupChat locale={locale} groupId={group.id} result={await getGroupMessages(group.id)} />
+          <>
+            <GroupMembers
+              locale={locale}
+              groupId={group.id}
+              result={await getGroupMembers(group.id)}
+            />
+            <GroupChat
+              locale={locale}
+              groupId={group.id}
+              result={await getGroupMessages(group.id)}
+            />
+          </>
         )}
       </Container>
     </main>

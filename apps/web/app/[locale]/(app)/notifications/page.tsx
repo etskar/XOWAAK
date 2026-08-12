@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/config/locales";
-import { createTranslator } from "@/i18n/translate";
-import { ProductUnavailablePage } from "@/features/showcase/showcase-page";
+import { getNotifications } from "@/server/messaging/queries";
+import { NotificationsView } from "@/features/messaging/notifications-view";
 
 type NotificationsPageProps = { params: Promise<{ locale: string }> };
 
@@ -9,6 +9,5 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
   const { locale: localeParam } = await params;
   if (!isLocale(localeParam)) notFound();
   const locale = localeParam as Locale;
-  const { t } = createTranslator(locale);
-  return <ProductUnavailablePage locale={locale} title={t("navigation.notifications")} />;
+  return <NotificationsView locale={locale} initial={await getNotifications()} />;
 }

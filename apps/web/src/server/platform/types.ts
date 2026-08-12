@@ -21,6 +21,7 @@ export type ProductRecord = {
   longitude: number | null;
   status: PlatformStatus;
   createdAt: string;
+  imageUrl: string | null;
   owner: PlatformOwner | null;
 };
 
@@ -45,6 +46,7 @@ export type GroupRecord = {
   visibility: "public" | "private";
   status: "active" | "archived";
   createdAt: string;
+  imageUrl: string | null;
   owner: PlatformOwner | null;
   memberCount: number;
 };
@@ -55,6 +57,16 @@ export type GroupMessageRecord = {
   senderId: string;
   body: string;
   createdAt: string;
+};
+
+export type GroupMemberRecord = {
+  groupId: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  role: "owner" | "admin" | "member";
+  status: "invited" | "active" | "left" | "removed";
+  isViewer: boolean;
 };
 
 export type LocationRecord = {
@@ -87,6 +99,13 @@ export type SearchResultSet = {
   query: string;
   results: Record<SearchCategory, SearchResult[]>;
   total: number;
+};
+
+export type ProfilePlatformRecords = {
+  products: ProductRecord[];
+  services: ServiceRecord[];
+  jobs: JobRecord[];
+  groups: GroupRecord[];
 };
 
 export type PlatformLocaleProps = { locale: Locale };

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { hasSupabasePublicEnv } from "@/config/public-env";
 import { getCurrentUser } from "@/server/auth/session";
 import { createSupabaseServerClient } from "@/server/supabase/client";
+import { getMediaSignedUrls } from "@/server/media/urls";
 import type {
   AccountDeletionRequestRecord,
   DeviceRecord,
@@ -15,6 +16,12 @@ import type {
 const profileSelect =
   "id, username, display_name, bio, avatar_media_id, location_label, visibility, locale, timezone, created_at, updated_at, deleted_at";
 const deviceCookieName = "xowaak_device_id";
+
+async function withAvatarUrl(profile: ProfileRecord | null) {
+  if (!profile?.avatar_media_id) return profile;
+  const urls = await getMediaSignedUrls([profile.avatar_media_id]);
+  return { ...profile, avatar_url: urls.get(profile.avatar_media_id) ?? null };
+}
 
 async function getCurrentDeviceId() {
   const cookieStore = await cookies();
@@ -41,7 +48,7 @@ export async function getOwnProfile(): Promise<ProfileRecord | null> {
     throw new Error("profile_query_failed");
   }
 
-  return data as ProfileRecord | null;
+  return withAvatarUrl(data as ProfileRecord | null);
 }
 
 export async function getProfileByUsername(username: string): Promise<ProfileRecord | null> {
@@ -60,7 +67,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileRec
     throw new Error("profile_query_failed");
   }
 
-  return data as ProfileRecord | null;
+  return withAvatarUrl(data as ProfileRecord | null);
 }
 
 export async function getOwnSettings(): Promise<UserSettingsRecord | null> {
