@@ -219,6 +219,16 @@ test("covers the localized auth and settings route matrix", async ({ page }) => 
     "/ar/messages",
     "/en/notifications",
     "/ar/notifications",
+    "/en/products",
+    "/ar/products",
+    "/en/services",
+    "/ar/services",
+    "/en/jobs",
+    "/ar/jobs",
+    "/en/groups",
+    "/ar/groups",
+    "/en/map",
+    "/ar/map",
   ];
 
   for (const route of protectedRoutes) {

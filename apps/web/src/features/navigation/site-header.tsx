@@ -37,6 +37,11 @@ function isApplicationPath(pathname: string, locale: Locale) {
     `/${locale}/settings`,
     `/${locale}/followers/requests`,
     `/${locale}/admin`,
+    `/${locale}/products`,
+    `/${locale}/services`,
+    `/${locale}/jobs`,
+    `/${locale}/groups`,
+    `/${locale}/map`,
   ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
@@ -94,6 +99,9 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
     ? [
         { href: `/${locale}/home` as Route, label: t("navigation.home") },
         { href: `/${locale}/search` as Route, label: t("navigation.search") },
+        { href: `/${locale}/products` as Route, label: t("navigation.products") },
+        { href: `/${locale}/map` as Route, label: t("navigation.map") },
+        { href: `/${locale}/services` as Route, label: t("navigation.services") },
         { href: `/${locale}/messages` as Route, label: t("navigation.messages") },
         { href: `/${locale}/notifications` as Route, label: t("navigation.notifications") },
       ]
@@ -180,6 +188,41 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
             ))}
           {isApp ? (
             <>
+              <Link
+                href={`/${locale}/products` as Route}
+                className="site-nav__mobile-link"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("navigation.products")}
+              </Link>
+              <Link
+                href={`/${locale}/services` as Route}
+                className="site-nav__mobile-link"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("navigation.services")}
+              </Link>
+              <Link
+                href={`/${locale}/jobs` as Route}
+                className="site-nav__mobile-link"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("navigation.jobs")}
+              </Link>
+              <Link
+                href={`/${locale}/groups` as Route}
+                className="site-nav__mobile-link"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("navigation.groups")}
+              </Link>
+              <Link
+                href={`/${locale}/map` as Route}
+                className="site-nav__mobile-link"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("navigation.map")}
+              </Link>
               <Link
                 href={`/${locale}/notifications` as Route}
                 className="site-nav__mobile-link"

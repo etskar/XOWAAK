@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Badge } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
+import { getPlatformMessages } from "@/i18n/platform-messages";
 import { createTranslator } from "@/i18n/translate";
 
 export function CreateAction({
@@ -17,6 +18,7 @@ export function CreateAction({
   profileComplete: boolean;
 }) {
   const app = getAppMessages(locale);
+  const platform = getPlatformMessages(locale);
   const { t } = createTranslator(locale);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -43,15 +45,38 @@ export function CreateAction({
             </button>
           </div>
           {profileComplete ? (
-            <button className="create-action__option" type="button" onClick={focusComposer}>
-              <span className="create-action__option-icon" aria-hidden="true">
-                +
-              </span>
-              <span>
-                <strong>{app.createPost}</strong>
-                <small>{app.createPostDescription}</small>
-              </span>
-            </button>
+            <>
+              <button className="create-action__option" type="button" onClick={focusComposer}>
+                <span className="create-action__option-icon" aria-hidden="true">
+                  +
+                </span>
+                <span>
+                  <strong>{app.createPost}</strong>
+                  <small>{app.createPostDescription}</small>
+                </span>
+              </button>
+              {[
+                { href: `/${locale}/products/new` as Route, label: platform.createProduct },
+                { href: `/${locale}/services/new` as Route, label: platform.createService },
+                { href: `/${locale}/jobs/new` as Route, label: platform.createJob },
+                { href: `/${locale}/groups/new` as Route, label: platform.createGroup },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  className="create-action__option"
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <span className="create-action__option-icon" aria-hidden="true">
+                    +
+                  </span>
+                  <span>
+                    <strong>{item.label}</strong>
+                    <small>{app.completeProfileDescription}</small>
+                  </span>
+                </Link>
+              ))}
+            </>
           ) : (
             <Link
               className="create-action__option"

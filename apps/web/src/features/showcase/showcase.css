@@ -776,6 +776,9 @@
 }
 
 @media (max-width: 42rem) {
+  .showcase-orbit {
+    overflow: clip;
+  }
   .showcase-hero {
     padding-block-start: 3.5rem;
   }

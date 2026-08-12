@@ -22,6 +22,9 @@ export const appMessages = {
     mapTitle: "Map and location discovery",
     favoritesTitle: "Favorites",
     groupsTitle: "Groups and communities",
+    emptyContent: "No public records are available yet.",
+    groupChatPlaceholder: "Write a message...",
+    sendMessage: "Send message",
   },
   ar: {
     appNavigation: "تنقل التطبيق",
@@ -42,6 +45,9 @@ export const appMessages = {
     mapTitle: "الخرائط واكتشاف المواقع",
     favoritesTitle: "المفضلة",
     groupsTitle: "المجموعات والمجتمعات",
+    emptyContent: "لا توجد سجلات عامة متاحة بعد.",
+    groupChatPlaceholder: "اكتب رسالة...",
+    sendMessage: "إرسال الرسالة",
   },
   es: {
     appNavigation: "Navegación de la aplicación",
@@ -63,6 +69,9 @@ export const appMessages = {
     mapTitle: "Mapas y descubrimiento de lugares",
     favoritesTitle: "Favoritos",
     groupsTitle: "Grupos y comunidades",
+    emptyContent: "Aún no hay registros públicos disponibles.",
+    groupChatPlaceholder: "Escribe un mensaje...",
+    sendMessage: "Enviar mensaje",
   },
   fr: {
     appNavigation: "Navigation de l’application",
@@ -84,6 +93,9 @@ export const appMessages = {
     mapTitle: "Carte et découverte locale",
     favoritesTitle: "Favoris",
     groupsTitle: "Groupes et communautés",
+    emptyContent: "Aucun enregistrement public n’est disponible pour le moment.",
+    groupChatPlaceholder: "Écrivez un message...",
+    sendMessage: "Envoyer le message",
   },
   de: {
     appNavigation: "App-Navigation",
@@ -105,6 +117,9 @@ export const appMessages = {
     mapTitle: "Karte und lokale Entdeckung",
     favoritesTitle: "Favoriten",
     groupsTitle: "Gruppen und Communities",
+    emptyContent: "Noch keine öffentlichen Einträge verfügbar.",
+    groupChatPlaceholder: "Nachricht schreiben...",
+    sendMessage: "Nachricht senden",
   },
   tr: {
     appNavigation: "Uygulama navigasyonu",
@@ -126,6 +141,9 @@ export const appMessages = {
     mapTitle: "Harita ve konum keşfi",
     favoritesTitle: "Favoriler",
     groupsTitle: "Gruplar ve topluluklar",
+    emptyContent: "Henüz herkese açık kayıt yok.",
+    groupChatPlaceholder: "Bir mesaj yaz...",
+    sendMessage: "Mesaj gönder",
   },
   pt: {
     appNavigation: "Navegação do aplicativo",
@@ -147,6 +165,9 @@ export const appMessages = {
     mapTitle: "Mapa e descoberta de locais",
     favoritesTitle: "Favoritos",
     groupsTitle: "Grupos e comunidades",
+    emptyContent: "Ainda não há registros públicos.",
+    groupChatPlaceholder: "Escreva uma mensagem...",
+    sendMessage: "Enviar mensagem",
   },
   zh: {
     appNavigation: "应用导航",
@@ -167,6 +188,9 @@ export const appMessages = {
     mapTitle: "地图与位置探索",
     favoritesTitle: "收藏",
     groupsTitle: "群组与社区",
+    emptyContent: "暂时没有公开记录。",
+    groupChatPlaceholder: "写一条消息...",
+    sendMessage: "发送消息",
   },
 } as const;
 

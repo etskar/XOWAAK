@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 
-import { Badge, Card, Container, Input, Stack } from "@/design-system";
+import { Badge, Container } from "@/design-system";
 import { isLocale, type Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
 import { createTranslator } from "@/i18n/translate";
+import { SearchExperience } from "@/features/platform/search-experience";
 
 export const dynamic = "force-dynamic";
 
@@ -28,15 +29,7 @@ export default async function SearchPage({ params }: SearchPageProps) {
           </div>
           <Badge variant="warning">{app.unavailable}</Badge>
         </div>
-        <Card className="app-search-card">
-          <Stack gap={4}>
-            <Input label={app.searchPlaceholder} placeholder={app.searchPlaceholder} isDisabled />
-            <div className="app-search-card__hint">
-              <span aria-hidden="true">⌕</span>
-              <p>{app.searchDescription}</p>
-            </div>
-          </Stack>
-        </Card>
+        <SearchExperience locale={locale} />
       </Container>
     </main>
   );
