@@ -5,10 +5,10 @@ import { notFound } from "next/navigation";
 import { Badge, Card, Container } from "@/design-system";
 import { isLocale, type Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
-import { getPostsMessages } from "@/i18n/posts-messages";
 import { requireCurrentUser } from "@/server/auth/session";
 import { getOwnProfile } from "@/server/identity/queries";
 import { PostComposer } from "@/features/posts/post-composer";
+import { BackLink } from "@/features/navigation/back-link";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,6 @@ export default async function NewPostPage({ params }: NewPostPageProps) {
   }
 
   const locale = localeParam as Locale;
-  const messages = getPostsMessages(locale);
   const app = getAppMessages(locale);
 
   await requireCurrentUser(locale);
@@ -39,9 +38,7 @@ export default async function NewPostPage({ params }: NewPostPageProps) {
   return (
     <main className="posts-new-page" data-locale={locale}>
       <Container size="md">
-        <Link className="platform-back-link" href={`/${locale}/home` as Route}>
-          ← {messages.pages.home}
-        </Link>
+        <BackLink locale={locale} fallback={`/${locale}/home`} />
         {profileComplete ? (
           <Card className="posts-new-page__card">
             <PostComposer

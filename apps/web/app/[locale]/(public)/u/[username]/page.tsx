@@ -4,7 +4,7 @@ import { RoutePlaceholder } from "@/components/route-placeholder";
 import { isLocale, type Locale } from "@/config/locales";
 import { hasSupabasePublicEnv } from "@/config/public-env";
 import { getIdentityMessages } from "@/i18n/identity-messages";
-import { ProfileView } from "@/features/profile/profile-view";
+import { ProfileView, PROFILE_TABS, type ProfileTab } from "@/features/profile/profile-view";
 import { getCurrentUser } from "@/server/auth/session";
 import { getProfileByUsername } from "@/server/identity/queries";
 import { getFollowerCount, getFollowingCount, getRelationship } from "@/server/social/queries";
@@ -47,6 +47,10 @@ export default async function PublicProfilePage({ params, searchParams }: Public
   const viewer = await getCurrentUser();
   const query = searchParams ? await searchParams : {};
   const cursor = Array.isArray(query.cursor) ? query.cursor[0] : query.cursor;
+  const rawTab = Array.isArray(query.tab) ? query.tab[0] : query.tab;
+  const tab: ProfileTab = PROFILE_TABS.includes(rawTab as ProfileTab)
+    ? (rawTab as ProfileTab)
+    : "posts";
   const [relationship, followerCount, followingCount, posts, platform] = await Promise.all([
     viewer ? getRelationship(viewer.id, profile.id) : Promise.resolve(null),
     getFollowerCount(profile.id),
@@ -66,6 +70,7 @@ export default async function PublicProfilePage({ params, searchParams }: Public
       posts={posts}
       postsPaginationPath={`/${locale}/u/${profile.username}`}
       platform={platform}
+      tab={tab}
     />
   );
 }

@@ -27,6 +27,8 @@ import { GroupMembers } from "@/features/platform/group-members";
 import { FavoriteButton } from "@/features/platform/favorite-button";
 import { ShareButton } from "@/features/platform/share-button";
 import { CommerceActionPanel } from "@/features/orders/commerce-action";
+import { PlatformOwnerActions } from "@/features/platform/platform-owner-actions";
+import { BackLink } from "@/features/navigation/back-link";
 
 export type PlatformKind = "products" | "services" | "jobs" | "groups";
 type PlatformRecord = ProductRecord | ServiceRecord | JobRecord | GroupRecord;
@@ -110,9 +112,12 @@ function PlatformCard({
         <div className="platform-card__meta">
           {amount && <strong className="platform-card__price">{amount}</strong>}
           {isGroup && (
-            <span>
-              {group.memberCount} {app.groupsTitle}
-            </span>
+            <>
+              {group.type === "channel" && <Badge variant="primary">{app.kindChannel}</Badge>}
+              <span>
+                {group.memberCount} {app.groupsTitle}
+              </span>
+            </>
           )}
           {location && <span>{location}</span>}
           {owner && <span>@{owner.username}</span>}
@@ -243,6 +248,13 @@ export async function PlatformDetail({
   const group = item as GroupRecord;
   const contentRecord = item as ProductRecord | ServiceRecord | JobRecord;
   const owner = isGroup ? group.owner : isService ? service.provider : product.owner;
+  const isOwner =
+    user !== null &&
+    (isGroup
+      ? String(group.ownerUserId) === user.id
+      : isService
+        ? String(service.providerUserId) === user.id
+        : String(product.ownerUserId) === user.id);
   const itemTitle = isGroup ? group.name : contentRecord.title;
   const description = isGroup ? group.description : contentRecord.description;
   const detailPath = `/${locale}/${kind}/${item.id}`;
@@ -291,9 +303,7 @@ export async function PlatformDetail({
   return (
     <main className="platform-page">
       <Container size="md">
-        <Link className="platform-back-link" href={listHref(kind, locale) as Route}>
-          ← {title}
-        </Link>
+        <BackLink locale={locale} fallback={listHref(kind, locale)} />
         <Card className="platform-detail-card">
           <div className="platform-detail-card__visual" aria-hidden="true">
             {item.imageUrl ? (
@@ -316,6 +326,11 @@ export async function PlatformDetail({
               {isJob && job.employerName && (
                 <span className="platform-detail-chip">{job.employerName}</span>
               )}
+              {isGroup && group.type === "channel" && (
+                <span className="platform-detail-chip platform-detail-chip--channel">
+                  {platform.channel}
+                </span>
+              )}
               {isGroup && (
                 <span className="platform-detail-chip">
                   {group.memberCount} {app.groupsTitle}
@@ -323,6 +338,14 @@ export async function PlatformDetail({
               )}
             </div>
             <div className="platform-detail-actions">
+              {isOwner && (
+                <PlatformOwnerActions
+                  locale={locale}
+                  kind={kind}
+                  id={item.id}
+                  listHref={listHref(kind, locale)}
+                />
+              )}
               {!isGroup && user && owner && (
                 <CommerceActionPanel
                   locale={locale}
@@ -429,12 +452,15 @@ export async function PlatformDetail({
               locale={locale}
               groupId={group.id}
               result={await getGroupMembers(group.id)}
+              viewerIsOwner={String(group.ownerUserId) === user.id}
             />
             <GroupChat
               locale={locale}
               groupId={group.id}
               result={await getGroupMessages(group.id)}
               viewerId={user.id}
+              isChannel={group.type === "channel"}
+              viewerCanManage={String(group.ownerUserId) === user.id}
             />
           </>
         )}

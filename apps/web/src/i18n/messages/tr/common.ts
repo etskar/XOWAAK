@@ -44,6 +44,7 @@ export const commonMessages = {
   closeNavigation: "Gezinmeyi kapat",
   toggleTheme: "Temayı değiştir",
   backToHome: "XOWAAK'a dön",
+  emptyState: "Burada henüz bir şey yok.",
   unavailableTitle: "Bu alan henüz kullanılamıyor",
   unavailableDescription: "Ürün yüzeyi hazır, ancak bu özellik mevcut sürümde bağlı değil.",
   configurationTitle: "XOWAAK yapılandırma bekliyor",
@@ -52,4 +53,10 @@ export const commonMessages = {
   designPreview: "Ürün yönü",
   footerProduct: "Ürün",
   footerResources: "Kaynaklar",
+  mediaRemove: "Kaldır",
+  mediaMove: "Taşı",
+  mediaMoveForward: "Öne taşı",
+  mediaMoveBackward: "Geriye taşı",
+  mediaUploading: "Yükleniyor",
+  emojiPicker: "Emoji",
 } as const;

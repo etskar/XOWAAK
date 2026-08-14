@@ -11,14 +11,16 @@ import { createTranslator } from "@/i18n/translate";
 import { LocaleSwitcher } from "@/features/localization/locale-switcher";
 import { ThemeToggle } from "@/features/navigation/theme-toggle";
 import { InstallAppButton } from "@/features/pwa/install-app-button";
-import { SearchBar } from "@/features/navigation/search-bar";
 import { UserMenu } from "@/features/navigation/user-menu";
 import { MenuRegistryProvider } from "@/features/navigation/menu-registry";
+import { isApplicationPath } from "@/features/navigation/routes";
 import { cx } from "@/design-system/utils/cx";
 
 type SiteHeaderProps = {
   locale: Locale;
   user?: User | null;
+  avatarUrl?: string | null;
+  displayName?: string | null;
 };
 
 function BrandMark() {
@@ -31,33 +33,12 @@ function BrandMark() {
   );
 }
 
-function isApplicationPath(pathname: string, locale: Locale) {
-  return [
-    `/${locale}/home`,
-    `/${locale}/search`,
-    `/${locale}/messages`,
-    `/${locale}/notifications`,
-    `/${locale}/settings`,
-    `/${locale}/followers/requests`,
-    `/${locale}/admin`,
-    `/${locale}/products`,
-    `/${locale}/services`,
-    `/${locale}/jobs`,
-    `/${locale}/groups`,
-    `/${locale}/map`,
-    `/${locale}/posts`,
-    `/${locale}/marketplace`,
-    `/${locale}/profile`,
-  ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
-}
-
-export function SiteHeader({ locale, user }: SiteHeaderProps) {
+export function SiteHeader({ locale, user, avatarUrl, displayName }: SiteHeaderProps) {
   const pathname = usePathname() ?? `/${locale}`;
   const { t } = createTranslator(locale);
   const [isOpen, setIsOpen] = useState(false);
   const config = getLocaleConfig(locale);
   const isApp = isApplicationPath(pathname, locale);
-  const isHome = pathname === `/${locale}/home`;
   const isLanding = pathname === `/${locale}`;
   const isAuthenticated = user !== null && user !== undefined;
   const links = [
@@ -73,16 +54,14 @@ export function SiteHeader({ locale, user }: SiteHeaderProps) {
         className={`site-header${isApp ? " site-header--app" : ""}${isLanding ? " site-header--landing" : ""}`}
       >
         <div className="site-header__inner">
-          <Link className="site-brand" href={`/${locale}` as Route} aria-label={config.name}>
+          <Link
+            className="site-brand"
+            href={(isApp ? `/${locale}/home` : `/${locale}`) as Route}
+            aria-label={config.name}
+          >
             <BrandMark />
             <span className="site-brand__word">XOWAAK</span>
           </Link>
-
-          {isApp && isHome && (
-            <div className="site-header__search">
-              <SearchBar locale={locale} />
-            </div>
-          )}
 
           {!isApp && !isLanding && (
             <nav className="site-nav site-nav--desktop" aria-label={t("navigation.productNavigation")}>
@@ -101,14 +80,15 @@ export function SiteHeader({ locale, user }: SiteHeaderProps) {
 
           <div className="site-header__actions">
             {isLanding ? (
-              <LocaleSwitcher locale={locale} compact />
-            ) : (
               <>
-                <InstallAppButton locale={locale} />
                 <LocaleSwitcher locale={locale} compact />
-                <ThemeToggle locale={locale} />
-                {isApp ? (
-                  <UserMenu locale={locale} isAuthenticated={isAuthenticated} />
+                {isAuthenticated ? (
+                  <Link
+                    className="site-action site-action--primary"
+                    href={`/${locale}/home` as Route}
+                  >
+                    {t("navigation.home")}
+                  </Link>
                 ) : (
                   <>
                     <Link
@@ -125,20 +105,54 @@ export function SiteHeader({ locale, user }: SiteHeaderProps) {
                     </Link>
                   </>
                 )}
-                {!isApp && (
-                  <button
-                    className="site-menu-button"
-                    type="button"
-                    aria-expanded={isOpen}
-                    aria-controls="mobile-product-navigation"
-                    aria-label={isOpen ? t("common.closeNavigation") : t("common.openNavigation")}
-                    onClick={() => setIsOpen((current) => !current)}
-                  >
-                    <span />
-                    <span />
-                    <span />
-                  </button>
+              </>
+            ) : isApp ? (
+              <UserMenu
+                locale={locale}
+                isAuthenticated={isAuthenticated}
+                avatarUrl={avatarUrl ?? null}
+                displayName={displayName ?? null}
+              />
+            ) : (
+              <>
+                <InstallAppButton locale={locale} />
+                <LocaleSwitcher locale={locale} compact />
+                <ThemeToggle locale={locale} />
+                {isAuthenticated ? (
+                  <UserMenu
+                    locale={locale}
+                    isAuthenticated={isAuthenticated}
+                    avatarUrl={avatarUrl ?? null}
+                    displayName={displayName ?? null}
+                  />
+                ) : (
+                  <>
+                    <Link
+                      className="site-action site-action--quiet"
+                      href={`/${locale}/auth/sign-in` as Route}
+                    >
+                      {t("navigation.signIn")}
+                    </Link>
+                    <Link
+                      className="site-action site-action--primary"
+                      href={`/${locale}/auth/sign-up` as Route}
+                    >
+                      {t("navigation.createAccount")}
+                    </Link>
+                  </>
                 )}
+                <button
+                  className="site-menu-button"
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls="mobile-product-navigation"
+                  aria-label={isOpen ? t("common.closeNavigation") : t("common.openNavigation")}
+                  onClick={() => setIsOpen((current) => !current)}
+                >
+                  <span />
+                  <span />
+                  <span />
+                </button>
               </>
             )}
           </div>
@@ -160,20 +174,24 @@ export function SiteHeader({ locale, user }: SiteHeaderProps) {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href={`/${locale}/auth/sign-in` as Route}
-                className="site-nav__mobile-link"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("navigation.signIn")}
-              </Link>
-              <Link
-                href={`/${locale}/auth/sign-up` as Route}
-                className="site-nav__mobile-link"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("navigation.createAccount")}
-              </Link>
+              {!isAuthenticated && (
+                <>
+                  <Link
+                    href={`/${locale}/auth/sign-in` as Route}
+                    className="site-nav__mobile-link"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {t("navigation.signIn")}
+                  </Link>
+                  <Link
+                    href={`/${locale}/auth/sign-up` as Route}
+                    className="site-nav__mobile-link"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {t("navigation.createAccount")}
+                  </Link>
+                </>
+              )}
             </nav>
           )}
         </div>

@@ -20,11 +20,7 @@ export default async function SignUpPage({ params }: SignUpPageProps) {
   const messages = getAuthMessages(locale);
 
   return (
-    <AuthShell
-      locale={locale}
-      title={messages.signUp.title}
-      description={messages.signUp.description}
-    >
+    <AuthShell locale={locale} title={messages.signUp.title}>
       <SignUpForm locale={locale} messages={messages} />
     </AuthShell>
   );

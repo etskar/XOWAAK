@@ -3,6 +3,7 @@ import type { Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
 import { FeedStream } from "@/features/feed/feed-stream";
 import { Fab } from "@/features/posts/fab";
+import { SearchBar } from "@/features/navigation/search-bar";
 import { encodeFeedCursor } from "@/server/feed/types";
 import type { FeedListResult, FeedQueryResult } from "@/server/feed/types";
 
@@ -26,6 +27,7 @@ export function FeedView({ locale, viewerId, result, profileComplete }: FeedView
             <p className="showcase-eyebrow">XOWAAK</p>
             <h1 className="ds-text-h1">{t("navigation.home")}</h1>
           </div>
+          <SearchBar locale={locale} />
         </div>
         {queryError && (
           <ErrorState title={t("errors.unexpected")} description={t("errors.reload")} />

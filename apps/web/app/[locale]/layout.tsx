@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -8,11 +9,13 @@ import { getSiteMetadata } from "@/config/metadata";
 import { createTranslator } from "@/i18n/translate";
 import { SiteFooter } from "@/features/navigation/site-header";
 import { SiteHeaderContainer } from "@/features/navigation/site-header-container";
+import { isApplicationPath } from "@/features/navigation/routes";
 import { PwaRegister } from "@/features/pwa/pwa-register";
 import "../globals.css";
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
     { media: "(prefers-color-scheme: dark)", color: "#0d161d" },
@@ -47,6 +50,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const locale = localeParam as Locale;
   const { t } = createTranslator(locale);
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-xowaak-pathname") ?? "";
+  const isAppPage = isApplicationPath(pathname, locale);
 
   return (
     <html lang={locale} dir={getDirection(locale)} data-theme="light">
@@ -60,9 +66,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             <SiteHeaderContainer locale={locale} />
           </Suspense>
           <div id="main-content">{children}</div>
-          <Suspense fallback={null}>
-            <SiteFooter locale={locale} />
-          </Suspense>
+          {!isAppPage && (
+            <Suspense fallback={null}>
+              <SiteFooter locale={locale} />
+            </Suspense>
+          )}
         </div>
       </body>
     </html>

@@ -7,6 +7,8 @@ export const postsMessages = {
     followers: "关注者",
     private: "私密",
     submit: "发布帖子",
+    preview: "预览",
+    backToEdit: "返回编辑",
     savedDraft: "草稿已保存。",
     created: "帖子已发布。",
     mediaImage: "图片",

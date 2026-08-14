@@ -55,11 +55,22 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
 
     const otherUserIds = [...new Set((members ?? []).map((row) => String(row.user_id)))];
     const { data: profiles } = otherUserIds.length
-      ? await supabase.from("profiles").select("id, username, display_name").in("id", otherUserIds)
+      ? await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_media_id")
+          .in("id", otherUserIds)
       : { data: [] };
     const profileById = new Map(
       (profiles ?? []).map((profile) => [String(profile.id), profile as ProfileRow]),
     );
+    const avatarIds = [
+      ...new Set(
+        (profiles ?? [])
+          .map((profile) => (profile.avatar_media_id ? String(profile.avatar_media_id) : null))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const avatarUrls = await getMediaSignedUrls(avatarIds);
     const lastByConversation = new Map<string, Record<string, unknown>>();
     for (const message of messages ?? []) {
       const conversationId = String(message.conversation_id);
@@ -71,14 +82,17 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
       data: conversationIds.flatMap((id) => {
         const other = (members ?? []).find((row) => String(row.conversation_id) === id);
         if (!other) return [];
-        const profile = profileName(profileById.get(String(other.user_id)));
+        const profile = profileById.get(String(other.user_id));
+        const name = profileName(profile);
+        const avatarMediaId = profile?.avatar_media_id ? String(profile.avatar_media_id) : null;
         const last = lastByConversation.get(id);
         return [
           {
             id,
             otherUserId: String(other.user_id),
-            otherUsername: profile.username,
-            otherDisplayName: profile.displayName,
+            otherUsername: name.username,
+            otherDisplayName: name.displayName,
+            otherAvatarUrl: avatarMediaId ? (avatarUrls.get(avatarMediaId) ?? null) : null,
             lastMessage: last?.body ? String(last.body) : null,
             lastMessageAt: last?.created_at ? String(last.created_at) : null,
           },
@@ -112,7 +126,7 @@ export async function getConversation(
     const [{ data: profile }, { data: messages, error: messageError }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, username, display_name")
+        .select("id, username, display_name, avatar_media_id")
         .eq("id", String(other.user_id))
         .maybeSingle(),
       supabase
@@ -125,9 +139,11 @@ export async function getConversation(
     ]);
     if (messageError) return { status: "error", data: null };
     const rows = (messages ?? []) as Array<Record<string, unknown>>;
-    const mediaUrls = await getMediaSignedUrls(
-      rows.flatMap((row) => (row.media_asset_id ? [String(row.media_asset_id)] : [])),
-    );
+    const avatarMediaId = profile?.avatar_media_id ? String(profile.avatar_media_id) : null;
+    const mediaUrls = await getMediaSignedUrls([
+      ...rows.flatMap((row) => (row.media_asset_id ? [String(row.media_asset_id)] : [])),
+      ...(avatarMediaId ? [avatarMediaId] : []),
+    ]);
     const name = profileName(profile as ProfileRow | undefined);
     const result: MessageRecord[] = rows.map((row) => ({
       id: String(row.id),
@@ -144,6 +160,7 @@ export async function getConversation(
         otherUserId: String(other.user_id),
         otherUsername: name.username,
         otherDisplayName: name.displayName,
+        otherAvatarUrl: avatarMediaId ? (mediaUrls.get(avatarMediaId) ?? null) : null,
         messages: result,
       },
     };

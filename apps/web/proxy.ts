@@ -38,6 +38,7 @@ export async function proxy(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
+  response.headers.set("x-xowaak-pathname", request.nextUrl.pathname);
 
   try {
     const { url, publishableKey } = getSupabasePublicEnv();

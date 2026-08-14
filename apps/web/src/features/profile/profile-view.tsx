@@ -16,6 +16,10 @@ import type { Relationship } from "@/server/social/types";
 import type { PostListResult, PostQueryResult } from "@/server/posts/types";
 import type { PlatformResult, ProfilePlatformRecords } from "@/server/platform/types";
 
+export type ProfileTab = "posts" | "products" | "services" | "jobs" | "groups";
+
+export const PROFILE_TABS: ProfileTab[] = ["posts", "products", "services", "jobs", "groups"];
+
 type ProfileViewProps = {
   locale: Locale;
   profile: ProfileRecord;
@@ -27,6 +31,13 @@ type ProfileViewProps = {
   postsPaginationPath: string;
   platform: PlatformResult<ProfilePlatformRecords>;
   isOwnProfile?: boolean;
+  tab?: ProfileTab;
+};
+
+type PlatformEntry = {
+  id: string;
+  title: string;
+  href: string;
 };
 
 export function ProfileView({
@@ -40,6 +51,7 @@ export function ProfileView({
   postsPaginationPath,
   platform,
   isOwnProfile = false,
+  tab = "posts",
 }: ProfileViewProps) {
   const messages = getIdentityMessages(locale);
   const social = getSocialMessages(locale);
@@ -47,6 +59,57 @@ export function ProfileView({
   const app = getAppMessages(locale);
   const { t } = createTranslator(locale);
   const displayName = profile.display_name || profile.username;
+
+  const platformOk = platform.status === "ok" ? platform.data : null;
+  const counts: Record<ProfileTab, number> = {
+    posts: 0,
+    products: platformOk?.products.length ?? 0,
+    services: platformOk?.services.length ?? 0,
+    jobs: platformOk?.jobs.length ?? 0,
+    groups: platformOk?.groups.length ?? 0,
+  };
+  const tabLabel: Record<ProfileTab, string> = {
+    posts: postsMessages.pages.home,
+    products: t("navigation.products"),
+    services: t("navigation.services"),
+    jobs: t("navigation.jobs"),
+    groups: t("navigation.groups"),
+  };
+  const tabHref: Record<ProfileTab, string> = {
+    posts: `/${locale}/u/${profile.username}`,
+    products: `/${locale}/u/${profile.username}?tab=products`,
+    services: `/${locale}/u/${profile.username}?tab=services`,
+    jobs: `/${locale}/u/${profile.username}?tab=jobs`,
+    groups: `/${locale}/u/${profile.username}?tab=groups`,
+  };
+
+  const entries: Record<ProfileTab, PlatformEntry[]> = {
+    posts: [],
+    products:
+      platformOk?.products.map((item) => ({
+        id: item.id,
+        title: item.title,
+        href: `/${locale}/products/${item.id}`,
+      })) ?? [],
+    services:
+      platformOk?.services.map((item) => ({
+        id: item.id,
+        title: item.title,
+        href: `/${locale}/services/${item.id}`,
+      })) ?? [],
+    jobs:
+      platformOk?.jobs.map((item) => ({
+        id: item.id,
+        title: item.title,
+        href: `/${locale}/jobs/${item.id}`,
+      })) ?? [],
+    groups:
+      platformOk?.groups.map((item) => ({
+        id: item.id,
+        title: item.name,
+        href: `/${locale}/groups/${item.id}`,
+      })) ?? [],
+  };
 
   return (
     <main className="profile-page" data-locale={locale}>
@@ -124,81 +187,59 @@ export function ProfileView({
           </div>
         </Card>
         <div className="profile-content-grid">
-          <section className="profile-posts" aria-labelledby="profile-posts-title">
-            <div className="profile-section-heading">
-              <p className="showcase-eyebrow">XOWAAK / {profile.username}</p>
-              <h2 id="profile-posts-title" className="ds-text-h3">
-                {postsMessages.pages.home}
-              </h2>
-            </div>
-            {posts && (
-              <PostList
-                locale={locale}
-                result={posts.status === "ok" ? posts.data : null}
-                viewerId={viewerId}
-                error={posts.status === "error"}
-                emptyTitle={postsMessages.pages.noPosts}
-                emptyDescription={postsMessages.pages.noPosts}
-                paginationPath={postsPaginationPath}
-              />
-            )}
-            {platform.status === "ok" &&
-              platform.data.products.length +
-                platform.data.services.length +
-                platform.data.jobs.length +
-                platform.data.groups.length >
-                0 && (
-                <section
-                  className="profile-platform-section"
-                  aria-labelledby="profile-platform-title"
-                >
-                  <div className="profile-section-heading">
-                    <p className="showcase-eyebrow">XOWAAK / DIRECTORY</p>
-                    <h2 id="profile-platform-title" className="ds-text-h3">
-                      {t("navigation.products")} / {t("navigation.services")} /{" "}
-                      {t("navigation.jobs")}
-                    </h2>
-                  </div>
-                  <div className="profile-platform-grid">
-                    {[
-                      ...platform.data.products.map((item) => ({
-                        id: item.id,
-                        kind: t("navigation.products"),
-                        title: item.title,
-                        href: `/${locale}/products/${item.id}`,
-                      })),
-                      ...platform.data.services.map((item) => ({
-                        id: item.id,
-                        kind: t("navigation.services"),
-                        title: item.title,
-                        href: `/${locale}/services/${item.id}`,
-                      })),
-                      ...platform.data.jobs.map((item) => ({
-                        id: item.id,
-                        kind: t("navigation.jobs"),
-                        title: item.title,
-                        href: `/${locale}/jobs/${item.id}`,
-                      })),
-                      ...platform.data.groups.map((item) => ({
-                        id: item.id,
-                        kind: t("navigation.groups"),
-                        title: item.name,
-                        href: `/${locale}/groups/${item.id}`,
-                      })),
-                    ].map((item) => (
-                      <Link
-                        key={`${item.kind}-${item.id}`}
-                        href={item.href as Route}
-                        className="profile-platform-card"
-                      >
-                        <span>{item.kind}</span>
-                        <strong>{item.title}</strong>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
+          <div>
+            <nav className="profile-tabs" aria-label={t("navigation.profile")}>
+              {PROFILE_TABS.map((key) => {
+                const count = counts[key];
+                return (
+                  <Link
+                    key={key}
+                    href={tabHref[key] as Route}
+                    className={tab === key ? "is-active" : undefined}
+                    aria-current={tab === key ? "page" : undefined}
+                  >
+                    {tabLabel[key]}
+                    {count > 0 && <span className="profile-tabs__count">{count}</span>}
+                  </Link>
+                );
+              })}
+            </nav>
+            <section className="profile-tab-panel" aria-label={tabLabel[tab]}>
+              <div className="profile-section-heading">
+                <p className="showcase-eyebrow">XOWAAK / {profile.username}</p>
+                <h2 className="ds-text-h3">{tabLabel[tab]}</h2>
+              </div>
+              {tab === "posts" &&
+                (posts ? (
+                  <PostList
+                    locale={locale}
+                    result={posts.status === "ok" ? posts.data : null}
+                    viewerId={viewerId}
+                    error={posts.status === "error"}
+                    emptyTitle={postsMessages.pages.noPosts}
+                    emptyDescription={postsMessages.pages.noPosts}
+                    paginationPath={postsPaginationPath}
+                  />
+                ) : null)}
+              {tab !== "posts" && (
+                <div className="profile-platform-grid">
+                  {entries[tab].map((item) => (
+                    <Link
+                      key={`${tab}-${item.id}`}
+                      href={item.href as Route}
+                      className="profile-platform-card"
+                    >
+                      <span>{tabLabel[tab]}</span>
+                      <strong>{item.title}</strong>
+                    </Link>
+                  ))}
+                  {entries[tab].length === 0 && (
+                    <p className="profile-tab-empty">{t("common.emptyState")}</p>
+                  )}
+                </div>
               )}
-          </section>
+            </section>
+          </div>
           <aside className="profile-context-card">
             <span className="profile-context-card__mark">X</span>
             <h2>{messages.profile.publicTitle}</h2>

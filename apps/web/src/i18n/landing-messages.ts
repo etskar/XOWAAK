@@ -5,10 +5,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "One space for people, products, and work",
       title: "Meet, share, and trade — in one place.",
-      description: "XOWAAK brings posts, marketplace, services, jobs, and groups together in a single, calm platform.",
+      description: "Posts, products, services, jobs, and groups in one calm place.",
       primaryAction: "Create account",
       secondaryAction: "Sign in",
-      note: "Live platform surface",
+      openApp: "Open XOWAAK",
     },
     offers: {
       eyebrow: "What XOWAAK offers",
@@ -174,10 +174,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "مساحة واحدة للناس والمنتجات والعمل",
       title: "تشارك، تشتري، وتعمل — في مكان واحد.",
-      description: "تجمع XOWAAK المنشورات، والسوق، والخدمات، والوظائف، والمجموعات في منصة واحدة هادئة.",
+      description: "منشورات، منتجات، خدمات، وظائف، ومجموعات في مكان واحد هادئ.",
       primaryAction: "إنشاء حساب",
       secondaryAction: "تسجيل الدخول",
-      note: "واجهة منصة حيّة",
+      openApp: "افتح XOWAAK",
     },
     offers: {
       eyebrow: "ماذا تقدم XOWAAK",
@@ -343,10 +343,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "Un solo espacio para personas, productos y trabajo",
       title: "Comparte, compra y trabaja — en un solo lugar.",
-      description: "XOWAAK reúne publicaciones, mercado, servicios, empleos y grupos en una única plataforma serena.",
+      description: "Publicaciones, productos, servicios, empleos y grupos en un solo lugar.",
       primaryAction: "Crear cuenta",
       secondaryAction: "Iniciar sesión",
-      note: "Plataforma en vivo",
+      openApp: "Abrir XOWAAK",
     },
     offers: {
       eyebrow: "Qué ofrece XOWAAK",
@@ -512,10 +512,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "Un seul espace pour les gens, les produits et le travail",
       title: "Partagez, achetez, travaillez — au même endroit.",
-      description: "XOWAAK réunit publications, marketplace, services, emplois et groupes dans une seule plateforme apaisée.",
+      description: "Publications, produits, services, emplois et groupes au même endroit.",
       primaryAction: "Créer un compte",
       secondaryAction: "Se connecter",
-      note: "Plateforme en direct",
+      openApp: "Ouvrir XOWAAK",
     },
     offers: {
       eyebrow: "Ce que propose XOWAAK",
@@ -681,10 +681,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "Ein Raum für Menschen, Produkte und Arbeit",
       title: "Teilen, kaufen, arbeiten — an einem Ort.",
-      description: "XOWAAK vereint Beiträge, Marktplatz, Dienstleistungen, Jobs und Gruppen auf einer ruhigen Plattform.",
+      description: "Beiträge, Produkte, Dienste, Jobs und Gruppen an einem ruhigen Ort.",
       primaryAction: "Konto erstellen",
       secondaryAction: "Anmelden",
-      note: "Live-Plattform",
+      openApp: "XOWAAK öffnen",
     },
     offers: {
       eyebrow: "Was XOWAAK bietet",
@@ -850,10 +850,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "İnsanlar, ürünler ve iş için tek bir alan",
       title: "Paylaş, al, çalış — hepsi tek yerde.",
-      description: "XOWAAK; gönderileri, pazar yerini, hizmetleri, işleri ve grupları tek bir sakin platformda birleştirir.",
+      description: "Gönderiler, ürünler, hizmetler, işler ve gruplar tek bir sakin yerde.",
       primaryAction: "Hesap oluştur",
       secondaryAction: "Giriş yap",
-      note: "Canlı platform",
+      openApp: "XOWAAK'i aç",
     },
     offers: {
       eyebrow: "XOWAAK neler sunuyor",
@@ -1019,10 +1019,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "Um só espaço para pessoas, produtos e trabalho",
       title: "Compartilhe, compre, trabalhe — em um só lugar.",
-      description: "A XOWAAK reúne publicações, marketplace, serviços, empregos e grupos em uma única plataforma tranquila.",
+      description: "Publicações, produtos, serviços, empregos e grupos em um só lugar.",
       primaryAction: "Criar conta",
       secondaryAction: "Entrar",
-      note: "Plataforma ao vivo",
+      openApp: "Abrir XOWAAK",
     },
     offers: {
       eyebrow: "O que a XOWAAK oferece",
@@ -1188,10 +1188,10 @@ export const landingMessages = {
     hero: {
       eyebrow: "一个空间，汇聚人、商品与工作",
       title: "分享、购买、工作——尽在一处。",
-      description: "XOWAAK 将动态、集市、服务、职位和群组整合在一个安静的平台中。",
+      description: "动态、商品、服务、职位与群组，汇聚在一个宁静的空间。",
       primaryAction: "创建账户",
       secondaryAction: "登录",
-      note: "在线平台",
+      openApp: "打开 XOWAAK",
     },
     offers: {
       eyebrow: "XOWAAK 提供什么",

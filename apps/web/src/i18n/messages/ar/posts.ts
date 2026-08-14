@@ -7,6 +7,8 @@ export const postsMessages = {
     followers: "المتابعون",
     private: "خاص",
     submit: "نشر المنشور",
+    preview: "معاينة",
+    backToEdit: "العودة للتعديل",
     savedDraft: "تم حفظ المسودة.",
     created: "تم نشر المنشور.",
     mediaImage: "صورة",

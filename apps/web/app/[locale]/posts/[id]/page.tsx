@@ -1,15 +1,13 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import type { Route } from "next";
 
 import { RoutePlaceholder } from "@/components/route-placeholder";
 import { isLocale, type Locale } from "@/config/locales";
 import { hasSupabasePublicEnv } from "@/config/public-env";
 import { getPostsMessages } from "@/i18n/posts-messages";
-import { createTranslator } from "@/i18n/translate";
 import { Container } from "@/design-system";
 import { getCurrentUser } from "@/server/auth/session";
 import { PostCard } from "@/features/posts/post-card";
+import { BackLink } from "@/features/navigation/back-link";
 import { getPost } from "@/server/posts/queries";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +21,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   if (!isLocale(localeParam)) notFound();
   const locale = localeParam as Locale;
   const messages = getPostsMessages(locale);
-  const { t } = createTranslator(locale);
 
   if (!hasSupabasePublicEnv()) {
     return (
@@ -52,7 +49,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     <main className="feed-page post-detail-page" data-locale={locale}>
       <Container size="md">
         <div className="post-detail-page__topline">
-          <Link href={`/${locale}/home` as Route}>{t("common.backToHome")}</Link>
+          <BackLink locale={locale} fallback={`/${locale}/home`} />
           <h1 className="showcase-eyebrow post-detail-page__title">{messages.pages.detail}</h1>
         </div>
         <div className="post-list">

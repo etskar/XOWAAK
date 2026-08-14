@@ -175,7 +175,12 @@ export function SearchBar({ locale }: { locale: Locale }) {
                               onClick={() => setIsOpen(false)}
                             >
                               <span className="search-suggestions__avatar" aria-hidden="true">
-                                {item.title.slice(0, 1).toUpperCase()}
+                                {item.imageUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={item.imageUrl} alt="" loading="lazy" decoding="async" />
+                                ) : (
+                                  item.title.slice(0, 1).toUpperCase()
+                                )}
                               </span>
                               <span className="search-suggestions__text">
                                 <strong>{item.title}</strong>

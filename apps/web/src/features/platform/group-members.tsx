@@ -7,18 +7,21 @@ import type { FormEvent } from "react";
 import { Button, Card, EmptyState, Input, Stack } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getMessagingMessages } from "@/i18n/messaging-messages";
-import { inviteGroupMember, respondToGroupInvitation } from "@/server/platform/group-actions";
+import {
+  inviteGroupMember,
+  respondToGroupInvitation,
+} from "@/server/platform/group-actions";
+import { removeGroupMember, setGroupMemberRole } from "@/server/platform/actions";
 import type { GroupMemberRecord, PlatformResult } from "@/server/platform/types";
 
-export function GroupMembers({
-  locale,
-  groupId,
-  result,
-}: {
+type GroupMembersProps = {
   locale: Locale;
   groupId: string;
   result: PlatformResult<GroupMemberRecord[]>;
-}) {
+  viewerIsOwner: boolean;
+};
+
+export function GroupMembers({ locale, groupId, result, viewerIsOwner }: GroupMembersProps) {
   const messages = getMessagingMessages(locale);
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -28,6 +31,7 @@ export function GroupMembers({
   const viewer = members.find((member) => member.isViewer);
   const canInvite =
     viewer?.status === "active" && (viewer.role === "owner" || viewer.role === "admin");
+  const viewerIsManager = viewerIsOwner || viewer?.role === "admin";
   const invitation = viewer?.status === "invited";
 
   function invite(event: FormEvent<HTMLFormElement>) {
@@ -57,6 +61,37 @@ export function GroupMembers({
     });
   }
 
+  function changeRole(member: GroupMemberRecord, role: "admin" | "member") {
+    setStatus(null);
+    startTransition(() => {
+      void setGroupMemberRole({ groupId, userId: member.userId, role }).then((response) => {
+        setStatus(response.ok ? messages.roleUpdated : messages.failed);
+        if (response.ok) router.refresh();
+      });
+    });
+  }
+
+  function remove(member: GroupMemberRecord) {
+    setStatus(null);
+    startTransition(() => {
+      void removeGroupMember({ groupId, userId: member.userId }).then((response) => {
+        setStatus(response.ok ? messages.memberRemoved : messages.failed);
+        if (response.ok) router.refresh();
+      });
+    });
+  }
+
+  function leave() {
+    if (!viewer) return;
+    setStatus(null);
+    startTransition(() => {
+      void removeGroupMember({ groupId, userId: viewer.userId }).then((response) => {
+        setStatus(response.ok ? messages.leftGroup : messages.failed);
+        if (response.ok) router.refresh();
+      });
+    });
+  }
+
   return (
     <Card className="group-members">
       <div className="group-members__header">
@@ -73,9 +108,45 @@ export function GroupMembers({
                 <strong>{member.displayName}</strong>
                 <span>
                   @{member.username} · {member.role}
+                  {member.status === "invited" ? ` · ${messages.invite}` : ""}
                 </span>
               </div>
-              <span>{member.status}</span>
+              {member.isViewer ? (
+                <Button type="button" variant="ghost" size="sm" onPress={leave} isDisabled={isPending}>
+                  {messages.leaveGroup}
+                </Button>
+              ) : (
+                member.status === "active" && (
+                  <span className="group-members__manage">
+                    {viewerIsOwner && member.role !== "owner" && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onPress={() =>
+                          changeRole(member, member.role === "admin" ? "member" : "admin")
+                        }
+                        isDisabled={isPending}
+                      >
+                        {member.role === "admin" ? messages.makeMember : messages.makeAdmin}
+                      </Button>
+                    )}
+                    {viewerIsManager &&
+                      member.role !== "owner" &&
+                      (viewerIsOwner || member.role === "member") && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onPress={() => remove(member)}
+                          isDisabled={isPending}
+                        >
+                          {messages.removeMember}
+                        </Button>
+                      )}
+                  </span>
+                )
+              )}
             </div>
           ))}
         </div>

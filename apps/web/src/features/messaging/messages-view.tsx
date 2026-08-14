@@ -66,6 +66,7 @@ export function MessagesView({
             otherUserId: loaded.data.otherUserId,
             otherUsername: loaded.data.otherUsername,
             otherDisplayName: loaded.data.otherDisplayName,
+            otherAvatarUrl: loaded.data.otherAvatarUrl,
             lastMessage: loaded.data.messages.at(-1)?.body ?? null,
             lastMessageAt: loaded.data.messages.at(-1)?.createdAt ?? null,
           };
@@ -144,6 +145,7 @@ export function MessagesView({
           otherUserId: loaded.data.otherUserId,
           otherUsername: loaded.data.otherUsername,
           otherDisplayName: loaded.data.otherDisplayName,
+          otherAvatarUrl: loaded.data.otherAvatarUrl,
           lastMessage: loaded.data.messages.at(-1)?.body ?? null,
           lastMessageAt: loaded.data.messages.at(-1)?.createdAt ?? null,
         };
@@ -218,7 +220,13 @@ export function MessagesView({
                     onClick={() => selectConversation(item.id)}
                   >
                     <span className="messaging-list__avatar" aria-hidden="true">
-                      {item.otherDisplayName.slice(0, 1).toUpperCase()}
+                      {item.otherAvatarUrl ? (
+                        // Signed URLs are generated on the server for conversation members.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.otherAvatarUrl} alt="" loading="lazy" decoding="async" />
+                      ) : (
+                        item.otherDisplayName.slice(0, 1).toUpperCase()
+                      )}
                     </span>
                     <span className="messaging-list__body">
                       <span className="messaging-list__row">
@@ -252,8 +260,20 @@ export function MessagesView({
                     ←
                   </button>
                   <span className="messaging-thread__identity">
-                    <strong>{detail.otherDisplayName}</strong>
-                    <span>@{detail.otherUsername}</span>
+                    {detail.otherAvatarUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className="messaging-thread__avatar"
+                        src={detail.otherAvatarUrl}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                    <span>
+                      <strong>{detail.otherDisplayName}</strong>
+                      <span>@{detail.otherUsername}</span>
+                    </span>
                   </span>
                 </header>
                 <div className="messaging-thread__messages" aria-live="polite">

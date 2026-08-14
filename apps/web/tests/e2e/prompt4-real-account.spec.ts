@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const primaryEmail = process.env.PROMPT4_PRIMARY_EMAIL;
 const secondaryEmail = process.env.PROMPT4_SECONDARY_EMAIL;

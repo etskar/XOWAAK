@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/server/auth/session";
 import { createSupabaseServerClient } from "@/server/supabase/client";
 
 const mediaInputSchema = z.object({
-  bucket: z.enum(["avatars", "post-media", "message-media", "platform-media"]),
+  bucket: z.enum(["avatars", "post-media", "message-media", "platform-media", "covers"]),
   objectPath: z.string().min(3).max(500),
   mimeType: z
     .string()

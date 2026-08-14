@@ -7,6 +7,8 @@ export const postsMessages = {
     followers: "Takipçiler",
     private: "Özel",
     submit: "Gönderiyi yayınla",
+    preview: "Önizleme",
+    backToEdit: "Düzenlemeye dön",
     savedDraft: "Taslak kaydedildi.",
     created: "Gönderi yayınlandı.",
     mediaImage: "Görsel",

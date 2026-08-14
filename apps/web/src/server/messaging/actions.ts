@@ -114,3 +114,85 @@ export async function markNotificationRead(notificationId: string): Promise<Mess
     return { ok: false, code: "error" };
   }
 }
+
+const conversationIdSchema = z.object({ conversationId: z.string().uuid() });
+
+export async function markConversationRead(input: unknown): Promise<MessagingActionResult> {
+  const parsed = conversationIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "invalid" };
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("conversation_members")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("conversation_id", parsed.data.conversationId)
+      .eq("user_id", user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, data: undefined };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function setConversationMuted(input: unknown): Promise<MessagingActionResult> {
+  const parsed = z
+    .object({ conversationId: z.string().uuid(), muted: z.boolean() })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, code: "invalid" };
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("conversation_members")
+      .update({
+        muted_at: parsed.data.muted ? new Date().toISOString() : null,
+      })
+      .eq("conversation_id", parsed.data.conversationId)
+      .eq("user_id", user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, data: undefined };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function leaveConversation(input: unknown): Promise<MessagingActionResult> {
+  const parsed = conversationIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "invalid" };
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("conversation_members")
+      .delete()
+      .eq("conversation_id", parsed.data.conversationId)
+      .eq("user_id", user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, data: undefined };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteDirectMessage(input: unknown): Promise<MessagingActionResult> {
+  const parsed = z.object({ messageId: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "invalid" };
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("messages")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", parsed.data.messageId)
+      .eq("sender_id", user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, data: undefined };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}

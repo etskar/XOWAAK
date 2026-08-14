@@ -10,14 +10,32 @@ import { Button, Input, Select, Stack, Textarea } from "@/design-system";
 import { MediaUpload } from "@/features/media/media-upload";
 import type { Locale } from "@/config/locales";
 import { getPlatformMessages } from "@/i18n/platform-messages";
-import { createGroup, createJob, createProduct, createService } from "@/server/platform/actions";
+import {
+  createGroup,
+  createJob,
+  createProduct,
+  createService,
+  updateGroup,
+  updateJob,
+  updateProduct,
+  updateService,
+} from "@/server/platform/actions";
 import type { PlatformKind } from "@/features/platform/platform-view";
 
-type CreationValues = Record<string, string>;
+export type PlatformFormValues = Record<string, string>;
 
-function initialValues(kind: PlatformKind): CreationValues {
+export type PlatformFormProps = {
+  locale: Locale;
+  kind: PlatformKind;
+  mode?: "create" | "edit";
+  initialValues?: PlatformFormValues;
+  existingImageUrl?: string | null;
+  recordId?: string;
+};
+
+function initialValues(kind: PlatformKind): PlatformFormValues {
   return kind === "groups"
-    ? { name: "", description: "", visibility: "public", imageMediaAssetId: "" }
+    ? { name: "", description: "", visibility: "public", type: "social", imageMediaAssetId: "" }
     : {
         title: "",
         description: "",
@@ -36,20 +54,39 @@ function initialValues(kind: PlatformKind): CreationValues {
       };
 }
 
-export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: PlatformKind }) {
+export function PlatformCreationForm({
+  locale,
+  kind,
+  mode = "create",
+  initialValues: providedValues,
+  existingImageUrl = null,
+  recordId,
+}: PlatformFormProps) {
   const messages = getPlatformMessages(locale);
   const router = useRouter();
-  const [values, setValues] = useState<CreationValues>(() => initialValues(kind));
+  const [values, setValues] = useState<PlatformFormValues>(() =>
+    providedValues ? { ...initialValues(kind), ...providedValues } : initialValues(kind),
+  );
+  const [stage, setStage] = useState<"edit" | "preview">("edit");
   const [status, setStatus] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const isEditing = mode === "edit";
   const title =
     kind === "products"
-      ? messages.createProduct
+      ? isEditing
+        ? messages.editProduct
+        : messages.createProduct
       : kind === "services"
-        ? messages.createService
+        ? isEditing
+          ? messages.editService
+          : messages.createService
         : kind === "jobs"
-          ? messages.createJob
-          : messages.createGroup;
+          ? isEditing
+            ? messages.editJob
+            : messages.createJob
+          : isEditing
+            ? messages.editGroup
+            : messages.createGroup;
 
   function setValue(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -58,17 +95,36 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus(null);
+    if (!recordId) {
+      setStage("preview");
+      return;
+    }
+    publish();
+  }
+
+  function publish() {
     startTransition(() => {
       void (async () => {
         const action =
           kind === "products"
-            ? createProduct
+            ? isEditing
+              ? updateProduct
+              : createProduct
             : kind === "services"
-              ? createService
+              ? isEditing
+                ? updateService
+                : createService
               : kind === "jobs"
-                ? createJob
-                : createGroup;
-        const result = await action(values);
+                ? isEditing
+                  ? updateJob
+                  : createJob
+                : isEditing
+                  ? updateGroup
+                  : createGroup;
+        const payload = isEditing
+          ? { id: recordId, ...values }
+          : values;
+        const result = await action(payload);
         if (!result.ok) {
           setStatus(
             result.code === "profile_incomplete" ? messages.profileIncomplete : messages.saveError,
@@ -76,6 +132,7 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
           return;
         }
         router.push(`/${locale}/${kind}/${result.id}` as Route);
+        router.refresh();
       })();
     });
   }
@@ -107,11 +164,68 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
       </div>
     ) : null;
 
+  if (stage === "preview") {
+    return (
+      <div className="platform-form" data-locale={locale}>
+        <Stack gap={5}>
+          <div className="platform-form__heading">
+            <p className="showcase-eyebrow">XOWAAK / PREVIEW</p>
+            <h1 className="ds-text-h2">{title}</h1>
+          </div>
+          <article className="post-preview-card">
+            <p className="post-preview-card__content" dir="auto">
+              {values.name || values.title}
+            </p>
+            {values.description && (
+              <p className="post-preview-card__content" dir="auto">
+                {values.description}
+              </p>
+            )}
+            {(values.category || values.employerName) && (
+              <p className="post-preview-card__content" dir="auto">
+                {[values.category, values.employerName].filter(Boolean).join(" · ")}
+              </p>
+            )}
+            {(values.price || values.salaryMin || values.salaryMax) && (
+              <p className="post-preview-card__content" dir="auto">
+                {[
+                  values.price ? `${values.price} ${values.currency}` : null,
+                  values.salaryMin ? `${messages.salaryMin}: ${values.salaryMin}` : null,
+                  values.salaryMax ? `${messages.salaryMax}: ${values.salaryMax}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+            {values.locationLabel && (
+              <p className="post-preview-card__content" dir="auto">
+                {values.locationLabel}
+              </p>
+            )}
+          </article>
+          <div className="platform-form__actions">
+            <Button variant="secondary" onPress={() => setStage("edit")} isDisabled={isPending}>
+              {messages.backToEdit}
+            </Button>
+            <Button type="button" onPress={publish} loading={isPending} isDisabled={isPending}>
+              {messages.publish}
+            </Button>
+          </div>
+          {status && (
+            <p className="settings-status" role="alert">
+              {status}
+            </p>
+          )}
+        </Stack>
+      </div>
+    );
+  }
+
   return (
     <form className="platform-form" onSubmit={submit} noValidate>
       <Stack gap={5}>
         <div className="platform-form__heading">
-          <p className="showcase-eyebrow">XOWAAK / CREATE</p>
+          <p className="showcase-eyebrow">XOWAAK / {isEditing ? "EDIT" : "CREATE"}</p>
           <h1 className="ds-text-h2">{title}</h1>
         </div>
         {kind === "groups" ? (
@@ -219,15 +333,26 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
           </>
         )}
         {kind === "groups" && (
-          <Select
-            label={messages.visibility}
-            options={[
-              { id: "public", label: messages.public },
-              { id: "private", label: messages.private },
-            ]}
-            selectedKey={values.visibility}
-            onSelectionChange={(key) => setValue("visibility", String(key))}
-          />
+          <>
+            <Select
+              label={messages.visibility}
+              options={[
+                { id: "public", label: messages.public },
+                { id: "private", label: messages.private },
+              ]}
+              selectedKey={values.visibility}
+              onSelectionChange={(key) => setValue("visibility", String(key))}
+            />
+            <Select
+              label={messages.groupType}
+              options={[
+                { id: "social", label: messages.social },
+                { id: "channel", label: messages.channel },
+              ]}
+              selectedKey={values.type ?? "social"}
+              onSelectionChange={(key) => setValue("type", String(key))}
+            />
+          </>
         )}
         {locationFields}
         <MediaUpload
@@ -243,15 +368,24 @@ export function PlatformCreationForm({ locale, kind }: { locale: Locale; kind: P
           disabled={isPending}
           onAssetIdsChange={(assetIds) => setValue("imageMediaAssetId", assetIds[0] ?? "")}
         />
+        {isEditing && existingImageUrl && !values.imageMediaAssetId && (
+          <div className="media-upload__current">
+            <span className="media-upload__thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={existingImageUrl} alt="" loading="lazy" decoding="async" />
+            </span>
+            <span className="media-upload__meta">{messages.image}</span>
+          </div>
+        )}
         <div className="platform-form__actions">
           <Link
             className="showcase-button showcase-button--secondary"
-            href={`/${locale}/${kind}` as Route}
+            href={(isEditing ? `/${locale}/${kind}/${recordId}` : `/${locale}/${kind}`) as Route}
           >
             {messages.cancel}
           </Link>
           <Button type="submit" loading={isPending} isDisabled={isPending}>
-            {messages.publish}
+            {isEditing ? messages.publish : messages.preview}
           </Button>
         </div>
         {status && (

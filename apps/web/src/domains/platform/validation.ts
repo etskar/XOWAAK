@@ -114,6 +114,7 @@ export const groupSchema = z.object({
   name: z.string().trim().min(1, "Enter a group name.").max(160, "Group name is too long."),
   description: z.string().trim().max(5000, "Group description is too long.").optional().default(""),
   visibility: z.enum(["public", "private"]).default("public"),
+  type: z.enum(["social", "channel"]).default("social"),
   ...mediaFields,
 });
 

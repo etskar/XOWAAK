@@ -317,7 +317,7 @@ export async function getGroups(limit = 24): Promise<PlatformResult<GroupRecord[
     const { data, error } = await supabase
       .from("groups")
       .select(
-        "id, owner_user_id, name, description, visibility, status, created_at, image_media_asset_id",
+        "id, owner_user_id, name, description, visibility, type, status, created_at, image_media_asset_id",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -349,6 +349,7 @@ export async function getGroups(limit = 24): Promise<PlatformResult<GroupRecord[
         name: String(row.name),
         description: row.description ? String(row.description) : null,
         visibility: row.visibility as GroupRecord["visibility"],
+        type: row.type as GroupRecord["type"],
         status: row.status as GroupRecord["status"],
         createdAt: String(row.created_at),
         imageUrl: row.image_media_asset_id
@@ -370,7 +371,7 @@ export async function getGroup(id: string): Promise<PlatformResult<GroupRecord |
     const { data, error } = await supabase
       .from("groups")
       .select(
-        "id, owner_user_id, name, description, visibility, status, created_at, image_media_asset_id",
+        "id, owner_user_id, name, description, visibility, type, status, created_at, image_media_asset_id",
       )
       .eq("id", id)
       .maybeSingle();
@@ -394,6 +395,7 @@ export async function getGroup(id: string): Promise<PlatformResult<GroupRecord |
         name: String(row.name),
         description: row.description ? String(row.description) : null,
         visibility: row.visibility as GroupRecord["visibility"],
+        type: row.type as GroupRecord["type"],
         status: row.status as GroupRecord["status"],
         createdAt: String(row.created_at),
         imageUrl: row.image_media_asset_id
@@ -472,20 +474,50 @@ export async function getGroupMessages(
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("group_messages")
-      .select("id, group_id, sender_id, body, created_at")
+      .select(
+        "id, group_id, sender_id, body, created_at, deleted_at, media_asset_id, media_assets(mime_type)",
+      )
       .eq("group_id", groupId)
       .order("created_at", { ascending: true })
       .limit(limit);
     if (error) return { status: "error", data: null };
+    const rows = (data ?? []) as Array<Record<string, unknown>>;
+    const senderIds = [...new Set(rows.map((row) => String(row.sender_id)))];
+    const mediaAssetIds = [
+      ...new Set(
+        rows
+          .map((row) => (row.media_asset_id ? String(row.media_asset_id) : null))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const [profiles, mediaUrls] = await Promise.all([
+      getProfiles(supabase, senderIds),
+      mediaAssetIds.length > 0 ? getMediaSignedUrls(mediaAssetIds) : Promise.resolve(new Map()),
+    ]);
     return {
       status: "ok",
-      data: (data ?? []).map((row) => ({
-        id: String(row.id),
-        groupId: String(row.group_id),
-        senderId: String(row.sender_id),
-        body: String(row.body),
-        createdAt: String(row.created_at),
-      })),
+      data: rows.map((row) => {
+        const sender = profiles.get(String(row.sender_id));
+        const mediaId = row.media_asset_id ? String(row.media_asset_id) : null;
+        return {
+          id: String(row.id),
+          groupId: String(row.group_id),
+          senderId: String(row.sender_id),
+          senderUsername: sender ? String(sender.username) : null,
+          senderDisplayName: sender ? String(sender.display_name || sender.username) : null,
+          body: String(row.body),
+          createdAt: String(row.created_at),
+          deletedAt: row.deleted_at ? String(row.deleted_at) : null,
+          mediaUrl: mediaId ? (mediaUrls.get(mediaId) ?? null) : null,
+          mediaType: mediaId
+            ? ((row.media_assets as { mime_type?: string } | null)?.mime_type?.startsWith(
+                "video/",
+              )
+                ? "video"
+                : "image")
+            : null,
+        };
+      }),
     };
   } catch {
     return { status: "error", data: null };
@@ -580,7 +612,7 @@ export async function searchPlatform(
     const [users, posts, products, services, jobs, groups] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, username, display_name, location_label")
+        .select("id, username, display_name, location_label, avatar_media_id")
         .or(`username.ilike.${like},display_name.ilike.${like},location_label.ilike.${like}`)
         .is("deleted_at", null)
         .limit(limit),
@@ -593,14 +625,14 @@ export async function searchPlatform(
         .limit(limit),
       supabase
         .from("products")
-        .select("id, title, location_label")
+        .select("id, title, location_label, image_media_asset_id")
         .or(`title.ilike.${like},location_label.ilike.${like}`)
         .eq("status", "published")
         .is("deleted_at", null)
         .limit(limit),
       supabase
         .from("services")
-        .select("id, title, location_label")
+        .select("id, title, location_label, image_media_asset_id")
         .or(`title.ilike.${like},location_label.ilike.${like}`)
         .eq("status", "published")
         .is("deleted_at", null)
@@ -614,7 +646,7 @@ export async function searchPlatform(
         .limit(limit),
       supabase
         .from("groups")
-        .select("id, name, description")
+        .select("id, name, description, image_media_asset_id")
         .or(`name.ilike.${like},description.ilike.${like}`)
         .eq("status", "active")
         .limit(limit),
@@ -624,7 +656,20 @@ export async function searchPlatform(
     const postAuthorIds = [
       ...new Set((posts.data ?? []).map((item) => String(item.author_id))),
     ];
-    const authorProfiles = await getProfiles(supabase, postAuthorIds);
+    const mediaAssetIds = [
+      ...new Set(
+        [
+          ...(users.data ?? []).map((item) => item.avatar_media_id),
+          ...(products.data ?? []).map((item) => item.image_media_asset_id),
+          ...(services.data ?? []).map((item) => item.image_media_asset_id),
+          ...(groups.data ?? []).map((item) => item.image_media_asset_id),
+        ].filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const [authorProfiles, mediaUrls] = await Promise.all([
+      getProfiles(supabase, postAuthorIds),
+      mediaAssetIds.length > 0 ? getMediaSignedUrls(mediaAssetIds) : Promise.resolve(new Map()),
+    ]);
     const results: Record<SearchResult["category"], SearchResult[]> = {
       users: (users.data ?? []).map((item) => ({
         category: "users",
@@ -633,6 +678,9 @@ export async function searchPlatform(
         subtitle: `@${item.username}`,
         href: `/en/u/${item.username}`,
         locationLabel: item.location_label,
+        imageUrl: item.avatar_media_id
+          ? (mediaUrls.get(String(item.avatar_media_id)) ?? null)
+          : null,
       })),
       posts: (posts.data ?? []).map((item) => {
         const authorProfile = authorProfiles.get(String(item.author_id));
@@ -653,6 +701,9 @@ export async function searchPlatform(
         subtitle: "Product",
         href: `/en/products/${item.id}`,
         locationLabel: item.location_label,
+        imageUrl: item.image_media_asset_id
+          ? (mediaUrls.get(String(item.image_media_asset_id)) ?? null)
+          : null,
       })),
       services: (services.data ?? []).map((item) => ({
         category: "services",
@@ -661,6 +712,9 @@ export async function searchPlatform(
         subtitle: "Service",
         href: `/en/services/${item.id}`,
         locationLabel: item.location_label,
+        imageUrl: item.image_media_asset_id
+          ? (mediaUrls.get(String(item.image_media_asset_id)) ?? null)
+          : null,
       })),
       jobs: (jobs.data ?? []).map((item) => ({
         category: "jobs",
@@ -676,6 +730,9 @@ export async function searchPlatform(
         title: String(item.name),
         subtitle: item.description ? String(item.description) : "Group",
         href: `/en/groups/${item.id}`,
+        imageUrl: item.image_media_asset_id
+          ? (mediaUrls.get(String(item.image_media_asset_id)) ?? null)
+          : null,
       })),
     };
     return {

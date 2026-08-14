@@ -7,6 +7,8 @@ export const postsMessages = {
     followers: "Abonnés",
     private: "Privé",
     submit: "Publier",
+    preview: "Aperçu",
+    backToEdit: "Retour à l'édition",
     savedDraft: "Brouillon enregistré.",
     created: "Publication publiée.",
     mediaImage: "Image",

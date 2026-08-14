@@ -19,6 +19,7 @@ export type PlatformErrorCode =
   | "validation"
   | "forbidden"
   | "conflict"
+  | "not_found"
   | "error";
 export type PlatformActionResult =
   { ok: true; id: string } | { ok: false; code: PlatformErrorCode };
@@ -148,6 +149,7 @@ export async function createGroup(input: unknown): Promise<PlatformActionResult>
         visibility: parsed.data.visibility,
         image_media_asset_id: parsed.data.imageMediaAssetId ?? null,
         status: "active",
+        type: parsed.data.type,
       })
       .select("id")
       .single();
@@ -163,18 +165,348 @@ export async function createGroup(input: unknown): Promise<PlatformActionResult>
   }
 }
 
-export async function sendGroupMessage(input: unknown): Promise<PlatformActionResult> {
+async function updatePlatformRow(
+  table: "products" | "services" | "jobs",
+  id: string,
+  ownerColumn: string,
+  ownerId: string,
+  values: Record<string, unknown>,
+): Promise<PlatformActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from(table)
+    .update(values)
+    .eq("id", id)
+    .eq(ownerColumn, ownerId)
+    .select("id")
+    .single();
+  return error ? { ok: false, code: errorCode(error) } : { ok: true, id: String(data.id) };
+}
+
+export async function updateProduct(input: unknown): Promise<PlatformActionResult> {
   const creator = await requirePlatformCreator();
   if (!creator.user) return { ok: false, code: creator.code ?? "error" };
   const parsed = z
-    .object({ groupId: z.string().uuid(), body: z.string().trim().min(1).max(5000) })
+    .object({ id: z.string().uuid(), ...productSchema.shape })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    return await updatePlatformRow(
+      "products",
+      parsed.data.id,
+      "owner_user_id",
+      creator.user.id,
+      {
+      title: parsed.data.title,
+      description: parsed.data.description || null,
+      category: parsed.data.category || null,
+      price: parsed.data.price ?? null,
+      currency: parsed.data.currency,
+      location_label: parsed.data.locationLabel || null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
+      image_media_asset_id: parsed.data.imageMediaAssetId,
+      status: "published",
+    });
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function updateService(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z
+    .object({ id: z.string().uuid(), ...serviceSchema.shape })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    return await updatePlatformRow(
+      "services",
+      parsed.data.id,
+      "provider_user_id",
+      creator.user.id,
+      {
+      title: parsed.data.title,
+      description: parsed.data.description || null,
+      category: parsed.data.category || null,
+      price: parsed.data.price ?? null,
+      currency: parsed.data.currency,
+      location_label: parsed.data.locationLabel || null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
+      image_media_asset_id: parsed.data.imageMediaAssetId,
+      status: "published",
+    });
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function updateJob(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ id: z.string().uuid(), ...jobSchema.shape }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    return await updatePlatformRow("jobs", parsed.data.id, "owner_user_id", creator.user.id, {
+      title: parsed.data.title,
+      employer_name: parsed.data.employerName || null,
+      description: parsed.data.description || null,
+      requirements: parsed.data.requirements || null,
+      job_type: parsed.data.jobType ?? null,
+      salary_min: parsed.data.salaryMin ?? null,
+      salary_max: parsed.data.salaryMax ?? null,
+      currency: parsed.data.currency,
+      location_label: parsed.data.locationLabel || null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
+      image_media_asset_id: parsed.data.imageMediaAssetId,
+      status: "published",
+    });
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function updateGroup(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z
+    .object({ id: z.string().uuid(), ...groupSchema.shape })
     .safeParse(input);
   if (!parsed.success) return { ok: false, code: "validation" };
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
+      .from("groups")
+      .update({
+        name: parsed.data.name,
+        description: parsed.data.description || null,
+        visibility: parsed.data.visibility,
+        image_media_asset_id: parsed.data.imageMediaAssetId,
+        type: parsed.data.type,
+      })
+      .eq("id", parsed.data.id)
+      .eq("owner_user_id", creator.user.id)
+      .select("id")
+      .single();
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: String(data.id) };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteProduct(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("products")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", parsed.data.id)
+      .eq("owner_user_id", creator.user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.id };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteService(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("services")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", parsed.data.id)
+      .eq("provider_user_id", creator.user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.id };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteJob(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("jobs")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", parsed.data.id)
+      .eq("owner_user_id", creator.user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.id };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteGroup(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("groups")
+      .update({ status: "archived" })
+      .eq("id", parsed.data.id)
+      .eq("owner_user_id", creator.user.id);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.id };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+const roleSchema = z.object({
+  groupId: z.string().uuid(),
+  userId: z.string().uuid(),
+  role: z.enum(["admin", "member"]),
+});
+
+export async function setGroupMemberRole(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = roleSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("owner_user_id")
+      .eq("id", parsed.data.groupId)
+      .single();
+    if (groupError) return { ok: false, code: errorCode(groupError) };
+    if (String(group.owner_user_id) !== creator.user.id) return { ok: false, code: "forbidden" };
+    const { error } = await supabase
+      .from("group_members")
+      .update({ role: parsed.data.role, updated_at: new Date().toISOString() })
+      .eq("group_id", parsed.data.groupId)
+      .eq("user_id", parsed.data.userId)
+      .neq("role", "owner");
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.groupId };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+const memberSchema = z.object({ groupId: z.string().uuid(), userId: z.string().uuid() });
+
+export async function removeGroupMember(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = memberSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    if (parsed.data.userId === creator.user.id) {
+      const { error } = await supabase
+        .from("group_members")
+        .update({ status: "left", updated_at: new Date().toISOString() })
+        .eq("group_id", parsed.data.groupId)
+        .eq("user_id", creator.user.id)
+        .neq("role", "owner");
+      return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.groupId };
+    }
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("owner_user_id")
+      .eq("id", parsed.data.groupId)
+      .single();
+    if (groupError) return { ok: false, code: errorCode(groupError) };
+    const isOwner = String(group.owner_user_id) === creator.user.id;
+    const { data: member, error: memberError } = await supabase
+      .from("group_members")
+      .select("role")
+      .eq("group_id", parsed.data.groupId)
+      .eq("user_id", parsed.data.userId)
+      .maybeSingle();
+    if (memberError) return { ok: false, code: errorCode(memberError) };
+    if (!member) return { ok: false, code: "not_found" };
+    if (member.role === "owner") return { ok: false, code: "forbidden" };
+    if (!isOwner) return { ok: false, code: "forbidden" };
+    const { error } = await supabase
+      .from("group_members")
+      .update({ status: "removed", updated_at: new Date().toISOString() })
+      .eq("group_id", parsed.data.groupId)
+      .eq("user_id", parsed.data.userId);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.groupId };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function deleteGroupMessage(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z.object({ messageId: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.rpc("delete_group_message", {
+      target_message_id: parsed.data.messageId,
+    });
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, id: parsed.data.messageId };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function sendGroupMessage(input: unknown): Promise<PlatformActionResult> {
+  const creator = await requirePlatformCreator();
+  if (!creator.user) return { ok: false, code: creator.code ?? "error" };
+  const parsed = z
+    .object({
+      groupId: z.string().uuid(),
+      body: z.string().trim().min(1).max(5000),
+      mediaAssetId: z.string().uuid().optional().nullable(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: membership, error: membershipError } = await supabase
+      .from("group_members")
+      .select("role, status")
+      .eq("group_id", parsed.data.groupId)
+      .eq("user_id", creator.user.id)
+      .maybeSingle();
+    if (membershipError) return { ok: false, code: errorCode(membershipError) };
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("type, owner_user_id, status")
+      .eq("id", parsed.data.groupId)
+      .single();
+    if (groupError) return { ok: false, code: errorCode(groupError) };
+    const isManager =
+      String(group.owner_user_id) === creator.user.id ||
+      (membership && ["owner", "admin"].includes(String(membership.role)));
+    if (String(group.status) !== "active") return { ok: false, code: "not_found" };
+    if (!membership || String(membership.status) !== "active") {
+      return { ok: false, code: "forbidden" };
+    }
+    if (String(group.type) === "channel" && !isManager) {
+      return { ok: false, code: "forbidden" };
+    }
+    const { data, error } = await supabase
       .from("group_messages")
-      .insert({ group_id: parsed.data.groupId, sender_id: creator.user.id, body: parsed.data.body })
+      .insert({
+        group_id: parsed.data.groupId,
+        sender_id: creator.user.id,
+        body: parsed.data.body,
+        media_asset_id: parsed.data.mediaAssetId ?? null,
+      })
       .select("id")
       .single();
     return error ? { ok: false, code: errorCode(error) } : { ok: true, id: String(data.id) };

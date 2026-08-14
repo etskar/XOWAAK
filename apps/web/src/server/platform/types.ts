@@ -44,6 +44,7 @@ export type GroupRecord = {
   name: string;
   description: string | null;
   visibility: "public" | "private";
+  type: "social" | "channel";
   status: "active" | "archived";
   createdAt: string;
   imageUrl: string | null;
@@ -55,8 +56,13 @@ export type GroupMessageRecord = {
   id: string;
   groupId: string;
   senderId: string;
+  senderUsername: string | null;
+  senderDisplayName: string | null;
   body: string;
   createdAt: string;
+  deletedAt: string | null;
+  mediaUrl: string | null;
+  mediaType: "image" | "video" | null;
 };
 
 export type GroupMemberRecord = {
@@ -93,6 +99,7 @@ export type SearchResult = {
   subtitle: string;
   href: string;
   locationLabel?: string | null;
+  imageUrl?: string | null;
 };
 
 export type SearchResultSet = {

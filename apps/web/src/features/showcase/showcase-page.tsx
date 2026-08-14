@@ -11,6 +11,7 @@ import { createTranslator } from "@/i18n/translate";
 import { Reveal } from "@/features/motion/reveal";
 import { getGroups, getJobs, getProducts, getServices } from "@/server/platform/queries";
 import { getPostsPage } from "@/server/posts/queries";
+import { getCurrentUser } from "@/server/auth/session";
 import type { PostRecord } from "@/server/posts/types";
 import type { GroupRecord, JobRecord, ProductRecord, ServiceRecord } from "@/server/platform/types";
 
@@ -320,7 +321,8 @@ async function LandingContent({ locale }: { locale: Locale }) {
   const platform = getPlatformMessages(locale);
   const { t } = createTranslator(locale);
 
-  const [products, services, jobs, groups, posts] = await Promise.all([
+  const [user, products, services, jobs, groups, posts] = await Promise.all([
+    getCurrentUser(),
     getProducts(4),
     getServices(4),
     getJobs(4),
@@ -360,23 +362,31 @@ async function LandingContent({ locale }: { locale: Locale }) {
                 <h1>{landing.hero.title}</h1>
                 <p className="landing-hero__description">{landing.hero.description}</p>
                 <div className="showcase-actions">
-                  <Link
-                    className="showcase-button showcase-button--primary"
-                    href={`/${locale}/auth/sign-up` as Route}
-                  >
-                    {landing.hero.primaryAction}
-                    <ArrowIcon />
-                  </Link>
-                  <Link
-                    className="showcase-button showcase-button--secondary"
-                    href={`/${locale}/auth/sign-in` as Route}
-                  >
-                    {landing.hero.secondaryAction}
-                  </Link>
-                </div>
-                <div className="landing-hero__note">
-                  <span className="landing-hero__note-dot" />
-                  <span>{landing.hero.note}</span>
+                  {user ? (
+                    <Link
+                      className="showcase-button showcase-button--primary"
+                      href={`/${locale}/home` as Route}
+                    >
+                      {landing.hero.openApp}
+                      <ArrowIcon />
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        className="showcase-button showcase-button--primary"
+                        href={`/${locale}/auth/sign-up` as Route}
+                      >
+                        {landing.hero.primaryAction}
+                        <ArrowIcon />
+                      </Link>
+                      <Link
+                        className="showcase-button showcase-button--secondary"
+                        href={`/${locale}/auth/sign-in` as Route}
+                      >
+                        {landing.hero.secondaryAction}
+                      </Link>
+                    </>
+                  )}
                 </div>
               </Reveal>
             </div>
@@ -800,19 +810,31 @@ async function LandingContent({ locale }: { locale: Locale }) {
             <p>{landing.finalCta.description}</p>
           </div>
           <div className="showcase-actions">
-            <Link
-              className="showcase-button showcase-button--primary"
-              href={`/${locale}/auth/sign-up` as Route}
-            >
-              {landing.finalCta.primaryAction}
-              <ArrowIcon />
-            </Link>
-            <Link
-              className="showcase-button showcase-button--secondary"
-              href={`/${locale}/auth/sign-in` as Route}
-            >
-              {landing.finalCta.secondaryAction}
-            </Link>
+            {user ? (
+              <Link
+                className="showcase-button showcase-button--primary"
+                href={`/${locale}/home` as Route}
+              >
+                {landing.hero.openApp}
+                <ArrowIcon />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  className="showcase-button showcase-button--primary"
+                  href={`/${locale}/auth/sign-up` as Route}
+                >
+                  {landing.finalCta.primaryAction}
+                  <ArrowIcon />
+                </Link>
+                <Link
+                  className="showcase-button showcase-button--secondary"
+                  href={`/${locale}/auth/sign-in` as Route}
+                >
+                  {landing.finalCta.secondaryAction}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </LandingSection>

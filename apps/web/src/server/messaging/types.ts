@@ -3,6 +3,7 @@ export type ConversationSummary = {
   otherUserId: string;
   otherUsername: string;
   otherDisplayName: string;
+  otherAvatarUrl: string | null;
   lastMessage: string | null;
   lastMessageAt: string | null;
 };
@@ -21,6 +22,7 @@ export type ConversationDetail = {
   otherUserId: string;
   otherUsername: string;
   otherDisplayName: string;
+  otherAvatarUrl: string | null;
   messages: MessageRecord[];
 };
 

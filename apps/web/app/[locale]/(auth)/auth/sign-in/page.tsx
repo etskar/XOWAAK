@@ -27,11 +27,7 @@ export default async function SignInPage({ params, searchParams }: SignInPagePro
   const messages = getAuthMessages(locale);
 
   return (
-    <AuthShell
-      locale={locale}
-      title={messages.signIn.title}
-      description={messages.signIn.description}
-    >
+    <AuthShell locale={locale} title={messages.signIn.title}>
       <SignInForm
         locale={locale}
         messages={messages}

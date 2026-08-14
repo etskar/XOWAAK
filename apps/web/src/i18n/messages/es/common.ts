@@ -44,6 +44,7 @@ export const commonMessages = {
   closeNavigation: "Cerrar navegación",
   toggleTheme: "Cambiar tema",
   backToHome: "Volver a XOWAAK",
+  emptyState: "Aún no hay nada aquí.",
   unavailableTitle: "Este espacio aún no está disponible",
   unavailableDescription:
     "La superficie del producto está lista, pero esta capacidad no está conectada en la versión actual.",
@@ -53,4 +54,10 @@ export const commonMessages = {
   designPreview: "Dirección del producto",
   footerProduct: "Producto",
   footerResources: "Recursos",
+  mediaRemove: "Quitar",
+  mediaMove: "Mover",
+  mediaMoveForward: "Mover adelante",
+  mediaMoveBackward: "Mover atrás",
+  mediaUploading: "Subiendo",
+  emojiPicker: "Emojis",
 } as const;

@@ -37,6 +37,7 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
     coverMediaId: profile?.cover_media_id ?? null,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(
     unavailable ? messages.profile.unavailable : null,
@@ -45,6 +46,8 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
   const coverUrl = profile?.cover_url ?? null;
   const shownCover = coverPreview ?? coverUrl;
   const hasCover = Boolean(shownCover);
+  const avatarUrl = avatarPreview ?? profile?.avatar_url ?? null;
+  const hasAvatar = Boolean(avatarUrl);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,10 +84,23 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
     <form className="settings-form" data-locale={locale} noValidate onSubmit={handleSubmit}>
       <Stack gap={5}>
         <div className="profile-editor-avatar">
-          <Avatar name={displayName} size="lg" />
+          <Avatar name={displayName} src={avatarUrl ?? undefined} size="lg" />
           <div>
             <p className="settings-form__label">{messages.profile.avatar}</p>
             <p className="settings-form__hint">{messages.profile.avatarUnavailable}</p>
+            {hasAvatar && (
+              <button
+                type="button"
+                className="profile-editor-cover__remove"
+                onClick={() => {
+                  setValues((current) => ({ ...current, avatarMediaId: null }));
+                  setAvatarPreview(null);
+                }}
+                disabled={unavailable || isPending}
+              >
+                {messages.profile.removeAvatar}
+              </button>
+            )}
           </div>
         </div>
         <MediaUpload
@@ -101,6 +117,7 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
           onAssetIdsChange={(assetIds) =>
             setValues((current) => ({ ...current, avatarMediaId: assetIds[0] ?? null }))
           }
+          onLocalPreview={setAvatarPreview}
         />
         <div className="profile-editor-cover">
           <div className="profile-editor-cover__preview" data-empty={!hasCover || undefined}>

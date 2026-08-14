@@ -44,6 +44,7 @@ export const commonMessages = {
   closeNavigation: "Close navigation",
   toggleTheme: "Toggle theme",
   backToHome: "Back to XOWAAK",
+  emptyState: "Nothing here yet.",
   unavailableTitle: "This space is not available yet",
   unavailableDescription:
     "The product surface is ready, but this capability is not connected in the current release.",
@@ -53,4 +54,10 @@ export const commonMessages = {
   designPreview: "Product direction",
   footerProduct: "Product",
   footerResources: "Resources",
+  mediaRemove: "Remove",
+  mediaMove: "Move",
+  mediaMoveForward: "Move forward",
+  mediaMoveBackward: "Move backward",
+  mediaUploading: "Uploading",
+  emojiPicker: "Emoji",
 } as const;

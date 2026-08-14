@@ -44,6 +44,7 @@ export const commonMessages = {
   closeNavigation: "关闭导航",
   toggleTheme: "切换主题",
   backToHome: "返回 XOWAAK",
+  emptyState: "这里还没有内容。",
   unavailableTitle: "此空间尚未开放",
   unavailableDescription: "产品界面已经准备好，但此功能尚未在当前版本连接。",
   configurationTitle: "XOWAAK 正在等待配置",
@@ -52,4 +53,10 @@ export const commonMessages = {
   designPreview: "产品方向",
   footerProduct: "产品",
   footerResources: "资源",
+  mediaRemove: "移除",
+  mediaMove: "移动",
+  mediaMoveForward: "向前移动",
+  mediaMoveBackward: "向后移动",
+  mediaUploading: "上传中",
+  emojiPicker: "表情",
 } as const;

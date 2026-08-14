@@ -184,3 +184,47 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 - `mailer_autoconfirm` still requires Dashboard change (no Management API token); the in-app Admin API fallback works.
 - Old unused CSS blocks (create-action, feed-page aside/composer) remain in `globals.css`; harmless, can be pruned later.
 - No visual regression run against a running dev server was performed in this stage (build + type + unit tests only).
+
+---
+
+## Stage: Phase 5 Refinements (Header/Auth/Landing/Search/Create-Edit-Delete/Channels/Messaging/Profile) — Complete
+
+### What was built
+
+- **Unified site header** (`site-header.tsx` rewritten; `SiteHeader` + `SiteFooter` in one file):
+  - Landing branch: brand + locale switcher + auth actions only. App branch: brand (→ `/home`) + `UserMenu`. Other pages: brand + nav + language + theme + auth actions + always-visible hamburger (mobile slide-down nav); mobile nav shows auth links only when signed out.
+  - `user-menu.tsx` rewritten: `Avatar` from the design system, `avatarUrl`/`displayName` props, menu = Profile / Edit Profile / Settings / Language / Appearance + sign-out form posting to `/{locale}/auth/sign-out`; `app.help` item removed (key left unused in i18n).
+  - `site-header-container.tsx` (server wrapper): `getCurrentUser()` + `getOwnProfile()` (try/catch) → passes avatar/display name so the header shows the real profile image and name.
+- **AuthShell simplification** (`auth-shell.tsx`): centered card with eyebrow/title/description/unavailable banner; old `.auth-layout`/`.auth-aside` CSS left unused.
+- **Landing hero trim + "Open XOWAAK"** (`showcase-page.tsx` + `landing-messages.ts`): shorter hero descriptions in 8 locales; `hero.note` replaced by `hero.openApp`; hero actions and final CTA are auth-aware (signed-in users get `Open XOWAAK` → `/home`); `LandingContent` fetches `getCurrentUser()` in `Promise.all`.
+- **Search moved into Home + result images** (`feed-view.tsx` header, `search-bar.tsx`, `src/server/platform/queries.ts`):
+  - `SearchResult` gains `imageUrl`; `searchPlatform` selects `avatar_media_id`/`image_media_asset_id`, resolves signed URLs (`getMediaSignedUrls` + `getProfiles`) for users/products/services/groups; suggestion avatars render `<img>` when available; `.search-bar input` font-size raised to 1rem.
+- **MediaUpload rewrite** (`media-upload.tsx`): items with object URLs, upload/remove/replace/reorder, `onAssetIdsChange` + `onLocalPreview` + `onPreviewsChange`; SVG icon buttons with `common.mediaMoveBackward/Forward/Remove/Uploading` aria-labels (8 locales); fixes `covers` bucket missing from `mediaInputSchema` in `src/server/media/actions.ts`.
+- **Post composer preview step** (`post-composer.tsx`): edit → preview stage with content + media preview (via `onPreviewsChange`), Back to edit + Publish; `composer.preview/backToEdit` keys in 8 locales.
+- **Server CRUD + channels + moderation** (`supabase/migrations/20260814000010_phase5_refinements.sql` — pushed to SQL Editor by the user, additive-only):
+  - `groups.type` (`social`|`channel`), `group_messages.media_asset_id` (+ media-owner trigger), `conversation_members.muted_at`; `can_post_group_message` gate on the insert policy (channels: owner/admin only); manager delete policy + `delete_group_message` RPC (soft delete, sender-or-manager); `notify_direct_message` rewritten to skip muted members.
+  - `src/server/platform/actions.ts`: `updateProduct/Service/Job/Group`, `deleteProduct/Service/Job/Group`, `setGroupMemberRole` (owner-only, cannot change owner), `removeGroupMember` (self-leave or owner-remove), `deleteGroupMessage`, `sendGroupMessage` with `mediaAssetId` + channel permission check; `"not_found"` added to `PlatformErrorCode`; image update no longer wipes an existing image when none is picked (`?? null` removed).
+  - `src/domains/platform/validation.ts`: `groupSchema.type` enum with `social` default.
+  - `src/server/messaging/actions.ts`: `markConversationRead`, `setConversationMuted`, `leaveConversation`, `deleteDirectMessage` (soft delete, sender only).
+- **Create/Edit forms with preview** (`platform-creation-form.tsx`): create + edit modes (initial values, existing image shown with `media-upload__current`), edit/preview stages, group-type `Select`, publish via create/update actions; 4 new edit pages under `(app)/{products,services,jobs,groups}/[id]/edit` (owner-gated, redirect non-owners). ~12 new platform i18n keys × 8 locales (`editProduct...`, `groupType/social/channel`, `preview/backToEdit`, `deleteTitle/deleteDescription/confirmDelete`).
+- **Detail-page owner actions + back link** (`back-link.tsx`, `platform-owner-actions.tsx`, `platform-view.tsx`): `router.back()` with fallback; Edit link + Delete-confirm `Dialog`; channel chip + `app.kindChannel` badge on group cards; `posts/[id]` and `posts/new` use `BackLink`.
+- **Group chat + members management** (`group-chat.tsx`, `group-members.tsx`): sender name/avatar, media attachments (image/video via `MediaUpload`, message-media bucket), per-message delete (own or manager, soft-deleted styling), channel posting restricted to managers (server + UI note), invite/accept/decline, owner: promote/demote/remove any non-owner, admin: remove members, anyone: leave group; 10 new messaging i18n keys × 8 locales.
+- **Profile tabs** (`profile-view.tsx` + `u/[username]` page): URL-param tabs `?tab=posts|products|services|jobs|groups` with count badges, per-kind grids, empty state (`common.emptyState` added × 8 locales).
+- **Profile form**: live avatar preview + "Remove avatar" (`identity-messages.profile.removeAvatar` × 8 locales), cover preview/remove already present.
+- **Messaging list avatars** (`messaging/queries.ts` + `messages-view.tsx`): conversation summaries/details resolve the counterpart's avatar (`getMediaSignedUrls`) and render it in the list and thread header.
+- **Bottom navigation now fixed on all breakpoints** (`navigation.css`): `.app-bottom-nav` always visible; `.app-shell__content` reserves bottom padding at every size.
+
+### Verification
+
+- `npx tsc --noEmit` — clean (run after every batch).
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings (one stale unused import in the e2e spec removed).
+- `npx vitest run` — 15 files / 41 tests passed.
+- `npm run build` — compiled successfully; all routes present (products/services/jobs/groups edit pages + profile tab queries included).
+- Runtime smoke checks with `next start`: `/en`, `/ar`, `/en/about`, `/en/explore`, `/en/products`, `/en/groups`, `/en/u/demo?tab=products`, `/en/u/demo?tab=groups`, `/ar/home`, `/ar/settings/profile`, `/en/auth/sign-in`, `/ar/auth/sign-in`, `/en/auth/sign-up` — all 200.
+- Migration 20260814000010 names verified against prior migrations (policy `group_messages_insert_member` in 13000000; trigger `messages_notify_recipient` + function `notify_direct_message` in 14000002/14000008) — drops/creates are correctly targeted; applied by the user via Supabase SQL Editor (direct DB credentials were rejected locally).
+
+### Known limitations / follow-ups
+
+- The `groups` / channel / muting behavior is inactive until migration 10 is applied in the Supabase project (user ran it from the SQL Editor).
+- Conversation mute/leave/block UI and per-conversation unread badges are not yet exposed in the messages view (server actions + schema are ready).
+- PWA icons still the default mark (no image tooling in this environment).

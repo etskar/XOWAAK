@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 
+import { Avatar } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
 import { getAppMessages } from "@/i18n/app-messages";
@@ -13,9 +14,13 @@ const menuId = "user-menu";
 export function UserMenu({
   locale,
   isAuthenticated,
+  avatarUrl = null,
+  displayName = null,
 }: {
   locale: Locale;
   isAuthenticated: boolean;
+  avatarUrl?: string | null;
+  displayName?: string | null;
 }) {
   const { t } = createTranslator(locale);
   const app = getAppMessages(locale);
@@ -24,9 +29,9 @@ export function UserMenu({
   const items = [
     { href: `/${locale}/profile` as Route, label: app.myProfile },
     { href: `/${locale}/settings/profile` as Route, label: app.editProfile },
+    { href: `/${locale}/settings` as Route, label: t("navigation.settings") },
     { href: `/${locale}/settings/language` as Route, label: t("identity.nav.language") },
     { href: `/${locale}/settings/appearance` as Route, label: t("identity.nav.appearance") },
-    { href: `/${locale}/settings` as Route, label: app.help },
   ];
 
   if (!isAuthenticated) {
@@ -58,16 +63,12 @@ export function UserMenu({
         aria-haspopup="menu"
         onClick={() => toggle(menuId)}
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-          <circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            d="M5 19.5c1.4-2.8 4-4 7-4s5.6 1.2 7 4"
-          />
-        </svg>
+        <Avatar
+          name={displayName?.trim() ? displayName : "X"}
+          src={avatarUrl ?? undefined}
+          alt={app.accountMenuTitle}
+          size="sm"
+        />
       </button>
       {isOpen && (
         <div className="user-menu__popover" role="menu" aria-label={app.accountMenuTitle}>
