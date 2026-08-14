@@ -6,6 +6,8 @@ export type ConversationSummary = {
   otherAvatarUrl: string | null;
   lastMessage: string | null;
   lastMessageAt: string | null;
+  unreadCount: number;
+  muted: boolean;
 };
 
 export type MessageRecord = {
@@ -23,6 +25,7 @@ export type ConversationDetail = {
   otherUsername: string;
   otherDisplayName: string;
   otherAvatarUrl: string | null;
+  muted: boolean;
   messages: MessageRecord[];
 };
 

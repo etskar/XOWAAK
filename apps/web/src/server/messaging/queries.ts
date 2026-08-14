@@ -30,9 +30,18 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
     const supabase = await createSupabaseServerClient();
     const { data: ownMembers, error: memberError } = await supabase
       .from("conversation_members")
-      .select("conversation_id")
+      .select("conversation_id, last_read_at, muted_at")
       .eq("user_id", user.id);
     if (memberError) return { status: "error", data: null };
+    const ownByConversation = new Map(
+      (ownMembers ?? []).map((row) => [
+        String(row.conversation_id),
+        {
+          lastRead: row.last_read_at ? new Date(String(row.last_read_at)).getTime() : null,
+          muted: Boolean(row.muted_at),
+        },
+      ]),
+    );
     const conversationIds = (ownMembers ?? []).map((row) => String(row.conversation_id));
     if (conversationIds.length === 0) return { status: "ok", data: [] };
 
@@ -45,7 +54,7 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
           .neq("user_id", user.id),
         supabase
           .from("messages")
-          .select("conversation_id, body, created_at")
+          .select("conversation_id, body, created_at, sender_id")
           .in("conversation_id", conversationIds)
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
@@ -86,6 +95,15 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
         const name = profileName(profile);
         const avatarMediaId = profile?.avatar_media_id ? String(profile.avatar_media_id) : null;
         const last = lastByConversation.get(id);
+        const own = ownByConversation.get(id);
+        const lastRead = own?.lastRead ?? null;
+        const unreadCount = (messages ?? []).reduce((count, message) => {
+          if (String(message.conversation_id) !== id) return count;
+          if (String(message.sender_id) === user.id) return count;
+          const createdAt = message.created_at ? new Date(String(message.created_at)).getTime() : 0;
+          if (lastRead !== null && createdAt <= lastRead) return count;
+          return count + 1;
+        }, 0);
         return [
           {
             id,
@@ -95,6 +113,8 @@ export async function getConversations(): Promise<MessagingResult<ConversationSu
             otherAvatarUrl: avatarMediaId ? (avatarUrls.get(avatarMediaId) ?? null) : null,
             lastMessage: last?.body ? String(last.body) : null,
             lastMessageAt: last?.created_at ? String(last.created_at) : null,
+            unreadCount,
+            muted: own?.muted ?? false,
           },
         ];
       }),
@@ -122,6 +142,12 @@ export async function getConversation(
       return { status: "ok", data: null };
     const other = (members ?? []).find((row) => String(row.user_id) !== user.id);
     if (!other) return { status: "ok", data: null };
+    const { data: ownMembership } = await supabase
+      .from("conversation_members")
+      .select("muted_at")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user.id)
+      .maybeSingle();
 
     const [{ data: profile }, { data: messages, error: messageError }] = await Promise.all([
       supabase
@@ -161,6 +187,7 @@ export async function getConversation(
         otherUsername: name.username,
         otherDisplayName: name.displayName,
         otherAvatarUrl: avatarMediaId ? (mediaUrls.get(avatarMediaId) ?? null) : null,
+        muted: Boolean(ownMembership?.muted_at),
         messages: result,
       },
     };

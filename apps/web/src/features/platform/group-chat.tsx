@@ -11,6 +11,7 @@ import { getAppMessages } from "@/i18n/app-messages";
 import { getMessagingMessages } from "@/i18n/messaging-messages";
 import { deleteGroupMessage, sendGroupMessage } from "@/server/platform/actions";
 import { MediaUpload } from "@/features/media/media-upload";
+import { EmojiPicker } from "@/features/messaging/emoji-picker";
 import { createSupabaseBrowserClient } from "@/supabase/browser";
 import type { GroupMessageRecord, PlatformResult } from "@/server/platform/types";
 
@@ -184,9 +185,12 @@ export function GroupChat({
               disabled={isPending}
               onAssetIdsChange={(ids) => setMediaAssetId(ids[0] ?? null)}
             />
-            <Button type="submit" loading={isPending} isDisabled={isPending || !body.trim()}>
-              {app.sendMessage}
-            </Button>
+            <div className="messaging-composer__tools">
+              <EmojiPicker locale={locale} onSelect={(emoji) => setBody((v) => v + emoji)} />
+              <Button type="submit" loading={isPending} isDisabled={isPending || !body.trim()}>
+                {app.sendMessage}
+              </Button>
+            </div>
             {status && <p role="alert">{status}</p>}
           </Stack>
         </form>

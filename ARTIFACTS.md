@@ -211,7 +211,7 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 - **Group chat + members management** (`group-chat.tsx`, `group-members.tsx`): sender name/avatar, media attachments (image/video via `MediaUpload`, message-media bucket), per-message delete (own or manager, soft-deleted styling), channel posting restricted to managers (server + UI note), invite/accept/decline, owner: promote/demote/remove any non-owner, admin: remove members, anyone: leave group; 10 new messaging i18n keys × 8 locales.
 - **Profile tabs** (`profile-view.tsx` + `u/[username]` page): URL-param tabs `?tab=posts|products|services|jobs|groups` with count badges, per-kind grids, empty state (`common.emptyState` added × 8 locales).
 - **Profile form**: live avatar preview + "Remove avatar" (`identity-messages.profile.removeAvatar` × 8 locales), cover preview/remove already present.
-- **Messaging list avatars** (`messaging/queries.ts` + `messages-view.tsx`): conversation summaries/details resolve the counterpart's avatar (`getMediaSignedUrls`) and render it in the list and thread header.
+- **Messaging list avatars + unread + actions** (`messaging/queries.ts`, `messages-view.tsx`, `emoji-picker.tsx`): conversation summaries/details resolve the counterpart's avatar; per-conversation unread counts (from `last_read_at`) with badges, client-side search filter, auto mark-read on open/realtime, thread actions (View profile, Mute/Unmute, Block user + leave, Leave with inline confirm), per-message delete for own DMs, and an emoji picker (`common.emojiPicker`, ~24 emojis) in both the DM and group-chat composers; 8 new messaging i18n keys × 8 locales.
 - **Bottom navigation now fixed on all breakpoints** (`navigation.css`): `.app-bottom-nav` always visible; `.app-shell__content` reserves bottom padding at every size.
 
 ### Verification
@@ -226,5 +226,4 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 ### Known limitations / follow-ups
 
 - The `groups` / channel / muting behavior is inactive until migration 10 is applied in the Supabase project (user ran it from the SQL Editor).
-- Conversation mute/leave/block UI and per-conversation unread badges are not yet exposed in the messages view (server actions + schema are ready).
 - PWA icons still the default mark (no image tooling in this environment).

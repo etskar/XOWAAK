@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import type { Route } from "next";
 import { useEffect, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
@@ -8,8 +10,18 @@ import { cx } from "@/design-system/utils/cx";
 import type { Locale } from "@/config/locales";
 import { getMessagingMessages } from "@/i18n/messaging-messages";
 import { MediaUpload } from "@/features/media/media-upload";
+import { EmojiPicker } from "@/features/messaging/emoji-picker";
 import { createSupabaseBrowserClient } from "@/supabase/browser";
-import { loadConversation, sendDirectMessage, startConversation } from "@/server/messaging/actions";
+import {
+  deleteDirectMessage,
+  leaveConversation,
+  loadConversation,
+  markConversationRead,
+  sendDirectMessage,
+  setConversationMuted,
+  startConversation,
+} from "@/server/messaging/actions";
+import { blockUser } from "@/server/social/actions";
 import type {
   ConversationDetail,
   ConversationSummary,
@@ -35,6 +47,7 @@ export function MessagesView({
   const messages = getMessagingMessages(locale);
   const conversations = initial.status === "ok" ? initial.data : [];
   const [items, setItems] = useState(conversations);
+  const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(conversations[0]?.id ?? null);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [username, setUsername] = useState("");
@@ -45,6 +58,20 @@ export function MessagesView({
   );
   const [isPending, startTransition] = useTransition();
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
+  const [confirmLeave, setConfirmLeave] = useState(false);
+
+  function clearUnread(id: string) {
+    setItems((current) =>
+      current.map((item) => (item.id === id ? { ...item, unreadCount: 0 } : item)),
+    );
+  }
+
+  function markRead(id: string) {
+    clearUnread(id);
+    startTransition(() => {
+      void markConversationRead({ conversationId: id });
+    });
+  }
 
   useEffect(() => {
     if (!initialUsername) {
@@ -69,6 +96,8 @@ export function MessagesView({
             otherAvatarUrl: loaded.data.otherAvatarUrl,
             lastMessage: loaded.data.messages.at(-1)?.body ?? null,
             lastMessageAt: loaded.data.messages.at(-1)?.createdAt ?? null,
+            unreadCount: 0,
+            muted: loaded.data.muted,
           };
           setItems((current) => [summary, ...current.filter((item) => item.id !== summary.id)]);
           setSelectedId(summary.id);
@@ -84,14 +113,19 @@ export function MessagesView({
     if (!selectedId) return;
     let active = true;
     void loadConversation(selectedId).then((result) => {
-      if (active && result.status === "ok") setDetail(result.data);
+      if (active && result.status === "ok") {
+        markRead(selectedId);
+        setDetail(result.data);
+      }
     });
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   function selectConversation(id: string) {
+    markRead(id);
     setDetail(null);
     setSelectedId(id);
     setMobileView("thread");
@@ -113,6 +147,7 @@ export function MessagesView({
             filter: `conversation_id=eq.${selectedId}`,
           },
           () => {
+            markRead(selectedId);
             void loadConversation(selectedId).then((result) => {
               if (result.status === "ok") setDetail(result.data);
             });
@@ -125,6 +160,7 @@ export function MessagesView({
     } catch {
       return undefined;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   function startChat(event: FormEvent<HTMLFormElement>) {
@@ -148,6 +184,8 @@ export function MessagesView({
           otherAvatarUrl: loaded.data.otherAvatarUrl,
           lastMessage: loaded.data.messages.at(-1)?.body ?? null,
           lastMessageAt: loaded.data.messages.at(-1)?.createdAt ?? null,
+          unreadCount: 0,
+          muted: loaded.data.muted,
         };
         setItems((current) => [summary, ...current.filter((item) => item.id !== summary.id)]);
         setUsername("");
@@ -175,6 +213,93 @@ export function MessagesView({
       });
     });
   }
+
+  function removeMessage(messageId: string) {
+    if (!selectedId) return;
+    startTransition(() => {
+      void deleteDirectMessage({ messageId }).then((result) => {
+        if (!result.ok) {
+          setStatus(messages.failed);
+          return;
+        }
+        void loadConversation(selectedId).then((loaded) => {
+          if (loaded.status === "ok") setDetail(loaded.data);
+        });
+      });
+    });
+  }
+
+  function toggleMuted() {
+    if (!selectedId || !detail) return;
+    setStatus(null);
+    startTransition(() => {
+      void setConversationMuted({ conversationId: selectedId, muted: !detail.muted }).then(
+        (result) => {
+          if (!result.ok) {
+            setStatus(messages.failed);
+            return;
+          }
+          setDetail((current) =>
+            current ? { ...current, muted: !current.muted } : current,
+          );
+          setItems((current) =>
+            current.map((item) =>
+              item.id === selectedId ? { ...item, muted: !detail.muted } : item,
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  function block() {
+    if (!selectedId || !detail) return;
+    setStatus(null);
+    startTransition(() => {
+      void blockUser({ userId: detail.otherUserId }).then((result) => {
+        if (!result.ok) {
+          setStatus(messages.failed);
+          return;
+        }
+        void leaveConversation({ conversationId: selectedId }).then((response) => {
+          if (!response.ok) {
+            setStatus(messages.failed);
+            return;
+          }
+          setItems((current) => current.filter((item) => item.id !== selectedId));
+          setDetail(null);
+          setSelectedId(items.find((item) => item.id !== selectedId)?.id ?? null);
+          setConfirmLeave(false);
+        });
+      });
+    });
+  }
+
+  function leave() {
+    if (!selectedId) return;
+    setStatus(null);
+    startTransition(() => {
+      void leaveConversation({ conversationId: selectedId }).then((result) => {
+        if (!result.ok) {
+          setStatus(messages.failed);
+          return;
+        }
+        setItems((current) => current.filter((item) => item.id !== selectedId));
+        setDetail(null);
+        setSelectedId(items.find((item) => item.id !== selectedId)?.id ?? null);
+        setConfirmLeave(false);
+      });
+    });
+  }
+
+  const filtered = items.filter((item) => {
+    if (!query.trim()) return true;
+    const needle = query.trim().toLowerCase();
+    return (
+      item.otherDisplayName.toLowerCase().includes(needle) ||
+      item.otherUsername.toLowerCase().includes(needle)
+    );
+  });
 
   return (
     <main className="messaging-page" data-locale={locale}>
@@ -204,12 +329,20 @@ export function MessagesView({
         </div>
         <div className="messaging-layout" data-mobile-view={mobileView}>
           <Card className="messaging-list">
-            <h2>{messages.conversations}</h2>
-            {items.length === 0 ? (
+            <div className="messaging-list__heading">
+              <h2>{messages.conversations}</h2>
+              <Input
+                label={messages.search}
+                value={query}
+                onChange={setQuery}
+                inputProps={{ name: "search", autoComplete: "off" }}
+              />
+            </div>
+            {filtered.length === 0 ? (
               <EmptyState title={messages.noConversations} description={messages.startTitle} />
             ) : (
               <div className="messaging-list__items">
-                {items.map((item) => (
+                {filtered.map((item) => (
                   <button
                     type="button"
                     key={item.id}
@@ -230,7 +363,17 @@ export function MessagesView({
                     </span>
                     <span className="messaging-list__body">
                       <span className="messaging-list__row">
-                        <strong>{item.otherDisplayName}</strong>
+                        <strong>
+                          {item.otherDisplayName}
+                          {item.muted && (
+                            <span className="messaging-list__muted" aria-label={messages.mute}>
+                              <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 8.5v3h2.5L10 15V5L6.5 8.5H4Z" />
+                                <path d="M13 8l4 4M17 8l-4 4" />
+                              </svg>
+                            </span>
+                          )}
+                        </strong>
                         {shortDate(item.lastMessageAt, locale) && (
                           <time dateTime={item.lastMessageAt ?? undefined}>
                             {shortDate(item.lastMessageAt, locale)}
@@ -242,6 +385,9 @@ export function MessagesView({
                       </span>
                       {item.lastMessage && <small>{item.lastMessage}</small>}
                     </span>
+                    {item.unreadCount > 0 && (
+                      <span className="messaging-list__unread">{item.unreadCount}</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -259,7 +405,10 @@ export function MessagesView({
                   >
                     ←
                   </button>
-                  <span className="messaging-thread__identity">
+                  <Link
+                    className="messaging-thread__identity"
+                    href={`/${locale}/u/${detail.otherUsername}` as Route}
+                  >
                     {detail.otherAvatarUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -274,8 +423,63 @@ export function MessagesView({
                       <strong>{detail.otherDisplayName}</strong>
                       <span>@{detail.otherUsername}</span>
                     </span>
-                  </span>
+                  </Link>
+                  <div className="messaging-thread__actions">
+                    <Link
+                      className="messaging-thread__action"
+                      href={`/${locale}/u/${detail.otherUsername}` as Route}
+                    >
+                      {messages.viewProfile}
+                    </Link>
+                    <button
+                      type="button"
+                      className="messaging-thread__action"
+                      onClick={toggleMuted}
+                      disabled={isPending}
+                    >
+                      {detail.muted ? messages.unmute : messages.mute}
+                    </button>
+                    <button
+                      type="button"
+                      className="messaging-thread__action"
+                      onClick={block}
+                      disabled={isPending}
+                    >
+                      {messages.block}
+                    </button>
+                    <button
+                      type="button"
+                      className="messaging-thread__action"
+                      onClick={() => setConfirmLeave(true)}
+                      disabled={isPending}
+                    >
+                      {messages.leave}
+                    </button>
+                  </div>
                 </header>
+                {confirmLeave && (
+                  <div className="messaging-thread__confirm">
+                    <p>{messages.leaveConfirm}</p>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      loading={isPending}
+                      isDisabled={isPending}
+                      onPress={leave}
+                    >
+                      {messages.leave}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => setConfirmLeave(false)}
+                    >
+                      {messages.decline}
+                    </Button>
+                  </div>
+                )}
                 <div className="messaging-thread__messages" aria-live="polite">
                   {detail.messages.length === 0 ? (
                     <p>{messages.noMessages}</p>
@@ -299,6 +503,19 @@ export function MessagesView({
                         <time dateTime={message.createdAt}>
                           {new Date(message.createdAt).toLocaleString(locale)}
                         </time>
+                        {message.senderId !== detail.otherUserId && (
+                          <button
+                            type="button"
+                            className="messaging-message__delete"
+                            onClick={() => removeMessage(message.id)}
+                            disabled={isPending}
+                            aria-label={messages.deleteMessage}
+                          >
+                            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                              <path d="M5 5l10 10M15 5 5 15" />
+                            </svg>
+                          </button>
+                        )}
                       </article>
                     ))
                   )}
@@ -312,25 +529,28 @@ export function MessagesView({
                       isDisabled={isPending}
                       inputProps={{ name: "body", autoComplete: "off" }}
                     />
-                    <MediaUpload
-                      locale={locale}
-                      bucket="message-media"
-                      label={messages.attachment}
-                      uploadLabel={messages.attachment}
-                      failedLabel={messages.failed}
-                      accept="image/*,video/*"
-                      multiple={false}
-                      maxFiles={1}
-                      disabled={isPending}
-                      onAssetIdsChange={(ids) => setMediaAssetId(ids[0] ?? null)}
-                    />
-                    <Button
-                      type="submit"
-                      loading={isPending}
-                      isDisabled={isPending || !body.trim()}
-                    >
-                      {messages.send}
-                    </Button>
+                    <div className="messaging-composer__tools">
+                      <EmojiPicker locale={locale} onSelect={(emoji) => setBody((v) => v + emoji)} />
+                      <MediaUpload
+                        locale={locale}
+                        bucket="message-media"
+                        label={messages.attachment}
+                        uploadLabel={messages.attachment}
+                        failedLabel={messages.failed}
+                        accept="image/*,video/*"
+                        multiple={false}
+                        maxFiles={1}
+                        disabled={isPending}
+                        onAssetIdsChange={(ids) => setMediaAssetId(ids[0] ?? null)}
+                      />
+                      <Button
+                        type="submit"
+                        loading={isPending}
+                        isDisabled={isPending || !body.trim()}
+                      >
+                        {messages.send}
+                      </Button>
+                    </div>
                   </Stack>
                 </form>
               </>
