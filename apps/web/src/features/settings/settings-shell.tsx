@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 import { Badge, Card, Container, Stack } from "@/design-system";
+import { cx } from "@/design-system/utils/cx";
 import type { Locale } from "@/config/locales";
 import { getIdentityMessages } from "@/i18n/identity-messages";
 import { createTranslator } from "@/i18n/translate";
@@ -15,9 +19,13 @@ type SettingsShellProps = {
 export function SettingsShell({ locale, children }: SettingsShellProps) {
   const messages = getIdentityMessages(locale);
   const { t } = createTranslator(locale);
+  const pathname = usePathname() ?? "";
   const links = [
     { href: `/${locale}/settings`, label: messages.nav.settings },
     { href: `/${locale}/settings/profile`, label: messages.nav.profile },
+    { href: `/${locale}/settings/notifications`, label: messages.nav.notifications },
+    { href: `/${locale}/settings/language`, label: messages.nav.language },
+    { href: `/${locale}/settings/appearance`, label: messages.nav.appearance },
     { href: `/${locale}/settings/privacy`, label: messages.nav.privacy },
     { href: `/${locale}/settings/account`, label: messages.nav.account },
     { href: `/${locale}/settings/security`, label: messages.nav.security },
@@ -34,11 +42,19 @@ export function SettingsShell({ locale, children }: SettingsShellProps) {
         <div className="settings-layout">
           <nav className="settings-nav" aria-label={messages.nav.settings}>
             <p className="settings-nav__label">{t("navigation.productNavigation")}</p>
-            {links.map((link) => (
-              <Link key={link.href} href={link.href as Route} className="settings-nav__link">
-                {link.label}
-              </Link>
-            ))}
+            {links.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href as Route}
+                  className={cx("settings-nav__link", isActive && "settings-nav__link--active")}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
           <Card elevated className="settings-content">
             <Stack gap={6}>{children}</Stack>

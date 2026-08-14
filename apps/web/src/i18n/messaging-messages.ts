@@ -2,6 +2,8 @@ import type { Locale } from "@/config/locales";
 
 export const messagingMessages = {
   en: {
+    back: "Back",
+    you: "You",
     title: "Notifications",
     startTitle: "Start a conversation",
     usernamePlaceholder: "Username",
@@ -23,6 +25,8 @@ export const messagingMessages = {
     markRead: "Mark read",
   },
   ar: {
+    back: "رجوع",
+    you: "أنت",
     title: "التنبيهات",
     startTitle: "بدء محادثة",
     usernamePlaceholder: "اسم المستخدم",
@@ -44,6 +48,8 @@ export const messagingMessages = {
     markRead: "تحديد كمقروء",
   },
   es: {
+    back: "Atrás",
+    you: "Tú",
     title: "Notificaciones",
     startTitle: "Iniciar una conversación",
     usernamePlaceholder: "Nombre de usuario",
@@ -65,6 +71,8 @@ export const messagingMessages = {
     markRead: "Marcar como leída",
   },
   fr: {
+    back: "Retour",
+    you: "Vous",
     title: "Notifications",
     startTitle: "Démarrer une conversation",
     usernamePlaceholder: "Nom d’utilisateur",
@@ -86,6 +94,8 @@ export const messagingMessages = {
     markRead: "Marquer comme lue",
   },
   de: {
+    back: "Zurück",
+    you: "Du",
     title: "Benachrichtigungen",
     startTitle: "Unterhaltung starten",
     usernamePlaceholder: "Benutzername",
@@ -107,6 +117,8 @@ export const messagingMessages = {
     markRead: "Als gelesen markieren",
   },
   tr: {
+    back: "Geri",
+    you: "Sen",
     title: "Bildirimler",
     startTitle: "Sohbet başlat",
     usernamePlaceholder: "Kullanıcı adı",
@@ -128,6 +140,8 @@ export const messagingMessages = {
     markRead: "Okundu işaretle",
   },
   pt: {
+    back: "Voltar",
+    you: "Você",
     title: "Notificações",
     startTitle: "Iniciar uma conversa",
     usernamePlaceholder: "Nome de utilizador",
@@ -149,6 +163,8 @@ export const messagingMessages = {
     markRead: "Marcar como lida",
   },
   zh: {
+    back: "返回",
+    you: "你",
     title: "通知",
     startTitle: "开始对话",
     usernamePlaceholder: "用户名",

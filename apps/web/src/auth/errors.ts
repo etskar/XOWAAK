@@ -30,6 +30,18 @@ export function getAuthErrorMessage(error: unknown, locale: Locale, context: Aut
     return messages.errors.emailAlreadyRegistered;
   }
 
+  if (
+    message.includes("rate limit") ||
+    message.includes("over_email_send_rate_limit") ||
+    message.includes("too many requests")
+  ) {
+    return messages.errors.rateLimited;
+  }
+
+  if (context === "signIn" && message.includes("user not found")) {
+    return messages.errors.userNotFound;
+  }
+
   if (context === "callback") {
     return messages.errors.callback;
   }

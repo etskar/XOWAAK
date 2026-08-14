@@ -14,13 +14,21 @@ import type {
 } from "@/server/identity/types";
 
 const profileSelect =
-  "id, username, display_name, bio, avatar_media_id, location_label, visibility, locale, timezone, created_at, updated_at, deleted_at";
+  "id, username, display_name, bio, avatar_media_id, cover_media_id, location_label, visibility, locale, timezone, created_at, updated_at, deleted_at";
 const deviceCookieName = "xowaak_device_id";
 
-async function withAvatarUrl(profile: ProfileRecord | null) {
-  if (!profile?.avatar_media_id) return profile;
-  const urls = await getMediaSignedUrls([profile.avatar_media_id]);
-  return { ...profile, avatar_url: urls.get(profile.avatar_media_id) ?? null };
+async function withMediaUrls(profile: ProfileRecord | null) {
+  if (!profile) return profile;
+  const assetIds = [profile.avatar_media_id, profile.cover_media_id].filter(
+    (id): id is string => Boolean(id),
+  );
+  if (assetIds.length === 0) return profile;
+  const urls = await getMediaSignedUrls(assetIds);
+  return {
+    ...profile,
+    avatar_url: profile.avatar_media_id ? (urls.get(profile.avatar_media_id) ?? null) : null,
+    cover_url: profile.cover_media_id ? (urls.get(profile.cover_media_id) ?? null) : null,
+  };
 }
 
 async function getCurrentDeviceId() {
@@ -48,7 +56,7 @@ export async function getOwnProfile(): Promise<ProfileRecord | null> {
     throw new Error("profile_query_failed");
   }
 
-  return withAvatarUrl(data as ProfileRecord | null);
+  return withMediaUrls(data as ProfileRecord | null);
 }
 
 export async function getProfileByUsername(username: string): Promise<ProfileRecord | null> {
@@ -67,7 +75,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileRec
     throw new Error("profile_query_failed");
   }
 
-  return withAvatarUrl(data as ProfileRecord | null);
+  return withMediaUrls(data as ProfileRecord | null);
 }
 
 export async function getOwnSettings(): Promise<UserSettingsRecord | null> {

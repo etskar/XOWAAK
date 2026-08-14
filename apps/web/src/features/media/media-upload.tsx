@@ -6,7 +6,7 @@ import type { Locale } from "@/config/locales";
 import { createSupabaseBrowserClient } from "@/supabase/browser";
 import { markMediaAssetsDeleted, registerMediaAsset } from "@/server/media/actions";
 
-type MediaBucket = "avatars" | "post-media" | "message-media" | "platform-media";
+type MediaBucket = "avatars" | "post-media" | "message-media" | "platform-media" | "covers";
 
 type MediaUploadProps = {
   locale: Locale;
@@ -21,6 +21,7 @@ type MediaUploadProps = {
   maxSizeBytes?: number;
   disabled?: boolean;
   onAssetIdsChange: (assetIds: string[]) => void;
+  onLocalPreview?: (url: string | null) => void;
 };
 
 function extensionFor(file: File) {
@@ -45,6 +46,7 @@ export function MediaUpload({
   maxSizeBytes = 25 * 1024 * 1024,
   disabled = false,
   onAssetIdsChange,
+  onLocalPreview,
 }: MediaUploadProps) {
   const inputId = useId();
   const [names, setNames] = useState<string[]>([]);
@@ -88,6 +90,9 @@ export function MediaUpload({
 
           setNames((current) => [...current, ...selected.map((file) => file.name)]);
           onAssetIdsChange(uploadedIds);
+          if (onLocalPreview && selected[0]) {
+            onLocalPreview(URL.createObjectURL(selected[0]));
+          }
         } catch {
           if (uploadedIds.length > 0) {
             await markMediaAssetsDeleted(uploadedIds);

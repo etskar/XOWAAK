@@ -8,6 +8,7 @@ import { Button, Card, EmptyState, Input, Select, Stack } from "@/design-system"
 import { createSupabaseBrowserClient } from "@/supabase/browser";
 import { getLocaleConfig, locales, type Locale } from "@/config/locales";
 import { getAuthMessages } from "@/i18n/auth-messages";
+import { getAppMessages } from "@/i18n/app-messages";
 import { getIdentitySchemas } from "@/domains/identity/validation";
 import type { IdentityMessages } from "@/i18n/identity-messages";
 import {
@@ -15,6 +16,7 @@ import {
   registerCurrentDevice,
   requestAccountDeletion,
   revokeDevice,
+  updateNotificationPreferences,
   updatePrivacySettings,
   updateSettings,
 } from "@/server/identity/actions";
@@ -42,17 +44,82 @@ function platformLabel(platform: DeviceRecord["platform"], messages: IdentityMes
   return labels[platform];
 }
 
-type PreferencesFormProps = {
+type LanguageFormProps = {
   locale: Locale;
   messages: IdentityMessages;
   settings: UserSettingsRecord | null;
   unavailable: boolean;
 };
 
-export function PreferencesForm({ locale, messages, settings, unavailable }: PreferencesFormProps) {
+export function LanguageForm({ locale, messages, settings, unavailable }: LanguageFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedLocale, setSelectedLocale] = useState<Locale>(settings?.locale ?? locale);
+  const [status, setStatus] = useState<string | null>(null);
+
+  function saveLanguage() {
+    const result = getIdentitySchemas(messages).settings.safeParse({
+      locale: selectedLocale,
+      themePreference: settings?.theme_preference ?? "system",
+    });
+
+    if (!result.success) {
+      setStatus(messages.common.error);
+      return;
+    }
+
+    startTransition(() => {
+      void (async () => {
+        const response = await updateSettings(result.data);
+        setStatus(response.ok ? messages.common.saved : operationMessage(response.code, messages));
+        if (response.ok) router.refresh();
+      })();
+    });
+  }
+
+  return (
+    <Card>
+      <Stack gap={4}>
+        <div>
+          <h2 className="settings-section-title">{messages.nav.language}</h2>
+          <p className="settings-form__hint">{messages.common.language}</p>
+        </div>
+        <Select
+          label={messages.common.language}
+          options={locales.map((option) => ({
+            id: option,
+            label: getLocaleConfig(option).nativeName,
+          }))}
+          selectedKey={selectedLocale}
+          onSelectionChange={(key) => setSelectedLocale(String(key) as Locale)}
+          isDisabled={unavailable || isPending}
+        />
+        <Button
+          type="button"
+          onPress={saveLanguage}
+          loading={isPending}
+          isDisabled={unavailable || isPending}
+        >
+          {messages.common.save}
+        </Button>
+        {status && (
+          <p className="settings-status" role="status">
+            {status}
+          </p>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
+type AppearanceFormProps = {
+  messages: IdentityMessages;
+  settings: UserSettingsRecord | null;
+  unavailable: boolean;
+};
+
+export function AppearanceForm({ messages, settings, unavailable }: AppearanceFormProps) {
+  const [isPending, startTransition] = useTransition();
   const [themePreference, setThemePreference] = useState<"system" | "light" | "dark">(
     settings?.theme_preference ?? "system",
   );
@@ -69,9 +136,9 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
     window.localStorage.setItem("xowaak-theme", resolvedTheme);
   }
 
-  function savePreferences() {
+  function saveAppearance() {
     const result = getIdentitySchemas(messages).settings.safeParse({
-      locale: selectedLocale,
+      locale: settings?.locale ?? "en",
       themePreference,
     });
 
@@ -86,7 +153,6 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
       void (async () => {
         const response = await updateSettings(result.data);
         setStatus(response.ok ? messages.common.saved : operationMessage(response.code, messages));
-        if (response.ok) router.refresh();
       })();
     });
   }
@@ -95,19 +161,9 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
     <Card>
       <Stack gap={4}>
         <div>
-          <h2 className="settings-section-title">{messages.nav.settings}</h2>
-          <p className="settings-form__hint">{messages.profile.description}</p>
+          <h2 className="settings-section-title">{messages.nav.appearance}</h2>
+          <p className="settings-form__hint">{messages.common.appearance}</p>
         </div>
-        <Select
-          label={messages.common.language}
-          options={locales.map((option) => ({
-            id: option,
-            label: getLocaleConfig(option).nativeName,
-          }))}
-          selectedKey={selectedLocale}
-          onSelectionChange={(key) => setSelectedLocale(String(key) as Locale)}
-          isDisabled={unavailable || isPending}
-        />
         <Select
           label={messages.common.appearance}
           options={[
@@ -123,6 +179,102 @@ export function PreferencesForm({ locale, messages, settings, unavailable }: Pre
           }}
           isDisabled={unavailable || isPending}
         />
+        <Button
+          type="button"
+          onPress={saveAppearance}
+          loading={isPending}
+          isDisabled={unavailable || isPending}
+        >
+          {messages.common.save}
+        </Button>
+        {status && (
+          <p className="settings-status" role="status">
+            {status}
+          </p>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
+type NotificationPreferencesFormProps = {
+  locale: Locale;
+  messages: IdentityMessages;
+  settings: UserSettingsRecord | null;
+  unavailable: boolean;
+};
+
+export function NotificationPreferencesForm({
+  locale,
+  messages,
+  settings,
+  unavailable,
+}: NotificationPreferencesFormProps) {
+  const app = getAppMessages(locale);
+  const initial = settings?.notification_preferences ?? {};
+  const [preferences, setPreferences] = useState({
+    follow: initial.follow !== false,
+    like: initial.like !== false,
+    comment: initial.comment !== false,
+    share: initial.share !== false,
+    message: initial.message !== false,
+    group: initial.group !== false,
+    system: initial.system !== false,
+  });
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<string | null>(null);
+
+  const options: Array<{ key: keyof typeof preferences; label: string }> = [
+    { key: "follow", label: app.notificationFollow },
+    { key: "like", label: app.notificationLike },
+    { key: "comment", label: app.notificationComment },
+    { key: "share", label: app.notificationShare },
+    { key: "message", label: app.notificationMessage },
+    { key: "group", label: app.notificationGroup },
+    { key: "system", label: app.notificationSystem },
+  ];
+
+  function savePreferences() {
+    const result = getIdentitySchemas(messages).notificationPreferences.safeParse(preferences);
+
+    if (!result.success) {
+      setStatus(messages.common.error);
+      return;
+    }
+
+    startTransition(() => {
+      void (async () => {
+        const response = await updateNotificationPreferences(result.data);
+        setStatus(response.ok ? messages.common.saved : operationMessage(response.code, messages));
+      })();
+    });
+  }
+
+  return (
+    <Card>
+      <Stack gap={4}>
+        <div>
+          <h2 className="settings-section-title">{messages.nav.notifications}</h2>
+          <p className="settings-form__hint">{app.notificationPrefsDescription}</p>
+        </div>
+        <div className="notification-preference-list">
+          {options.map((option) => (
+            <label key={option.key} className="notification-preference-row">
+              <span>{option.label}</span>
+              <input
+                type="checkbox"
+                checked={preferences[option.key]}
+                onChange={(event) =>
+                  setPreferences((current) => ({
+                    ...current,
+                    [option.key]: event.target.checked,
+                  }))
+                }
+                disabled={unavailable || isPending}
+              />
+            </label>
+          ))}
+        </div>
         <Button
           type="button"
           onPress={savePreferences}

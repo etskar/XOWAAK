@@ -86,6 +86,7 @@ async function hydratePosts(rows: Array<Record<string, unknown>>): Promise<PostR
 async function queryPosts(options: {
   authorId?: string;
   cursor?: string | null;
+  offset?: number;
   limit?: number;
 }): Promise<PostQueryResult<PostListResult>> {
   if (!hasSupabasePublicEnv()) return { status: "unavailable", data: null };
@@ -103,7 +104,9 @@ async function queryPosts(options: {
       .limit(limit + 1);
 
     if (options.authorId) query = query.eq("author_id", options.authorId);
-    if (cursor) {
+    if (options.offset && options.offset > 0) {
+      query = query.range(options.offset, options.offset + limit);
+    } else if (cursor) {
       query = query.or(
         `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`,
       );
@@ -130,6 +133,11 @@ export async function getFeed(cursor?: string | null, limit = defaultLimit) {
   const user = await getCurrentUser();
   if (!user) return { status: "unauthenticated" as const, data: null };
   return queryPosts({ cursor, limit });
+}
+
+export async function getPostsPage(offset = 0, limit = 12): Promise<PostRecord[]> {
+  const result = await queryPosts({ offset, limit });
+  return result.status === "ok" ? result.data.items : [];
 }
 
 export async function getPost(postId: string): Promise<PostQueryResult<PostRecord | null>> {

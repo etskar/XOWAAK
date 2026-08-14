@@ -60,6 +60,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             locale={locale}
             post={result.data}
             isOwner={user?.id === result.data.authorId}
+            isAuthenticated={user !== null}
           />
         </div>
       </Container>

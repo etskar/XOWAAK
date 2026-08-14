@@ -8,6 +8,7 @@ export type PostCommentRecord = {
   id: string;
   authorId: string;
   authorName: string;
+  authorUsername: string;
   body: string;
   createdAt: string;
 };
@@ -81,6 +82,7 @@ export async function getPostEngagement(postIds: string[]): Promise<Map<string, 
         id: String(row.id),
         authorId,
         authorName: String(profile?.display_name || profile?.username || "XOWAAK user"),
+        authorUsername: profile?.username ? String(profile.username) : "",
         body: String(row.body),
         createdAt: String(row.created_at),
       });

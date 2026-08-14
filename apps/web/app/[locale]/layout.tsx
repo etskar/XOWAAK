@@ -6,7 +6,8 @@ import { appConfig } from "@/config/app";
 import { getDirection, isLocale, locales, type Locale } from "@/config/locales";
 import { getSiteMetadata } from "@/config/metadata";
 import { createTranslator } from "@/i18n/translate";
-import { SiteFooter, SiteHeader } from "@/features/navigation/site-header";
+import { SiteFooter } from "@/features/navigation/site-header";
+import { SiteHeaderContainer } from "@/features/navigation/site-header-container";
 import { PwaRegister } from "@/features/pwa/pwa-register";
 import "../globals.css";
 
@@ -56,10 +57,12 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <div className="site-root" data-app-name={appConfig.name}>
           <PwaRegister />
           <Suspense fallback={<div className="site-header__fallback" aria-hidden="true" />}>
-            <SiteHeader locale={locale} />
+            <SiteHeaderContainer locale={locale} />
           </Suspense>
           <div id="main-content">{children}</div>
-          <SiteFooter locale={locale} />
+          <Suspense fallback={null}>
+            <SiteFooter locale={locale} />
+          </Suspense>
         </div>
       </body>
     </html>

@@ -1,14 +1,11 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
 import { notFound } from "next/navigation";
 
 import { isLocale, type Locale } from "@/config/locales";
-import { hasSupabasePublicEnv } from "@/config/public-env";
-import { createTranslator } from "@/i18n/translate";
 import { requireCurrentUser } from "@/server/auth/session";
-import { FeedView } from "@/features/posts/feed-view";
-import { getFeed } from "@/server/posts/queries";
-import { getPostsMessages } from "@/i18n/posts-messages";
+import { getUnifiedFeed } from "@/server/feed/queries";
+import { decodeFeedCursor } from "@/server/feed/types";
 import { getOwnProfile } from "@/server/identity/queries";
+import { FeedView } from "@/features/feed/feed-view";
 
 export const dynamic = "force-dynamic";
 
@@ -25,18 +22,6 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   }
 
   const locale = localeParam as Locale;
-  const { t } = createTranslator(locale);
-  const posts = getPostsMessages(locale);
-
-  if (!hasSupabasePublicEnv()) {
-    return (
-      <RoutePlaceholder
-        locale={locale}
-        title={t("navigation.home")}
-        description={posts.pages.unavailable}
-      />
-    );
-  }
 
   const user = await requireCurrentUser(locale);
   let profile = null;
@@ -48,9 +33,7 @@ export default async function HomePage({ params, searchParams }: HomePageProps) 
   const profileComplete = Boolean(profile?.username && profile.display_name.trim());
   const query = searchParams ? await searchParams : {};
   const cursorValue = Array.isArray(query.cursor) ? query.cursor[0] : query.cursor;
-  const feed = await getFeed(cursorValue, 20);
-  const result =
-    feed.status === "unauthenticated" ? { status: "error" as const, data: null } : feed;
+  const result = await getUnifiedFeed(decodeFeedCursor(cursorValue));
 
   return (
     <FeedView

@@ -5,6 +5,8 @@ export type ProfileRecord = {
   bio: string | null;
   avatar_media_id: string | null;
   avatar_url?: string | null;
+  cover_media_id: string | null;
+  cover_url?: string | null;
   location_label: string | null;
   visibility: "public" | "private";
   locale: string;
@@ -13,6 +15,15 @@ export type ProfileRecord = {
   updated_at: string;
   deleted_at: string | null;
 };
+
+export type NotificationPreferenceKey =
+  | "follow"
+  | "like"
+  | "comment"
+  | "share"
+  | "message"
+  | "group"
+  | "system";
 
 export type UserSettingsRecord = {
   user_id: string;

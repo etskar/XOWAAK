@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
 import { Button, EmptyState, Input, Stack } from "@/design-system";
+import { cx } from "@/design-system/utils/cx";
 import type { Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
 import { sendGroupMessage } from "@/server/platform/actions";
@@ -15,10 +16,12 @@ export function GroupChat({
   locale,
   groupId,
   result,
+  viewerId,
 }: {
   locale: Locale;
   groupId: string;
   result: PlatformResult<GroupMessageRecord[]>;
+  viewerId: string | null;
 }) {
   const app = getAppMessages(locale);
   const router = useRouter();
@@ -77,7 +80,13 @@ export function GroupChat({
       {result.status === "ok" && result.data.length > 0 && (
         <div className="group-chat__messages">
           {result.data.map((message) => (
-            <article key={message.id}>
+            <article
+              key={message.id}
+              className={cx(
+                "messaging-message",
+                message.senderId === viewerId && "messaging-message--own",
+              )}
+            >
               <p>{message.body}</p>
               <time dateTime={message.createdAt}>
                 {new Date(message.createdAt).toLocaleString(locale)}

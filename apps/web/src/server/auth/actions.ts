@@ -2,6 +2,10 @@
 
 import { hasSupabasePublicEnv } from "@/config/public-env";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
+import { createSupabaseServerClient } from "@/server/supabase/client";
+import { getCurrentUser } from "@/server/auth/session";
+import { getIdentityMessages } from "@/i18n/identity-messages";
+import { getIdentitySchemas } from "@/domains/identity/validation";
 
 export type ConfirmSignupResult = { ok: true } | { ok: false };
 
@@ -51,6 +55,91 @@ export async function confirmSignupEmail(input: ConfirmSignupInput): Promise<Con
     });
 
     return updateError ? { ok: false } : { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export type UsernameAvailabilityResult = { ok: true; available: true } | { ok: true; available: false };
+
+export async function isUsernameAvailable(username: unknown): Promise<UsernameAvailabilityResult> {
+  const result = getIdentitySchemas(getIdentityMessages("en")).profile.pick({ username: true }).safeParse(
+    { username: typeof username === "string" ? username : "" },
+  );
+  if (!result.success) {
+    return { ok: true, available: false };
+  }
+  if (!hasSupabasePublicEnv()) {
+    return { ok: true, available: true };
+  }
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", result.data.username)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (error) return { ok: true, available: true };
+    return { ok: true, available: !data };
+  } catch {
+    return { ok: true, available: true };
+  }
+}
+
+export type UsernameResolutionResult = { ok: true; email: string | null } | { ok: false };
+
+export async function resolveUsernameToEmail(username: unknown): Promise<UsernameResolutionResult> {
+  if (typeof username !== "string" || !/^[a-z0-9][a-z0-9._-]{2,31}$/i.test(username)) {
+    return { ok: false };
+  }
+  if (!hasSupabasePublicEnv()) {
+    return { ok: true, email: null };
+  }
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, username")
+      .eq("username", username.trim().toLowerCase())
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (error || !data) return { ok: true, email: null };
+    const admin = createSupabaseAdminClient();
+    const { data: user, error: userError } = await admin.auth.admin.getUserById(String(data.id));
+    if (userError || !user.user?.email) return { ok: true, email: null };
+    return { ok: true, email: user.user.email };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export type SignupProfileResult = { ok: true } | { ok: false };
+
+interface SignupProfileInput {
+  username: string;
+  displayName: string;
+}
+
+export async function createProfileOnSignup(input: SignupProfileInput): Promise<SignupProfileResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false };
+  const result = getIdentitySchemas(getIdentityMessages("en")).profile
+    .pick({ username: true, displayName: true })
+    .safeParse(input);
+  if (!result.success) return { ok: false };
+  if (!hasSupabasePublicEnv()) return { ok: false };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        username: result.data.username,
+        display_name: result.data.displayName,
+      },
+      { onConflict: "id" },
+    );
+    return error ? { ok: false } : { ok: true };
   } catch {
     return { ok: false };
   }

@@ -5,6 +5,7 @@ import { Avatar, Badge, Card, Container } from "@/design-system";
 
 import type { Locale } from "@/config/locales";
 import { getIdentityMessages } from "@/i18n/identity-messages";
+import { getAppMessages } from "@/i18n/app-messages";
 import type { ProfileRecord } from "@/server/identity/types";
 import { RelationshipActions } from "@/features/social/relationship-actions";
 import { PostList } from "@/features/posts/post-list";
@@ -25,6 +26,7 @@ type ProfileViewProps = {
   posts: PostQueryResult<PostListResult> | null;
   postsPaginationPath: string;
   platform: PlatformResult<ProfilePlatformRecords>;
+  isOwnProfile?: boolean;
 };
 
 export function ProfileView({
@@ -37,10 +39,12 @@ export function ProfileView({
   posts,
   postsPaginationPath,
   platform,
+  isOwnProfile = false,
 }: ProfileViewProps) {
   const messages = getIdentityMessages(locale);
   const social = getSocialMessages(locale);
   const postsMessages = getPostsMessages(locale);
+  const app = getAppMessages(locale);
   const { t } = createTranslator(locale);
   const displayName = profile.display_name || profile.username;
 
@@ -54,7 +58,13 @@ export function ProfileView({
           </Badge>
         </div>
         <Card elevated className="profile-hero-card">
-          <div className="profile-cover" aria-hidden="true" />
+          <div className="profile-cover" aria-hidden="true">
+            {profile.cover_url && (
+              // Signed URLs are generated on the server for visible profiles only.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.cover_url} alt="" />
+            )}
+          </div>
           <div className="profile-hero-card__body">
             <div className="profile-summary">
               <Avatar name={displayName} src={profile.avatar_url ?? undefined} size="lg" />
@@ -67,11 +77,28 @@ export function ProfileView({
                 </p>
               </div>
               <div className="profile-summary__actions">
-                <RelationshipActions
-                  locale={locale}
-                  targetUserId={profile.id}
-                  relationship={relationship}
-                />
+                {isOwnProfile ? (
+                  <>
+                    <Link
+                      className="showcase-button showcase-button--secondary"
+                      href={`/${locale}/settings/profile` as Route}
+                    >
+                      {app.editProfile}
+                    </Link>
+                    <Link
+                      className="showcase-button showcase-button--quiet"
+                      href={`/${locale}/settings` as Route}
+                    >
+                      {t("navigation.settings")}
+                    </Link>
+                  </>
+                ) : (
+                  <RelationshipActions
+                    locale={locale}
+                    targetUserId={profile.id}
+                    relationship={relationship}
+                  />
+                )}
               </div>
             </div>
             {profile.bio && (

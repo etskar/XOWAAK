@@ -13,6 +13,8 @@ describe("authentication foundation", () => {
 
     expect(
       schema.safeParse({
+        name: "Test Person",
+        username: "test_person",
         email: "person@example.com",
         password: "correct-horse-battery",
         confirmPassword: "correct-horse-battery",
@@ -21,6 +23,8 @@ describe("authentication foundation", () => {
 
     expect(
       schema.safeParse({
+        name: "",
+        username: "UPPER CASE",
         email: "not-an-email",
         password: "short",
         confirmPassword: "different",

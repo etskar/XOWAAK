@@ -23,6 +23,9 @@ export const postsMessages = {
     submitComment: "إضافة تعليق",
     emptyComments: "لا توجد تعليقات بعد.",
     you: "أنت",
+    previous: "الصورة السابقة",
+    next: "الصورة التالية",
+    close: "إغلاق العارض",
     actionFailed: "هذا الإجراء غير متاح حالياً.",
   },
   card: {

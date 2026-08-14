@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
 import { Button, Card, Container, EmptyState, Input, Stack } from "@/design-system";
+import { cx } from "@/design-system/utils/cx";
 import type { Locale } from "@/config/locales";
 import { getMessagingMessages } from "@/i18n/messaging-messages";
 import { MediaUpload } from "@/features/media/media-upload";
@@ -15,12 +16,21 @@ import type {
   MessagingResult,
 } from "@/server/messaging/types";
 
+function shortDate(value: string | null, locale: Locale) {
+  if (!value) return null;
+  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(
+    new Date(value),
+  );
+}
+
 export function MessagesView({
   locale,
   initial,
+  initialUsername,
 }: {
   locale: Locale;
   initial: MessagingResult<ConversationSummary[]>;
+  initialUsername?: string;
 }) {
   const messages = getMessagingMessages(locale);
   const conversations = initial.status === "ok" ? initial.data : [];
@@ -34,6 +44,40 @@ export function MessagesView({
     initial.status === "error" ? messages.failed : null,
   );
   const [isPending, startTransition] = useTransition();
+  const [mobileView, setMobileView] = useState<"list" | "thread">("list");
+
+  useEffect(() => {
+    if (!initialUsername) {
+      return;
+    }
+    startTransition(() => {
+      void startConversation({ username: initialUsername }).then((result) => {
+        if (!result.ok) {
+          setStatus(messages.failed);
+          return;
+        }
+        void loadConversation(result.data.id).then((loaded) => {
+          if (loaded.status !== "ok" || !loaded.data) {
+            setStatus(messages.failed);
+            return;
+          }
+          const summary: ConversationSummary = {
+            id: loaded.data.id,
+            otherUserId: loaded.data.otherUserId,
+            otherUsername: loaded.data.otherUsername,
+            otherDisplayName: loaded.data.otherDisplayName,
+            lastMessage: loaded.data.messages.at(-1)?.body ?? null,
+            lastMessageAt: loaded.data.messages.at(-1)?.createdAt ?? null,
+          };
+          setItems((current) => [summary, ...current.filter((item) => item.id !== summary.id)]);
+          setSelectedId(summary.id);
+          setDetail(loaded.data);
+          setStatus(null);
+        });
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -49,6 +93,7 @@ export function MessagesView({
   function selectConversation(id: string) {
     setDetail(null);
     setSelectedId(id);
+    setMobileView("thread");
   }
 
   useEffect(() => {
@@ -155,7 +200,7 @@ export function MessagesView({
             </Button>
           </form>
         </div>
-        <div className="messaging-layout">
+        <div className="messaging-layout" data-mobile-view={mobileView}>
           <Card className="messaging-list">
             <h2>{messages.conversations}</h2>
             {items.length === 0 ? (
@@ -166,16 +211,29 @@ export function MessagesView({
                   <button
                     type="button"
                     key={item.id}
-                    className={
-                      selectedId === item.id
-                        ? "messaging-list__item is-selected"
-                        : "messaging-list__item"
-                    }
+                    className={cx(
+                      "messaging-list__item",
+                      selectedId === item.id && "is-selected",
+                    )}
                     onClick={() => selectConversation(item.id)}
                   >
-                    <strong>{item.otherDisplayName}</strong>
-                    <span>@{item.otherUsername}</span>
-                    {item.lastMessage && <small>{item.lastMessage}</small>}
+                    <span className="messaging-list__avatar" aria-hidden="true">
+                      {item.otherDisplayName.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="messaging-list__body">
+                      <span className="messaging-list__row">
+                        <strong>{item.otherDisplayName}</strong>
+                        {shortDate(item.lastMessageAt, locale) && (
+                          <time dateTime={item.lastMessageAt ?? undefined}>
+                            {shortDate(item.lastMessageAt, locale)}
+                          </time>
+                        )}
+                      </span>
+                      <span className="messaging-list__username">
+                        @{item.otherUsername}
+                      </span>
+                      {item.lastMessage && <small>{item.lastMessage}</small>}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -185,15 +243,33 @@ export function MessagesView({
             {detail ? (
               <>
                 <header className="messaging-thread__header">
-                  <h2>{detail.otherDisplayName}</h2>
-                  <span>@{detail.otherUsername}</span>
+                  <button
+                    type="button"
+                    className="messaging-thread__back"
+                    onClick={() => setMobileView("list")}
+                    aria-label={messages.back}
+                  >
+                    ←
+                  </button>
+                  <span className="messaging-thread__identity">
+                    <strong>{detail.otherDisplayName}</strong>
+                    <span>@{detail.otherUsername}</span>
+                  </span>
                 </header>
                 <div className="messaging-thread__messages" aria-live="polite">
                   {detail.messages.length === 0 ? (
                     <p>{messages.noMessages}</p>
                   ) : (
                     detail.messages.map((message) => (
-                      <article key={message.id} className="messaging-message">
+                      <article
+                        key={message.id}
+                        className={cx(
+                          "messaging-message",
+                          message.senderId === detail.otherUserId
+                            ? "messaging-message--other"
+                            : "messaging-message--own",
+                        )}
+                      >
                         <p dir="auto">{message.body}</p>
                         {message.mediaUrl && (
                           // Signed URLs are generated on the server for conversation members.

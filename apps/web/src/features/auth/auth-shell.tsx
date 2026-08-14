@@ -25,8 +25,8 @@ export function AuthShell({ locale, title, description, children }: AuthShellPro
           <aside className="auth-aside">
             <Badge variant="primary">{landing.hero.eyebrow}</Badge>
             <p className="auth-aside__kicker">XOWAAK / 01</p>
-            <h2>{landing.hero.visualTitle}</h2>
-            <p>{landing.hero.visualBody}</p>
+            <h2>{landing.about.title}</h2>
+            <p>{landing.about.description}</p>
             <div className="auth-aside__points">
               <span>{landing.features.identity.title}</span>
               <span>{landing.features.privacy.title}</span>

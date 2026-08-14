@@ -18,7 +18,7 @@ import type {
 const deviceCookieName = "xowaak_device_id";
 const deviceCookieMaxAge = 60 * 60 * 24 * 365;
 const profileSelect =
-  "id, username, display_name, bio, avatar_media_id, location_label, visibility, locale, timezone, created_at, updated_at, deleted_at";
+  "id, username, display_name, bio, avatar_media_id, cover_media_id, location_label, visibility, locale, timezone, created_at, updated_at, deleted_at";
 
 export async function updateProfile(input: unknown): Promise<IdentityActionResult<ProfileRecord>> {
   if (!hasSupabasePublicEnv()) {
@@ -47,6 +47,7 @@ export async function updateProfile(input: unknown): Promise<IdentityActionResul
           bio: result.data.bio || null,
           location_label: result.data.locationLabel || null,
           avatar_media_id: result.data.avatarMediaId ?? null,
+          cover_media_id: result.data.coverMediaId ?? null,
         },
         { onConflict: "id" },
       )
@@ -58,6 +59,51 @@ export async function updateProfile(input: unknown): Promise<IdentityActionResul
     }
 
     return { ok: true, data: data as ProfileRecord };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
+export async function updateNotificationPreferences(
+  input: unknown,
+): Promise<IdentityActionResult<UserSettingsRecord>> {
+  if (!hasSupabasePublicEnv()) {
+    return { ok: false, code: "unavailable" };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, code: "unauthenticated" };
+  }
+
+  const result = getIdentitySchemas(getIdentityMessages("en")).notificationPreferences.safeParse(
+    input,
+  );
+  if (!result.success) {
+    return { ok: false, code: "validation" };
+  }
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("user_settings")
+      .upsert(
+        {
+          user_id: user.id,
+          notification_preferences: result.data,
+        },
+        { onConflict: "user_id" },
+      )
+      .select(
+        "user_id, theme_preference, locale, discoverability, contact_privacy, notification_preferences, privacy_preferences, created_at, updated_at",
+      )
+      .single();
+
+    if (error) {
+      return { ok: false, code: "error" };
+    }
+
+    return { ok: true, data: data as UserSettingsRecord };
   } catch {
     return { ok: false, code: "error" };
   }

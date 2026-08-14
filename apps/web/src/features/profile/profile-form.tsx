@@ -34,12 +34,17 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
     bio: profile?.bio ?? "",
     locationLabel: profile?.location_label ?? "",
     avatarMediaId: profile?.avatar_media_id ?? null,
+    coverMediaId: profile?.cover_media_id ?? null,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(
     unavailable ? messages.profile.unavailable : null,
   );
   const displayName = values.displayName || values.username || messages.profile.title;
+  const coverUrl = profile?.cover_url ?? null;
+  const shownCover = coverPreview ?? coverUrl;
+  const hasCover = Boolean(shownCover);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,6 +63,7 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
         const response = await updateProfile({
           ...result.data,
           avatarMediaId: values.avatarMediaId,
+          coverMediaId: values.coverMediaId,
         });
 
         if (!response.ok) {
@@ -95,6 +101,50 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
           onAssetIdsChange={(assetIds) =>
             setValues((current) => ({ ...current, avatarMediaId: assetIds[0] ?? null }))
           }
+        />
+        <div className="profile-editor-cover">
+          <div className="profile-editor-cover__preview" data-empty={!hasCover || undefined}>
+            {shownCover ? (
+              // Local previews use object URLs; server covers use signed URLs.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={shownCover} alt="" />
+            ) : (
+              <span>{messages.profile.cover}</span>
+            )}
+          </div>
+          <div>
+            <p className="settings-form__label">{messages.profile.cover}</p>
+            <p className="settings-form__hint">{messages.profile.coverUnavailable}</p>
+            {hasCover && (
+              <button
+                type="button"
+                className="profile-editor-cover__remove"
+                onClick={() => {
+                  setValues((current) => ({ ...current, coverMediaId: null }));
+                  setCoverPreview(null);
+                }}
+                disabled={unavailable || isPending}
+              >
+                {messages.profile.removeCover}
+              </button>
+            )}
+          </div>
+        </div>
+        <MediaUpload
+          locale={locale}
+          bucket="covers"
+          label={messages.profile.cover}
+          uploadLabel={messages.profile.cover}
+          failedLabel={messages.common.error}
+          accept="image/*"
+          multiple={false}
+          maxFiles={1}
+          maxSizeBytes={5 * 1024 * 1024}
+          disabled={unavailable || isPending}
+          onAssetIdsChange={(assetIds) =>
+            setValues((current) => ({ ...current, coverMediaId: assetIds[0] ?? null }))
+          }
+          onLocalPreview={setCoverPreview}
         />
         <Input
           label={messages.profile.username}

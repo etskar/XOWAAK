@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Route } from "next";
+import type { User } from "@supabase/supabase-js";
 
 import { Badge, Card, Container, EmptyState, ErrorState } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
+import { getPlatformMessages } from "@/i18n/platform-messages";
 import { createTranslator } from "@/i18n/translate";
 import type {
   GroupRecord,
@@ -12,10 +14,19 @@ import type {
   ProductRecord,
   ServiceRecord,
 } from "@/server/platform/types";
-import { getGroupMembers, getGroupMessages } from "@/server/platform/queries";
+import {
+  getGroupMembers,
+  getGroupMessages,
+  getGroups,
+  getJobs,
+  getProducts,
+  getServices,
+} from "@/server/platform/queries";
 import { GroupChat } from "@/features/platform/group-chat";
 import { GroupMembers } from "@/features/platform/group-members";
 import { FavoriteButton } from "@/features/platform/favorite-button";
+import { ShareButton } from "@/features/platform/share-button";
+import { CommerceActionPanel } from "@/features/orders/commerce-action";
 
 export type PlatformKind = "products" | "services" | "jobs" | "groups";
 type PlatformRecord = ProductRecord | ServiceRecord | JobRecord | GroupRecord;
@@ -47,10 +58,12 @@ function PlatformCard({
   kind,
   item,
   locale,
+  isAuthenticated,
 }: {
   kind: PlatformKind;
   item: PlatformRecord;
   locale: Locale;
+  isAuthenticated: boolean;
 }) {
   const app = getAppMessages(locale);
   const isGroup = kind === "groups";
@@ -71,6 +84,13 @@ function PlatformCard({
       : isJob && job.salaryMin !== null
         ? price(job.salaryMin, job.currency, locale)
         : null;
+  const kindLabel = isGroup
+    ? app.kindGroup
+    : isJob
+      ? app.kindJob
+      : kind === "products"
+        ? app.kindProduct
+        : app.kindService;
 
   return (
     <Card as="article" className="platform-card">
@@ -78,50 +98,44 @@ function PlatformCard({
         {item.imageUrl ? (
           // Signed URLs are generated on the server for visible records only.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.imageUrl} alt="" />
+          <img src={item.imageUrl} alt="" loading="lazy" />
         ) : (
           <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
         )}
+        <span className="platform-card__kind">{kindLabel}</span>
       </div>
       <div className="platform-card__body">
-        <div className="platform-card__topline">
-          <Badge
-            variant={
-              item.status === "published" || item.status === "active" ? "success" : "neutral"
-            }
-          >
-            {item.status}
-          </Badge>
-          {location && <span>{location}</span>}
-        </div>
-        <h2>{itemTitle}</h2>
-        {description && <p>{description}</p>}
+        <h2 className="platform-card__title">{itemTitle}</h2>
+        {description && <p className="platform-card__description">{description}</p>}
         <div className="platform-card__meta">
-          {amount && <strong>{amount}</strong>}
+          {amount && <strong className="platform-card__price">{amount}</strong>}
           {isGroup && (
             <span>
               {group.memberCount} {app.groupsTitle}
             </span>
           )}
+          {location && <span>{location}</span>}
           {owner && <span>@{owner.username}</span>}
         </div>
         <div className="platform-card__actions">
           <Link className="platform-card__link" href={detailHref(kind, locale, item.id) as Route}>
-            {app.current} →
+            {app.viewDetails}
           </Link>
-          <FavoriteButton
-            locale={locale}
-            targetType={
-              kind === "groups"
-                ? "group"
-                : kind === "products"
-                  ? "product"
-                  : kind === "services"
-                    ? "service"
-                    : "job"
-            }
-            targetId={item.id}
-          />
+          {isAuthenticated && (
+            <FavoriteButton
+              locale={locale}
+              targetType={
+                kind === "groups"
+                  ? "group"
+                  : kind === "products"
+                    ? "product"
+                    : kind === "services"
+                      ? "service"
+                      : "job"
+              }
+              targetId={item.id}
+            />
+          )}
         </div>
       </div>
     </Card>
@@ -132,10 +146,12 @@ export function PlatformDirectory({
   kind,
   locale,
   result,
+  user,
 }: {
   kind: PlatformKind;
   locale: Locale;
   result: PlatformResult<PlatformRecord[]>;
+  user: User | null;
 }) {
   const { t } = createTranslator(locale);
   const app = getAppMessages(locale);
@@ -166,7 +182,13 @@ export function PlatformDirectory({
         {result.status === "ok" && result.data.length > 0 && (
           <div className="platform-card-grid">
             {result.data.map((item) => (
-              <PlatformCard key={item.id} kind={kind} item={item} locale={locale} />
+              <PlatformCard
+                key={item.id}
+                kind={kind}
+                item={item}
+                locale={locale}
+                isAuthenticated={user !== null}
+              />
             ))}
           </div>
         )}
@@ -179,10 +201,12 @@ export async function PlatformDetail({
   kind,
   locale,
   result,
+  user,
 }: {
   kind: PlatformKind;
   locale: Locale;
   result: PlatformResult<PlatformRecord | null>;
+  user: User | null;
 }) {
   const { t } = createTranslator(locale);
   const title = titleFor(kind, t);
@@ -221,6 +245,48 @@ export async function PlatformDetail({
   const owner = isGroup ? group.owner : isService ? service.provider : product.owner;
   const itemTitle = isGroup ? group.name : contentRecord.title;
   const description = isGroup ? group.description : contentRecord.description;
+  const detailPath = `/${locale}/${kind}/${item.id}`;
+  const messageHref = owner
+    ? (`/${locale}/messages?open=${encodeURIComponent(owner.username)}` as Route)
+    : null;
+  const signInHref = `/${locale}/auth/sign-in?next=${encodeURIComponent(detailPath)}` as Route;
+  const actionLabel = isJob
+    ? app.applyJob
+    : isService
+      ? app.requestService
+      : app.orderProduct;
+  const platform = getPlatformMessages(locale);
+  const kindLabel = isGroup
+    ? app.kindGroup
+    : isJob
+      ? app.kindJob
+      : isService
+        ? app.kindService
+        : app.kindProduct;
+  const amount =
+    isJob && job.salaryMin !== null
+      ? `${price(job.salaryMin, job.currency, locale)}${
+          job.salaryMax !== null ? ` – ${price(job.salaryMax, job.currency, locale)}` : ""
+        }`
+      : !isGroup && product.price !== null
+        ? price(product.price, product.currency, locale)
+        : null;
+  const location = !isGroup && !isJob ? product.locationLabel : isJob ? job.locationLabel : null;
+  const jobTypeLabel =
+    isJob && job.jobType
+      ? (platform.jobTypes[job.jobType as keyof typeof platform.jobTypes] ?? null)
+      : null;
+  const relatedResult = isGroup
+    ? await getGroups(9)
+    : isJob
+      ? await getJobs(9)
+      : isService
+        ? await getServices(9)
+        : await getProducts(9);
+  const related =
+    relatedResult.status === "ok"
+      ? relatedResult.data.filter((r) => r.id !== item.id).slice(0, 3)
+      : [];
 
   return (
     <main className="platform-page">
@@ -235,35 +301,129 @@ export async function PlatformDetail({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={item.imageUrl} alt="" />
             ) : (
-              <span>{isGroup ? "G" : isJob ? "J" : kind === "products" ? "P" : "S"}</span>
+              <span>{isGroup ? "G" : isJob ? "J" : isService ? "S" : "P"}</span>
+            )}
+            <span className="platform-detail-card__kind">{kindLabel}</span>
+          </div>
+          <div className="platform-detail-card__body">
+            <h1 className="ds-text-h2">{itemTitle}</h1>
+            <div className="platform-detail-card__keyinfo">
+              {amount && (
+                <span className="platform-detail-chip platform-detail-chip--price">{amount}</span>
+              )}
+              {jobTypeLabel && <span className="platform-detail-chip">{jobTypeLabel}</span>}
+              {location && <span className="platform-detail-chip">{location}</span>}
+              {isJob && job.employerName && (
+                <span className="platform-detail-chip">{job.employerName}</span>
+              )}
+              {isGroup && (
+                <span className="platform-detail-chip">
+                  {group.memberCount} {app.groupsTitle}
+                </span>
+              )}
+            </div>
+            <div className="platform-detail-actions">
+              {!isGroup && user && owner && (
+                <CommerceActionPanel
+                  locale={locale}
+                  kind={isJob ? "job" : isService ? "service" : "product"}
+                  targetId={item.id}
+                  ownerUsername={owner.username}
+                  actionLabel={actionLabel}
+                />
+              )}
+              {!isGroup && !user && (
+                <Link href={signInHref} className="showcase-button showcase-button--primary">
+                  {actionLabel}
+                </Link>
+              )}
+              {messageHref && (isGroup ? (
+                <Link href={messageHref} className="showcase-button showcase-button--primary">
+                  {app.messageSeller}
+                </Link>
+              ) : (
+                <Link href={messageHref} className="showcase-button showcase-button--secondary">
+                  {app.messageSeller}
+                </Link>
+              ))}
+              {user && (
+                <FavoriteButton
+                  locale={locale}
+                  targetType={
+                    kind === "groups"
+                      ? "group"
+                      : kind === "products"
+                        ? "product"
+                        : kind === "services"
+                          ? "service"
+                          : "job"
+                  }
+                  targetId={item.id}
+                />
+              )}
+              <ShareButton
+                locale={locale}
+                title={itemTitle}
+                url={detailHref(kind, locale, item.id)}
+              />
+            </div>
+            {description && <p className="platform-detail-card__description">{description}</p>}
+            {owner && (
+              <div className="platform-detail-card__footer">
+                <Link href={`/${locale}/u/${owner.username}` as Route}>@{owner.username}</Link>
+              </div>
+            )}
+            {!user && (
+              <Card className="platform-signin-card">
+                <p>{app.signInRequired}</p>
+                <Link
+                  className="showcase-button showcase-button--primary"
+                  href={`/${locale}/auth/sign-in?next=${encodeURIComponent(detailPath)}` as Route}
+                >
+                  {t("navigation.signIn")}
+                </Link>
+              </Card>
+            )}
+            {related.length > 0 && (
+              <section className="platform-related" aria-label={app.relatedContent}>
+                <h2 className="platform-related__heading">{app.relatedContent}</h2>
+                <div className="platform-related__grid">
+                  {related.map((relatedItem) => {
+                    const relatedRecord = relatedItem as ProductRecord | ServiceRecord | JobRecord;
+                    const relatedTitle = isGroup
+                      ? (relatedItem as GroupRecord).name
+                      : relatedRecord.title;
+                    const relatedOwner = isGroup
+                      ? (relatedItem as GroupRecord).owner
+                      : isService
+                        ? (relatedItem as ServiceRecord).provider
+                        : (relatedItem as ProductRecord).owner;
+                    return (
+                      <Link
+                        key={relatedItem.id}
+                        className="platform-related__card"
+                        href={detailHref(kind, locale, relatedItem.id) as Route}
+                      >
+                        <span className="platform-related__visual" aria-hidden="true">
+                          {relatedItem.imageUrl ? (
+                            // Signed URLs are generated on the server for visible records only.
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={relatedItem.imageUrl} alt="" loading="lazy" />
+                          ) : (
+                            <span>{isGroup ? "G" : isJob ? "J" : isService ? "S" : "P"}</span>
+                          )}
+                        </span>
+                        <strong>{relatedTitle}</strong>
+                        {relatedOwner && <span>@{relatedOwner.username}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
             )}
           </div>
-          <Badge variant="success">{item.status}</Badge>
-          <h1 className="ds-text-h2">{itemTitle}</h1>
-          {description && <p>{description}</p>}
-          {owner && <Link href={`/${locale}/u/${owner.username}` as Route}>@{owner.username}</Link>}
-          <FavoriteButton
-            locale={locale}
-            targetType={
-              kind === "groups"
-                ? "group"
-                : kind === "products"
-                  ? "product"
-                  : kind === "services"
-                    ? "service"
-                    : "job"
-            }
-            targetId={item.id}
-          />
-          {isGroup && (
-            <p>
-              {group.memberCount} {app.groupsTitle}
-            </p>
-          )}
-          {isJob && job.employerName && <p>{job.employerName}</p>}
-          {!isGroup && !isJob && product.locationLabel && <p>{product.locationLabel}</p>}
         </Card>
-        {isGroup && (
+        {isGroup && user && (
           <>
             <GroupMembers
               locale={locale}
@@ -274,6 +434,7 @@ export async function PlatformDetail({
               locale={locale}
               groupId={group.id}
               result={await getGroupMessages(group.id)}
+              viewerId={user.id}
             />
           </>
         )}

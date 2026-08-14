@@ -27,6 +27,16 @@ export function getIdentitySchemas(messages: IdentityMessages) {
       bio: z.string().trim().max(2000, messages.validation.bioTooLong),
       locationLabel: z.string().trim().max(160, messages.validation.locationTooLong),
       avatarMediaId: z.string().uuid().nullable().optional(),
+      coverMediaId: z.string().uuid().nullable().optional(),
+    }),
+    notificationPreferences: z.object({
+      follow: z.boolean(),
+      like: z.boolean(),
+      comment: z.boolean(),
+      share: z.boolean(),
+      message: z.boolean(),
+      group: z.boolean(),
+      system: z.boolean(),
     }),
     privacy: z.object({
       visibility: z.enum(["public", "private"]),

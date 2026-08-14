@@ -23,6 +23,9 @@ export const postsMessages = {
     submitComment: "Adicionar comentário",
     emptyComments: "Ainda não há comentários.",
     you: "Você",
+    previous: "Imagem anterior",
+    next: "Próxima imagem",
+    close: "Fechar visualizador",
     actionFailed: "Esta ação não está disponível agora.",
   },
   card: {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { useState, useTransition } from "react";
 import type { FormEvent } from "react";
 
@@ -14,9 +15,10 @@ import { MediaUpload } from "@/features/media/media-upload";
 type PostComposerProps = {
   locale: Locale;
   unavailable: boolean;
+  redirectTo?: Route;
 };
 
-export function PostComposer({ locale, unavailable }: PostComposerProps) {
+export function PostComposer({ locale, unavailable, redirectTo }: PostComposerProps) {
   const router = useRouter();
   const messages = getPostsMessages(locale);
   const [content, setContent] = useState("");
@@ -53,7 +55,11 @@ export function PostComposer({ locale, unavailable }: PostComposerProps) {
         setContent("");
         setMediaAssetIds([]);
         setStatus(messages.composer.created);
-        router.refresh();
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else {
+          router.refresh();
+        }
       })();
     });
   }

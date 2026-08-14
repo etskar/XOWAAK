@@ -1,14 +1,31 @@
 import { notFound } from "next/navigation";
+
 import { isLocale, type Locale } from "@/config/locales";
-import { createTranslator } from "@/i18n/translate";
-import { ProductUnavailablePage } from "@/features/showcase/showcase-page";
+import { getGroups, getJobs, getProducts, getServices } from "@/server/platform/queries";
+import { getCurrentUser } from "@/server/auth/session";
+import { ExploreView } from "@/features/explore/explore-view";
 
-type ExplorePageProps = { params: Promise<{ locale: string }> };
+export const dynamic = "force-dynamic";
 
-export default async function ExplorePage({ params }: ExplorePageProps) {
+export default async function ExplorePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeParam } = await params;
   if (!isLocale(localeParam)) notFound();
   const locale = localeParam as Locale;
-  const { t } = createTranslator(locale);
-  return <ProductUnavailablePage locale={locale} title={t("navigation.discover")} />;
+  const [products, services, jobs, groups] = await Promise.all([
+    getProducts(4),
+    getServices(4),
+    getJobs(4),
+    getGroups(4),
+  ]);
+  const user = await getCurrentUser();
+  return (
+    <ExploreView
+      locale={locale}
+      user={user}
+      products={products}
+      services={services}
+      jobs={jobs}
+      groups={groups}
+    />
+  );
 }

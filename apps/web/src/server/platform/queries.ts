@@ -19,9 +19,9 @@ import type {
 } from "@/server/platform/types";
 import { getMediaSignedUrls } from "@/server/media/urls";
 
-const ownerSelect = "id, username, display_name";
+export const ownerSelect = "id, username, display_name";
 
-function owner(value: Record<string, unknown> | undefined): PlatformOwner | null {
+export function owner(value: Record<string, unknown> | undefined): PlatformOwner | null {
   if (!value) return null;
   return {
     id: String(value.id),
@@ -37,7 +37,7 @@ function pattern(value: string) {
     .replace(/,/g, " ")}%`;
 }
 
-function productRecord(
+export function productRecord(
   row: Record<string, unknown>,
   profile?: Record<string, unknown>,
 ): ProductRecord {
@@ -59,7 +59,7 @@ function productRecord(
   };
 }
 
-function serviceRecord(
+export function serviceRecord(
   row: Record<string, unknown>,
   profile?: Record<string, unknown>,
 ): ServiceRecord {
@@ -82,7 +82,7 @@ function serviceRecord(
   };
 }
 
-function jobRecord(row: Record<string, unknown>, profile?: Record<string, unknown>): JobRecord {
+export function jobRecord(row: Record<string, unknown>, profile?: Record<string, unknown>): JobRecord {
   return {
     ...productRecord(row, profile),
     employerName: row.employer_name ? String(row.employer_name) : null,
@@ -95,7 +95,7 @@ function jobRecord(row: Record<string, unknown>, profile?: Record<string, unknow
   };
 }
 
-async function getProfiles(
+export async function getProfiles(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   ids: string[],
 ) {
@@ -570,19 +570,26 @@ export async function searchPlatform(
       status: "ok",
       data: {
         query: value,
-        results: { users: [], products: [], services: [], jobs: [], groups: [] },
+        results: { users: [], posts: [], products: [], services: [], jobs: [], groups: [] },
         total: 0,
       },
     };
   try {
     const supabase = await createSupabaseServerClient();
     const like = pattern(value);
-    const [users, products, services, jobs, groups] = await Promise.all([
+    const [users, posts, products, services, jobs, groups] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, username, display_name, location_label")
         .or(`username.ilike.${like},display_name.ilike.${like},location_label.ilike.${like}`)
         .is("deleted_at", null)
+        .limit(limit),
+      supabase
+        .from("posts")
+        .select("id, author_id, content")
+        .eq("status", "published")
+        .ilike("content", like)
+        .order("created_at", { ascending: false })
         .limit(limit),
       supabase
         .from("products")
@@ -612,8 +619,12 @@ export async function searchPlatform(
         .eq("status", "active")
         .limit(limit),
     ]);
-    if ([users, products, services, jobs, groups].some((result) => result.error))
+    if ([users, posts, products, services, jobs, groups].some((result) => result.error))
       return { status: "error", data: null };
+    const postAuthorIds = [
+      ...new Set((posts.data ?? []).map((item) => String(item.author_id))),
+    ];
+    const authorProfiles = await getProfiles(supabase, postAuthorIds);
     const results: Record<SearchResult["category"], SearchResult[]> = {
       users: (users.data ?? []).map((item) => ({
         category: "users",
@@ -623,6 +634,18 @@ export async function searchPlatform(
         href: `/en/u/${item.username}`,
         locationLabel: item.location_label,
       })),
+      posts: (posts.data ?? []).map((item) => {
+        const authorProfile = authorProfiles.get(String(item.author_id));
+        return {
+          category: "posts",
+          id: String(item.id),
+          title: String(item.content ?? "").slice(0, 120),
+          subtitle: authorProfile
+            ? `@${String(authorProfile.username)}`
+            : "Post",
+          href: `/en/posts/${item.id}`,
+        };
+      }),
       products: (products.data ?? []).map((item) => ({
         category: "products",
         id: String(item.id),

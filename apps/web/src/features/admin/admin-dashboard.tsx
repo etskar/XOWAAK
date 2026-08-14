@@ -10,9 +10,9 @@ export function AdminDashboard({ locale }: { locale: Locale }) {
   const landing = getLandingMessages(locale);
   const { t } = createTranslator(locale);
   const areas = [
-    landing.rhythm.items.clear,
-    landing.rhythm.items.flexible,
-    landing.rhythm.items.human,
+    landing.offers.items.social,
+    landing.offers.items.marketplace,
+    landing.offers.items.services,
   ];
 
   return (
@@ -25,7 +25,7 @@ export function AdminDashboard({ locale }: { locale: Locale }) {
         <header className="admin-page__header">
           <p className="showcase-eyebrow">XOWAAK / {t("navigation.admin")}</p>
           <h1 className="ds-text-display">{t("navigation.admin")}</h1>
-          <p>{landing.intro.description}</p>
+          <p>{landing.about.description}</p>
         </header>
         <div className="admin-grid">
           {areas.map((area, index) => (

@@ -14,9 +14,17 @@ type PostCardProps = {
   locale: Locale;
   post: PostRecord;
   isOwner: boolean;
+  showComments?: boolean;
+  isAuthenticated?: boolean;
 };
 
-export function PostCard({ locale, post, isOwner }: PostCardProps) {
+export function PostCard({
+  locale,
+  post,
+  isOwner,
+  showComments = true,
+  isAuthenticated = true,
+}: PostCardProps) {
   const messages = getPostsMessages(locale);
   const visibilityLabel = {
     public: messages.composer.public,
@@ -49,7 +57,13 @@ export function PostCard({ locale, post, isOwner }: PostCardProps) {
           </p>
         )}
         <PostMedia locale={locale} media={post.media} />
-        <PostEngagement locale={locale} postId={post.id} initial={post.engagement} />
+        <PostEngagement
+          locale={locale}
+          postId={post.id}
+          initial={post.engagement}
+          showComments={showComments}
+          isAuthenticated={isAuthenticated}
+        />
         <div className="post-card__footer">
           <Link href={`/${locale}/posts/${post.id}` as Route}>{messages.card.viewPost}</Link>
           <PostActions locale={locale} post={post} isOwner={isOwner} />

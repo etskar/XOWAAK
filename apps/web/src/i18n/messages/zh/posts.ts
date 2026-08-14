@@ -23,6 +23,9 @@ export const postsMessages = {
     submitComment: "添加评论",
     emptyComments: "还没有评论。",
     you: "你",
+    previous: "上一张图片",
+    next: "下一张图片",
+    close: "关闭查看器",
     actionFailed: "此操作暂时不可用。",
   },
   card: {

@@ -51,6 +51,7 @@
   --color-success: var(--color-green-700);
   --color-warning: var(--color-yellow-800);
   --color-error: var(--color-red-700);
+  --color-danger: var(--color-red-700);
   --color-info: var(--color-blue-700);
   --color-focus: var(--color-brand-indigo);
   --color-accent: var(--color-brand-green);
@@ -113,6 +114,7 @@
   --shadow-sm: 0 1px 2px rgb(13 22 29 / 8%);
   --shadow-md: 0 0.5rem 1.25rem rgb(13 22 29 / 10%);
   --shadow-lg: 0 1rem 3rem rgb(13 22 29 / 14%);
+  --shadow-xl: 0 1.5rem 4rem rgb(13 22 29 / 20%);
 
   /* Primitive sizing and responsive breakpoints. */
   --size-touch: 2.75rem;
@@ -174,6 +176,7 @@
   --color-success: #62d995;
   --color-warning: #f3bf73;
   --color-error: #ff9b91;
+  --color-danger: #ff9b91;
   --color-info: #9bbcff;
   --color-focus: #b8c3ff;
   --color-accent: #b7f58a;
@@ -193,4 +196,5 @@
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 24%);
   --shadow-md: 0 0.5rem 1.25rem rgb(0 0 0 / 30%);
   --shadow-lg: 0 1rem 3rem rgb(0 0 0 / 42%);
+  --shadow-xl: 0 1.5rem 4.5rem rgb(0 0 0 / 52%);
 }

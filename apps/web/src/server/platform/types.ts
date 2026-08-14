@@ -84,7 +84,7 @@ export type PlatformResult<T> =
   | { status: "unavailable"; data: null }
   | { status: "error"; data: null };
 
-export type SearchCategory = "users" | "products" | "services" | "jobs" | "groups";
+export type SearchCategory = "users" | "posts" | "products" | "services" | "jobs" | "groups";
 
 export type SearchResult = {
   category: SearchCategory;

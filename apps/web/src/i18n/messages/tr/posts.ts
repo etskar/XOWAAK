@@ -23,6 +23,9 @@ export const postsMessages = {
     submitComment: "Yorum ekle",
     emptyComments: "Henüz yorum yok.",
     you: "Sen",
+    previous: "Önceki görsel",
+    next: "Sonraki görsel",
+    close: "Görüntüleyiciyi kapat",
     actionFailed: "Bu işlem şu anda kullanılamıyor.",
   },
   card: {

@@ -12,7 +12,12 @@ import { getAuthSchemas, getValidationErrors } from "@/auth/validation";
 import { Button, Input, Stack } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import type { AuthMessages } from "@/i18n/auth-messages";
-import { confirmSignupEmail } from "@/server/auth/actions";
+import {
+  confirmSignupEmail,
+  createProfileOnSignup,
+  isUsernameAvailable,
+  resolveUsernameToEmail,
+} from "@/server/auth/actions";
 import { createSupabaseBrowserClient } from "@/supabase/browser";
 
 type AuthFormProps = {
@@ -47,6 +52,71 @@ function fieldValue(form: HTMLFormElement, name: string) {
   return String(new FormData(form).get(name) ?? "");
 }
 
+type PasswordInputProps = {
+  label: string;
+  name: string;
+  autoComplete: string;
+  isInvalid: boolean;
+  error?: string;
+  toggleLabel: string;
+};
+
+function PasswordInput({ label, name, autoComplete, isInvalid, error, toggleLabel }: PasswordInputProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="auth-password-field">
+      <Input
+        label={label}
+        isRequired
+        isInvalid={isInvalid}
+        error={error}
+        inputProps={{ type: visible ? "text" : "password", name, autoComplete }}
+      />
+      <button
+        type="button"
+        className="auth-password-field__toggle"
+        aria-pressed={visible}
+        aria-label={toggleLabel}
+        title={toggleLabel}
+        onClick={() => setVisible((current) => !current)}
+      >
+        {visible ? (
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"
+            />
+            <circle cx="12" cy="12" r="2.6" fill="currentColor" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"
+            />
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              d="M4 4l16 16"
+            />
+          </svg>
+        )}
+      </button>
+    </div>
+  );
+}
+
 export function SignInForm({
   locale,
   messages,
@@ -69,8 +139,7 @@ export function SignInForm({
     event.preventDefault();
     const form = event.currentTarget;
     const result = getAuthSchemas(messages).signIn.safeParse({
-      email: fieldValue(form, "email"),
-      password: fieldValue(form, "password"),
+      identifier: fieldValue(form, "identifier"),
     });
 
     setStatus(null);
@@ -85,7 +154,24 @@ export function SignInForm({
       void (async () => {
         try {
           const supabase = createSupabaseBrowserClient();
-          const { error } = await supabase.auth.signInWithPassword(result.data);
+          const identifier = result.data.identifier;
+          const isEmail = identifier.includes("@");
+          let email: string | null = isEmail ? identifier.toLowerCase() : null;
+
+          if (!isEmail) {
+            const resolution = await resolveUsernameToEmail(identifier);
+            email = resolution.ok ? resolution.email : null;
+          }
+
+          if (!email) {
+            setStatus({ kind: "error", message: messages.errors.userNotFound });
+            return;
+          }
+
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password: fieldValue(form, "password"),
+          });
 
           if (error) {
             throw error;
@@ -103,18 +189,19 @@ export function SignInForm({
     <form className="auth-form" noValidate onSubmit={handleSubmit}>
       <Stack gap={4}>
         <Input
-          label={messages.common.email}
+          label={messages.common.identifier}
           isRequired
-          isInvalid={Boolean(fieldErrors.email)}
-          error={fieldErrors.email}
-          inputProps={{ type: "email", name: "email", autoComplete: "email" }}
+          isInvalid={Boolean(fieldErrors.identifier)}
+          error={fieldErrors.identifier}
+          inputProps={{ type: "text", name: "identifier", autoComplete: "username" }}
         />
-        <Input
+        <PasswordInput
           label={messages.common.password}
-          isRequired
+          name="password"
+          autoComplete="current-password"
           isInvalid={Boolean(fieldErrors.password)}
           error={fieldErrors.password}
-          inputProps={{ type: "password", name: "password", autoComplete: "current-password" }}
+          toggleLabel={messages.common.showPassword}
         />
         <Button type="submit" loading={isPending} isDisabled={isPending}>
           {messages.common.signIn}
@@ -142,6 +229,8 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
     event.preventDefault();
     const form = event.currentTarget;
     const result = getAuthSchemas(messages).signUp.safeParse({
+      name: fieldValue(form, "name"),
+      username: fieldValue(form, "username"),
       email: fieldValue(form, "email"),
       password: fieldValue(form, "password"),
       confirmPassword: fieldValue(form, "confirmPassword"),
@@ -158,6 +247,13 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
     startTransition(() => {
       void (async () => {
         try {
+          const availability = await isUsernameAvailable(result.data.username);
+
+          if (availability.ok && !availability.available) {
+            setFieldErrors({ username: messages.validation.usernameTaken });
+            return;
+          }
+
           const supabase = createSupabaseBrowserClient();
           const redirectTo = `${window.location.origin}${buildAuthCallbackPath(locale, `/${locale}/auth/verification`)}`;
           const { data, error } = await supabase.auth.signUp({
@@ -171,6 +267,10 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
           }
 
           if (data.session) {
+            await createProfileOnSignup({
+              username: result.data.username,
+              displayName: result.data.name,
+            });
             router.replace(`/${locale}/home`);
             return;
           }
@@ -188,6 +288,10 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
               });
 
               if (!signInError) {
+                await createProfileOnSignup({
+                  username: result.data.username,
+                  displayName: result.data.name,
+                });
                 router.replace(`/${locale}/home`);
                 return;
               }
@@ -206,25 +310,41 @@ export function SignUpForm({ locale, messages }: AuthFormProps) {
     <form className="auth-form" noValidate onSubmit={handleSubmit}>
       <Stack gap={4}>
         <Input
+          label={messages.common.name}
+          isRequired
+          isInvalid={Boolean(fieldErrors.name)}
+          error={fieldErrors.name}
+          inputProps={{ type: "text", name: "name", autoComplete: "name" }}
+        />
+        <Input
+          label={messages.common.username}
+          isRequired
+          isInvalid={Boolean(fieldErrors.username)}
+          error={fieldErrors.username}
+          inputProps={{ type: "text", name: "username", autoComplete: "username" }}
+        />
+        <Input
           label={messages.common.email}
           isRequired
           isInvalid={Boolean(fieldErrors.email)}
           error={fieldErrors.email}
           inputProps={{ type: "email", name: "email", autoComplete: "email" }}
         />
-        <Input
+        <PasswordInput
           label={messages.common.password}
-          isRequired
+          name="password"
+          autoComplete="new-password"
           isInvalid={Boolean(fieldErrors.password)}
           error={fieldErrors.password}
-          inputProps={{ type: "password", name: "password", autoComplete: "new-password" }}
+          toggleLabel={messages.common.showPassword}
         />
-        <Input
+        <PasswordInput
           label={messages.common.confirmPassword}
-          isRequired
+          name="confirmPassword"
+          autoComplete="new-password"
           isInvalid={Boolean(fieldErrors.confirmPassword)}
           error={fieldErrors.confirmPassword}
-          inputProps={{ type: "password", name: "confirmPassword", autoComplete: "new-password" }}
+          toggleLabel={messages.common.showPassword}
         />
         <Button type="submit" loading={isPending} isDisabled={isPending}>
           {messages.common.signUp}
@@ -355,19 +475,21 @@ export function UpdatePasswordForm({ locale, messages }: AuthFormProps) {
   return (
     <form className="auth-form" noValidate onSubmit={handleSubmit}>
       <Stack gap={4}>
-        <Input
+        <PasswordInput
           label={messages.common.password}
-          isRequired
+          name="password"
+          autoComplete="new-password"
           isInvalid={Boolean(fieldErrors.password)}
           error={fieldErrors.password}
-          inputProps={{ type: "password", name: "password", autoComplete: "new-password" }}
+          toggleLabel={messages.common.showPassword}
         />
-        <Input
+        <PasswordInput
           label={messages.common.confirmPassword}
-          isRequired
+          name="confirmPassword"
+          autoComplete="new-password"
           isInvalid={Boolean(fieldErrors.confirmPassword)}
           error={fieldErrors.confirmPassword}
-          inputProps={{ type: "password", name: "confirmPassword", autoComplete: "new-password" }}
+          toggleLabel={messages.common.showPassword}
         />
         <Button type="submit" loading={isPending} isDisabled={isPending}>
           {messages.common.updatePassword}
