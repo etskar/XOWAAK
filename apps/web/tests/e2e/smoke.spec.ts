@@ -5,8 +5,10 @@ test.setTimeout(90_000);
 test("loads the English route shell", async ({ page }) => {
   await page.goto("/en");
 
-  await expect(page).toHaveTitle("XOWAAK");
-  await expect(page.getByRole("heading", { name: "Make room for what matters." })).toBeVisible();
+  await expect(page).toHaveTitle(/— XOWAAK$/);
+  await expect(
+    page.getByRole("heading", { name: "Meet, share, and trade products." }),
+  ).toBeVisible();
 });
 
 test("redirects the root route to the default locale", async ({ page }) => {
@@ -114,24 +116,22 @@ test("preserves query parameters while switching a dynamic route", async ({ page
   await expect(page).toHaveURL(/\/ar\/u\/example\?tab=posts$/);
 });
 
-test("toggles the visual theme without changing the route", async ({ page }) => {
+test("keeps the public header free of a dark-mode toggle", async ({ page }) => {
   await page.goto("/en");
 
-  const themeToggle = page.getByRole("button", { name: "Toggle theme" });
-  await themeToggle.click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await themeToggle.click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("button", { name: "Toggle theme" })).toHaveCount(0);
+  await expect(page.getByLabel("Language")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
 });
 
-test("opens the mobile navigation without horizontal movement", async ({ page }) => {
+test("keeps the public header compact on mobile without a hamburger menu", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/en");
 
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  const mobileNavigation = page.locator("#mobile-product-navigation");
-  await expect(mobileNavigation.getByRole("link", { name: "About XOWAAK" })).toBeVisible();
-  await expect(mobileNavigation.getByRole("link", { name: "Create account" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open navigation" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
+  await expect(page.locator(".site-header--public")).toBeVisible();
 });
 
 test("exposes an installable PWA shell", async ({ page, request }) => {
@@ -219,14 +219,6 @@ test("covers the localized auth and settings route matrix", async ({ page }) => 
     "/ar/messages",
     "/en/notifications",
     "/ar/notifications",
-    "/en/products",
-    "/ar/products",
-    "/en/services",
-    "/ar/services",
-    "/en/jobs",
-    "/ar/jobs",
-    "/en/groups",
-    "/ar/groups",
     "/en/map",
     "/ar/map",
   ];
@@ -237,6 +229,25 @@ test("covers the localized auth and settings route matrix", async ({ page }) => 
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
     await expect(page).toHaveURL(new RegExp(`/${locale}/auth/sign-in\\?`));
     await expect(page.locator(".auth-unavailable")).toHaveCount(0);
+  }
+
+  const publicBrowseRoutes = [
+    "/en/products",
+    "/ar/products",
+    "/en/services",
+    "/ar/services",
+    "/en/jobs",
+    "/ar/jobs",
+    "/en/groups",
+    "/ar/groups",
+  ];
+
+  for (const route of publicBrowseRoutes) {
+    await page.goto(route);
+    const locale = route.startsWith("/ar") ? "ar" : "en";
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page).not.toHaveURL(new RegExp(`/${locale}/auth/sign-in`));
   }
 });
 

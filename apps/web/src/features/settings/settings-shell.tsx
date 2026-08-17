@@ -10,6 +10,7 @@ import { cx } from "@/design-system/utils/cx";
 import type { Locale } from "@/config/locales";
 import { getIdentityMessages } from "@/i18n/identity-messages";
 import { createTranslator } from "@/i18n/translate";
+import { BackLink } from "@/features/navigation/back-link";
 
 type SettingsShellProps = {
   locale: Locale;
@@ -36,7 +37,7 @@ export function SettingsShell({ locale, children }: SettingsShellProps) {
     <main className="settings-page" data-locale={locale}>
       <Container size="xl">
         <div className="settings-page__topline">
-          <Link href={`/${locale}` as Route}>{t("common.backToHome")}</Link>
+          <BackLink locale={locale} fallback={`/${locale}/home`} />
           <Badge variant="primary">{messages.nav.settings}</Badge>
         </div>
         <div className="settings-layout">

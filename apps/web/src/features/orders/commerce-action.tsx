@@ -102,7 +102,11 @@ export function CommerceActionPanel({
             onChange={setMessage}
             maxLength={2000}
           />
-          {error && <p className="commerce-panel__error">{error}</p>}
+          {error && (
+            <p className="commerce-panel__error" role="alert">
+              {error}
+            </p>
+          )}
           <div className="commerce-panel__form-actions">
             <Button type="submit" variant="primary" loading={isPending} isDisabled={isPending}>
               {kind === "job" ? app.applyJob : actionLabel}

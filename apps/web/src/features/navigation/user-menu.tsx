@@ -29,6 +29,7 @@ export function UserMenu({
   const items = [
     { href: `/${locale}/profile` as Route, label: app.myProfile },
     { href: `/${locale}/settings/profile` as Route, label: app.editProfile },
+    { href: `/${locale}/notifications` as Route, label: t("navigation.notifications") },
     { href: `/${locale}/settings` as Route, label: t("navigation.settings") },
     { href: `/${locale}/settings/language` as Route, label: t("identity.nav.language") },
     { href: `/${locale}/settings/appearance` as Route, label: t("identity.nav.appearance") },

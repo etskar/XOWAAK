@@ -161,3 +161,19 @@ export async function getPost(postId: string): Promise<PostQueryResult<PostRecor
 export async function getUserPosts(authorId: string, cursor?: string | null, limit = defaultLimit) {
   return queryPosts({ authorId, cursor, limit });
 }
+
+export async function getUserPostsCount(authorId: string): Promise<number> {
+  if (!hasSupabasePublicEnv()) return 0;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { count, error } = await supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", authorId)
+      .eq("status", "published");
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}

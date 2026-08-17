@@ -1,4 +1,4 @@
-export const navigationMessages = {
+﻿export const navigationMessages = {
   home: "首页",
   about: "关于 XOWAAK",
   discover: "探索",
@@ -13,6 +13,7 @@ export const navigationMessages = {
   landing: "概览",
   followRequests: "关注请求",
   createAccount: "创建账户",
+  openApp: "打开 XOWAAK",
   switchLanguage: "切换语言",
   productNavigation: "产品导航",
   search: "搜索",

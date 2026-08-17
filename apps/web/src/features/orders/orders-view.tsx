@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition, type ReactNode } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 
-import { Badge, Button, Card, EmptyState } from "@/design-system";
+import { Badge, Button, Card, Dialog, EmptyState } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getAppMessages, type AppMessages } from "@/i18n/app-messages";
 import {
@@ -121,14 +121,27 @@ function OrderRow({
             >
               {app.accept}
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => onStatus(order.id, "declined")}
-              isDisabled={isPending}
+            <Dialog
+              trigger={
+                <Button size="sm" variant="outline" isDisabled={isPending}>
+                  {app.decline}
+                </Button>
+              }
+              title={app.confirmDecline}
+              closeLabel={app.cancel}
             >
-              {app.decline}
-            </Button>
+              <div className="social-confirmation">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  loading={isPending}
+                  isDisabled={isPending}
+                  onPress={() => onStatus(order.id, "declined")}
+                >
+                  {app.decline}
+                </Button>
+              </div>
+            </Dialog>
           </>
         )}
         {isOwner && order.status === "accepted" && (
@@ -142,14 +155,27 @@ function OrderRow({
           </Button>
         )}
         {!isOwner && order.status === "pending" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onPress={() => onStatus(order.id, "cancelled")}
-            isDisabled={isPending}
+          <Dialog
+            trigger={
+              <Button size="sm" variant="outline" isDisabled={isPending}>
+                {app.cancel}
+              </Button>
+            }
+            title={app.confirmCancel}
+            closeLabel={app.decline}
           >
-            {app.cancel}
-          </Button>
+            <div className="social-confirmation">
+              <Button
+                type="button"
+                variant="destructive"
+                loading={isPending}
+                isDisabled={isPending}
+                onPress={() => onStatus(order.id, "cancelled")}
+              >
+                {app.cancel}
+              </Button>
+            </div>
+          </Dialog>
         )}
       </div>
     </Card>
@@ -219,14 +245,27 @@ function ApplicationRow({
             >
               {app.shortlist}
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => onStatus(application.id, "rejected")}
-              isDisabled={isPending}
+            <Dialog
+              trigger={
+                <Button size="sm" variant="outline" isDisabled={isPending}>
+                  {app.reject}
+                </Button>
+              }
+              title={app.confirmReject}
+              closeLabel={app.cancel}
             >
-              {app.reject}
-            </Button>
+              <div className="social-confirmation">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  loading={isPending}
+                  isDisabled={isPending}
+                  onPress={() => onStatus(application.id, "rejected")}
+                >
+                  {app.reject}
+                </Button>
+              </div>
+            </Dialog>
           </>
         )}
         {isOwner && application.status === "shortlisted" && (
@@ -240,14 +279,27 @@ function ApplicationRow({
           </Button>
         )}
         {!isOwner && application.status === "pending" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onPress={() => onStatus(application.id, "withdrawn")}
-            isDisabled={isPending}
+          <Dialog
+            trigger={
+              <Button size="sm" variant="outline" isDisabled={isPending}>
+                {app.withdraw}
+              </Button>
+            }
+            title={app.confirmWithdraw}
+            closeLabel={app.cancel}
           >
-            {app.withdraw}
-          </Button>
+            <div className="social-confirmation">
+              <Button
+                type="button"
+                variant="destructive"
+                loading={isPending}
+                isDisabled={isPending}
+                onPress={() => onStatus(application.id, "withdrawn")}
+              >
+                {app.withdraw}
+              </Button>
+            </div>
+          </Dialog>
         )}
       </div>
     </Card>
@@ -271,19 +323,24 @@ export function OrdersView({
 }) {
   const app = getAppMessages(locale);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function runStatusOrder(orderId: string, status: OrderStatus) {
+    setError(null);
     startTransition(() => {
       void updateOrderStatus({ orderId, status }).then((result) => {
         if (result.ok) window.location.reload();
+        else setError(app.commerceFailed);
       });
     });
   }
 
   function runStatusApplication(applicationId: string, status: ApplicationStatus) {
+    setError(null);
     startTransition(() => {
       void updateJobApplicationStatus({ applicationId, status }).then((result) => {
         if (result.ok) window.location.reload();
+        else setError(app.commerceFailed);
       });
     });
   }
@@ -299,6 +356,11 @@ export function OrdersView({
 
   return (
     <div className="orders-view">
+      {error && (
+        <p className="orders-view__error" role="alert">
+          {error}
+        </p>
+      )}
       <Section
         title={app.incomingOrders}
         empty={app.noIncomingOrders}

@@ -9,6 +9,7 @@ import { getAppMessages } from "@/i18n/app-messages";
 import type { ProfileRecord } from "@/server/identity/types";
 import { RelationshipActions } from "@/features/social/relationship-actions";
 import { PostList } from "@/features/posts/post-list";
+import { BackLink } from "@/features/navigation/back-link";
 import { getSocialMessages } from "@/i18n/social-messages";
 import { getPostsMessages } from "@/i18n/posts-messages";
 import { createTranslator } from "@/i18n/translate";
@@ -28,6 +29,7 @@ type ProfileViewProps = {
   followingCount: number;
   viewerId: string | null;
   posts: PostQueryResult<PostListResult> | null;
+  postsCount: number;
   postsPaginationPath: string;
   platform: PlatformResult<ProfilePlatformRecords>;
   isOwnProfile?: boolean;
@@ -48,6 +50,7 @@ export function ProfileView({
   followingCount,
   viewerId,
   posts,
+  postsCount,
   postsPaginationPath,
   platform,
   isOwnProfile = false,
@@ -62,7 +65,7 @@ export function ProfileView({
 
   const platformOk = platform.status === "ok" ? platform.data : null;
   const counts: Record<ProfileTab, number> = {
-    posts: 0,
+    posts: postsCount,
     products: platformOk?.products.length ?? 0,
     services: platformOk?.services.length ?? 0,
     jobs: platformOk?.jobs.length ?? 0,
@@ -115,7 +118,7 @@ export function ProfileView({
     <main className="profile-page" data-locale={locale}>
       <Container size="xl">
         <div className="profile-page__topline">
-          <Link href={`/${locale}` as Route}>{t("common.backToHome")}</Link>
+          <BackLink locale={locale} fallback={`/${locale}/explore`} />
           <Badge variant={profile.visibility === "private" ? "warning" : "success"}>
             {profile.visibility === "private" ? messages.privacy.private : messages.privacy.public}
           </Badge>

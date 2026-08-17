@@ -9,11 +9,9 @@ import { getLandingMessages } from "@/i18n/landing-messages";
 import { getPlatformMessages } from "@/i18n/platform-messages";
 import { createTranslator } from "@/i18n/translate";
 import { Reveal } from "@/features/motion/reveal";
-import { getGroups, getJobs, getProducts, getServices } from "@/server/platform/queries";
-import { getPostsPage } from "@/server/posts/queries";
+import { getJobs, getProducts, getServices } from "@/server/platform/queries";
 import { getCurrentUser } from "@/server/auth/session";
-import type { PostRecord } from "@/server/posts/types";
-import type { GroupRecord, JobRecord, ProductRecord, ServiceRecord } from "@/server/platform/types";
+import type { JobRecord, ProductRecord, ServiceRecord } from "@/server/platform/types";
 
 type ShowcasePageProps = {
   locale: Locale;
@@ -65,10 +63,6 @@ function price(value: number, currency: string, locale: Locale) {
   return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
 }
 
-function count(value: number, locale: Locale) {
-  return new Intl.NumberFormat(locale).format(value);
-}
-
 function initialOf(name: string) {
   return name.trim().slice(0, 1).toUpperCase();
 }
@@ -114,28 +108,52 @@ function VisualBlock({ imageUrl, letter, text = false }: VisualBlockProps) {
   );
 }
 
+function RotatingHeadline({ lead, phrases }: { lead: string; phrases: readonly string[] }) {
+  return (
+    <h1 className="landing-hero__title">
+      <span className="landing-hero__lead" aria-hidden="true">{lead} </span>
+      <span className="landing-hero__rotating" aria-hidden="true">
+        {phrases.map((phrase, index) => (
+          <span key={phrase} className="landing-hero__rotating-item" data-index={index}>
+            {phrase}
+          </span>
+        ))}
+      </span>
+      <span className="sr-only">
+        {lead} {phrases[0]}
+      </span>
+    </h1>
+  );
+}
+
 type HeroVisualProps = {
   locale: Locale;
   product: ProductRecord | null;
-  post: PostRecord | null;
+  service: ServiceRecord | null;
+  job: JobRecord | null;
 };
 
-function HeroVisual({ locale, product, post }: HeroVisualProps) {
-  const landing = getLandingMessages(locale);
+function HeroVisual({ locale, product, service, job }: HeroVisualProps) {
   const { t } = createTranslator(locale);
 
   return (
     <div className="landing-hero-visual" aria-hidden="true">
       <div className="landing-hero-visual__halo" />
       <div className="landing-hero-visual__halo landing-hero-visual__halo--two" />
-      <div className="landing-hero-visual__pill">
-        <span>{t("navigation.products")}</span>
-        <span aria-hidden="true">·</span>
-        <span>{t("navigation.services")}</span>
-        <span aria-hidden="true">·</span>
-        <span>{t("navigation.jobs")}</span>
-        <span aria-hidden="true">·</span>
-        <span>{t("navigation.groups")}</span>
+      <div className="landing-hero-visual__stage">
+        <span className="landing-hero-visual__brandmark">
+          <span />
+          <span />
+          <span />
+        </span>
+        <strong className="landing-hero-visual__wordmark">XOWAAK</strong>
+        <span className="landing-hero-visual__pills">
+          <span>{t("navigation.products")}</span>
+          <span aria-hidden="true">·</span>
+          <span>{t("navigation.services")}</span>
+          <span aria-hidden="true">·</span>
+          <span>{t("navigation.jobs")}</span>
+        </span>
       </div>
       {product ? (
         <div className="landing-hero-visual__card landing-hero-visual__card--product">
@@ -153,132 +171,47 @@ function HeroVisual({ locale, product, post }: HeroVisualProps) {
           </span>
         </div>
       ) : null}
-      <div className="landing-hero-visual__card landing-hero-visual__card--post">
-        <span className="landing-hero-visual__identity">
-          <span className="landing-hero-visual__avatar">
-            {post ? initialOf(post.author.displayName || post.author.username) : initialOf(landing.demo.post.name)}
+      {job ? (
+        <div className="landing-hero-visual__card landing-hero-visual__card--job">
+          <span className="landing-hero-visual__chips">
+            <span>{job.employerName ?? `@${job.owner?.username ?? ""}`}</span>
           </span>
-          <span className="landing-hero-visual__who">
-            <strong>{post ? post.author.displayName || post.author.username : landing.demo.post.name}</strong>
-            <small>
-              @{post ? post.author.username : landing.demo.post.username}
-            </small>
+          <strong>{job.title}</strong>
+          <span className="landing-hero-visual__meta">
+            {job.locationLabel ? `⌖ ${job.locationLabel}` : null}
           </span>
-        </span>
-        <span className="landing-hero-visual__text">
-          {post
-            ? (post.content ?? landing.demo.post.text).slice(0, 120)
-            : landing.demo.post.text}
-        </span>
-      </div>
-      <div className="landing-hero-visual__card landing-hero-visual__card--chat">
-        <span className="landing-hero-visual__bubble landing-hero-visual__bubble--other">
-          {landing.messaging.demo.a}
-        </span>
-        <span className="landing-hero-visual__bubble landing-hero-visual__bubble--own">
-          {landing.messaging.demo.b}
-        </span>
-      </div>
+        </div>
+      ) : null}
+      {service ? (
+        <div className="landing-hero-visual__card landing-hero-visual__card--service">
+          <strong>{service.title}</strong>
+          <span className="landing-hero-visual__meta">
+            {service.provider ? `@${service.provider.username}` : null}
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-type PostCardProps = {
-  locale: Locale;
-  post: PostRecord;
+type EmptyStateProps = {
+  title: string;
+  description: string;
 };
 
-function PostStats({ likes, comments }: { likes: string; comments: string }) {
+function EmptyState({ title, description }: EmptyStateProps) {
   return (
-    <footer className="landing-post__stats">
-      <span>
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 20s-7-4.6-9.2-8.6C1.2 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.8 1-1.7 2.6-2.8 4.6-2.8 3.4 0 5.2 3.4 3.6 6.4C19 15.4 12 20 12 20Z" />
-        </svg>
-        {likes}
-      </span>
-      <span>
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 4v-4H6a2 2 0 0 1-2-2V6ZM8 9.5h8M8 12.5h5" />
-        </svg>
-        {comments}
-      </span>
-    </footer>
+    <Reveal>
+      <div className="landing-empty">
+        <span className="landing-empty__mark" aria-hidden="true">
+          <Glyph name="services" />
+        </span>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+    </Reveal>
   );
 }
-
-function PostCardView({ locale, post }: PostCardProps) {
-  const name = post.author.displayName || post.author.username;
-  const image = post.media.find((item) => item.mediaType === "image")?.url;
-  const likes = post.engagement?.likeCount ?? 0;
-  const comments = post.engagement?.commentCount ?? 0;
-
-  return (
-    <article className="landing-post">
-      <header className="landing-post__header">
-        <span className="landing-post__avatar" aria-hidden="true">
-          {initialOf(name)}
-        </span>
-        <span className="landing-post__who">
-          <strong>{name}</strong>
-          <small>@{post.author.username}</small>
-        </span>
-      </header>
-      {post.content && (
-        <p className="landing-post__text" dir="auto">
-          {post.content}
-        </p>
-      )}
-      {image && (
-        <span className="landing-post__media">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image} alt="" loading="lazy" decoding="async" />
-        </span>
-      )}
-      <PostStats likes={count(likes, locale)} comments={count(comments, locale)} />
-    </article>
-  );
-}
-
-const DEMO_PRODUCTS = [
-  { index: 0, price: 49 },
-  { index: 1, price: 199 },
-  { index: 2, price: 89 },
-] as const;
-
-const DEMO_SERVICES = [
-  { index: 0, price: 19 },
-  { index: 1, price: 25 },
-  { index: 2, price: 40 },
-] as const;
-
-const DEMO_JOBS = [
-  { title: 0, employer: 0, location: 0, type: 0 },
-  { title: 1, employer: 1, location: 1, type: 1 },
-  { title: 2, employer: 2, location: 2, type: 2 },
-] as const;
-
-const DEMO_GROUPS = [
-  { index: 0, members: 1240 },
-  { index: 1, members: 860 },
-  { index: 2, members: 512 },
-] as const;
 
 type SectionProps = {
   id?: string;
@@ -321,34 +254,26 @@ async function LandingContent({ locale }: { locale: Locale }) {
   const platform = getPlatformMessages(locale);
   const { t } = createTranslator(locale);
 
-  const [user, products, services, jobs, groups, posts] = await Promise.all([
+  const [user, products, services, jobs] = await Promise.all([
     getCurrentUser(),
     getProducts(4),
     getServices(4),
     getJobs(4),
-    getGroups(4),
-    getPostsPage(0, 2),
   ]);
 
   const productItems: ProductRecord[] =
     products.status === "ok" && products.data.length > 0 ? products.data : [];
   const serviceItems: ServiceRecord[] =
     services.status === "ok" && services.data.length > 0 ? services.data : [];
-  const jobItems: JobRecord[] =
-    jobs.status === "ok" && jobs.data.length > 0 ? jobs.data : [];
-  const groupItems: GroupRecord[] =
-    groups.status === "ok" && groups.data.length > 0 ? groups.data : [];
+  const jobItems: JobRecord[] = jobs.status === "ok" && jobs.data.length > 0 ? jobs.data : [];
 
   const offers: Array<{
-    key: GlyphName;
+    key: keyof typeof landing.offers.items;
     href: string;
   }> = [
-    { key: "social", href: "#social" },
     { key: "marketplace", href: "#marketplace" },
     { key: "services", href: "#services" },
     { key: "jobs", href: "#jobs" },
-    { key: "groups", href: "#groups" },
-    { key: "messaging", href: "#messaging" },
   ];
 
   return (
@@ -359,12 +284,12 @@ async function LandingContent({ locale }: { locale: Locale }) {
             <div className="landing-hero__copy">
               <Reveal>
                 <Badge variant="primary">{landing.hero.eyebrow}</Badge>
-                <h1>{landing.hero.title}</h1>
+                <RotatingHeadline lead={landing.hero.lead} phrases={landing.hero.phrases} />
                 <p className="landing-hero__description">{landing.hero.description}</p>
                 <div className="showcase-actions">
                   {user ? (
                     <Link
-                      className="showcase-button showcase-button--primary"
+                      className="showcase-button showcase-button--primary showcase-button--lg"
                       href={`/${locale}/home` as Route}
                     >
                       {landing.hero.openApp}
@@ -373,14 +298,14 @@ async function LandingContent({ locale }: { locale: Locale }) {
                   ) : (
                     <>
                       <Link
-                        className="showcase-button showcase-button--primary"
+                        className="showcase-button showcase-button--primary showcase-button--lg"
                         href={`/${locale}/auth/sign-up` as Route}
                       >
                         {landing.hero.primaryAction}
                         <ArrowIcon />
                       </Link>
                       <Link
-                        className="showcase-button showcase-button--secondary"
+                        className="showcase-button showcase-button--secondary showcase-button--lg"
                         href={`/${locale}/auth/sign-in` as Route}
                       >
                         {landing.hero.secondaryAction}
@@ -394,7 +319,8 @@ async function LandingContent({ locale }: { locale: Locale }) {
               <HeroVisual
                 locale={locale}
                 product={productItems[0] ?? null}
-                post={posts[0] ?? null}
+                service={serviceItems[0] ?? null}
+                job={jobItems[0] ?? null}
               />
             </Reveal>
           </div>
@@ -422,159 +348,81 @@ async function LandingContent({ locale }: { locale: Locale }) {
         </div>
       </LandingSection>
 
-      <LandingSection id="social" alt>
-        <SectionHeading
-          eyebrow={landing.social.eyebrow}
-          title={landing.social.title}
-          description={landing.social.description}
-        />
-        <div className="landing-posts-list">
-          {posts.length > 0 ? (
-            posts.map((post, index) => (
-              <Reveal key={post.id} delay={index * 80}>
-                <PostCardView locale={locale} post={post} />
-              </Reveal>
-            ))
-          ) : (
-            <Reveal>
-              <article className="landing-post">
-                <header className="landing-post__header">
-                  <span className="landing-post__avatar" aria-hidden="true">
-                    {initialOf(landing.demo.post.name)}
-                  </span>
-                  <span className="landing-post__who">
-                    <strong>{landing.demo.post.name}</strong>
-                    <small>@{landing.demo.post.username}</small>
-                  </span>
-                  <Badge variant="neutral" className="landing-card__badge">
-                    {landing.demo.tag}
-                  </Badge>
-                </header>
-                <p className="landing-post__text" dir="auto">
-                  {landing.demo.post.text}
-                </p>
-                <PostStats likes={count(24, locale)} comments={count(6, locale)} />
-              </article>
-            </Reveal>
-          )}
-        </div>
-        <div className="landing-section__action">
-          <Link className="showcase-button showcase-button--secondary" href={`/${locale}/explore` as Route}>
-            {landing.social.exploreAction}
-            <ArrowIcon />
-          </Link>
-        </div>
-      </LandingSection>
-
-      <LandingSection id="marketplace">
+      <LandingSection id="marketplace" alt>
         <SectionHeading
           eyebrow={landing.marketplace.eyebrow}
           title={landing.marketplace.title}
           description={landing.marketplace.description}
         />
-        <div className="landing-grid">
-          {productItems.length > 0
-            ? productItems.slice(0, 4).map((item, index) => (
-                <Reveal key={item.id} delay={index * 60}>
-                  <Link className="landing-card" href={`/${locale}/products/${item.id}` as Route}>
-                    <VisualBlock imageUrl={item.imageUrl} letter={initialOf(item.title)} />
-                    <span className="landing-card__body">
-                      <strong className="landing-card__title" dir="auto">
-                        {item.title}
-                      </strong>
-                      <span className="landing-card__meta">
-                        {item.locationLabel ? `⌖ ${item.locationLabel}` : landing.marketplace.eyebrow}
+        {productItems.length > 0 ? (
+          <div className="landing-grid">
+            {productItems.slice(0, 4).map((item, index) => (
+              <Reveal key={item.id} delay={index * 60}>
+                <Link className="landing-card" href={`/${locale}/products/${item.id}` as Route}>
+                  <VisualBlock imageUrl={item.imageUrl} letter={initialOf(item.title)} />
+                  <span className="landing-card__body">
+                    <strong className="landing-card__title" dir="auto">
+                      {item.title}
+                    </strong>
+                    {item.category && (
+                      <span className="landing-card__chips">
+                        <span className="landing-card__chip">{item.category}</span>
                       </span>
-                      <span className="landing-card__price">
-                        {item.price !== null ? price(item.price, item.currency, locale) : null}
-                      </span>
+                    )}
+                    <span className="landing-card__meta">
+                      {item.locationLabel
+                        ? `⌖ ${item.locationLabel}`
+                        : item.owner
+                          ? `@${item.owner.username}`
+                          : landing.marketplace.eyebrow}
                     </span>
-                    <span className="landing-card__footer">
-                      <span className="landing-card__link">
-                        {t("navigation.products")}
-                        <ArrowIcon />
-                      </span>
+                    <span className="landing-card__price">
+                      {item.price !== null ? price(item.price, item.currency, locale) : null}
                     </span>
-                  </Link>
-                </Reveal>
-              ))
-            : DEMO_PRODUCTS.map((demo, index) => (
-                <Reveal key={demo.index} delay={index * 60}>
-                  <Link className="landing-card" href={`/${locale}/products` as Route}>
-                    <VisualBlock imageUrl={null} letter={initialOf(landing.demo.products[demo.index])} />
-                    <span className="landing-card__body">
-                      <strong className="landing-card__title" dir="auto">
-                        {landing.demo.products[demo.index]}
-                      </strong>
-                      <Badge variant="neutral" className="landing-card__badge">
-                        {landing.demo.tag}
-                      </Badge>
-                      <span className="landing-card__price">{price(demo.price, "USD", locale)}</span>
+                  </span>
+                  <span className="landing-card__footer">
+                    <span className="landing-card__link">
+                      {t("navigation.products")}
+                      <ArrowIcon />
                     </span>
-                    <span className="landing-card__footer">
-                      <span className="landing-card__link">
-                        {t("navigation.products")}
-                        <ArrowIcon />
-                      </span>
-                    </span>
-                  </Link>
-                </Reveal>
-              ))}
-        </div>
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title={landing.empty.title} description={landing.empty.description} />
+        )}
         <div className="landing-section__action">
-          <Link className="showcase-button showcase-button--secondary" href={`/${locale}/products` as Route}>
+          <Link className="showcase-button showcase-button--primary" href={`/${locale}/products` as Route}>
             {landing.marketplace.browseAction}
             <ArrowIcon />
           </Link>
         </div>
       </LandingSection>
 
-      <LandingSection id="services" alt>
+      <LandingSection id="services">
         <SectionHeading
           eyebrow={landing.services.eyebrow}
           title={landing.services.title}
           description={landing.services.description}
         />
-        <div className="landing-grid">
-          {serviceItems.slice(0, 4).map((item, index) => (
-            <Reveal key={item.id} delay={index * 60}>
-              <Link className="landing-card" href={`/${locale}/services/${item.id}` as Route}>
-                <VisualBlock imageUrl={item.imageUrl} letter={initialOf(item.title)} />
-                <span className="landing-card__body">
-                  <strong className="landing-card__title" dir="auto">
-                    {item.title}
-                  </strong>
-                  <span className="landing-card__meta">
-                    {item.provider ? `@${item.provider.username}` : landing.demo.tag}
-                  </span>
-                  <span className="landing-card__price">
-                    {item.price !== null ? price(item.price, item.currency, locale) : null}
-                  </span>
-                </span>
-                <span className="landing-card__footer">
-                  <span className="landing-card__link">
-                    {t("navigation.services")}
-                    <ArrowIcon />
-                  </span>
-                </span>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-        {serviceItems.length === 0 && (
+        {serviceItems.length > 0 ? (
           <div className="landing-grid">
-            {DEMO_SERVICES.map((demo, index) => (
-              <Reveal key={demo.index} delay={index * 60}>
-                <Link className="landing-card" href={`/${locale}/services` as Route}>
-                  <VisualBlock imageUrl={null} letter={initialOf(landing.demo.services[demo.index])} />
+            {serviceItems.slice(0, 4).map((item, index) => (
+              <Reveal key={item.id} delay={index * 60}>
+                <Link className="landing-card" href={`/${locale}/services/${item.id}` as Route}>
+                  <VisualBlock imageUrl={item.imageUrl} letter={initialOf(item.title)} />
                   <span className="landing-card__body">
                     <strong className="landing-card__title" dir="auto">
-                      {landing.demo.services[demo.index]}
+                      {item.title}
                     </strong>
-                    <Badge variant="neutral" className="landing-card__badge">
-                      {landing.demo.tag}
-                    </Badge>
-                    <span className="landing-card__price">{price(demo.price, "USD", locale)}</span>
+                    <span className="landing-card__meta">
+                      {item.provider ? `@${item.provider.username}` : landing.services.eyebrow}
+                    </span>
+                    <span className="landing-card__price">
+                      {item.price !== null ? price(item.price, item.currency, locale) : null}
+                    </span>
                   </span>
                   <span className="landing-card__footer">
                     <span className="landing-card__link">
@@ -586,6 +434,8 @@ async function LandingContent({ locale }: { locale: Locale }) {
               </Reveal>
             ))}
           </div>
+        ) : (
+          <EmptyState title={landing.empty.title} description={landing.empty.description} />
         )}
         <div className="landing-section__action">
           <Link className="showcase-button showcase-button--secondary" href={`/${locale}/services` as Route}>
@@ -595,197 +445,68 @@ async function LandingContent({ locale }: { locale: Locale }) {
         </div>
       </LandingSection>
 
-      <LandingSection id="jobs">
+      <LandingSection id="jobs" alt>
         <SectionHeading
           eyebrow={landing.jobs.eyebrow}
           title={landing.jobs.title}
           description={landing.jobs.description}
         />
-        <div className="landing-grid">
-          {jobItems.slice(0, 4).map((item, index) => {
-            const typeLabel =
-              item.jobType && platform.jobTypes[item.jobType as keyof typeof platform.jobTypes]
-                ? platform.jobTypes[item.jobType as keyof typeof platform.jobTypes]
-                : null;
-            return (
-              <Reveal key={item.id} delay={index * 60}>
-                <Link className="landing-card" href={`/${locale}/jobs/${item.id}` as Route}>
-                  <span className="landing-card__body landing-card__body--pad">
-                    <span className="landing-card__chips">
-                      <span className="landing-card__chip">
-                        {item.employerName ?? `@${item.owner?.username ?? ""}`}
-                      </span>
-                      {typeLabel && <span className="landing-card__chip">{typeLabel}</span>}
-                    </span>
-                    <strong className="landing-card__title" dir="auto">
-                      {item.title}
-                    </strong>
-                    <span className="landing-card__meta">
-                      {item.locationLabel ? `⌖ ${item.locationLabel}` : landing.jobs.eyebrow}
-                    </span>
-                    {item.salaryMin !== null && (
-                      <span className="landing-card__price">
-                        {price(item.salaryMin, item.currency, locale)}
-                      </span>
-                    )}
-                  </span>
-                  <span className="landing-card__footer">
-                    <span className="landing-card__link">
-                      {t("navigation.jobs")}
-                      <ArrowIcon />
-                    </span>
-                  </span>
-                </Link>
-              </Reveal>
-            );
-          })}
-        </div>
-        {jobItems.length === 0 && (
+        {jobItems.length > 0 ? (
           <div className="landing-grid">
-            {DEMO_JOBS.map((demo, index) => (
-              <Reveal key={demo.title} delay={index * 60}>
-                <Link className="landing-card" href={`/${locale}/jobs` as Route}>
-                  <span className="landing-card__body landing-card__body--pad">
-                    <span className="landing-card__chips">
-                      <span className="landing-card__chip">{landing.demo.jobs.employers[demo.employer]}</span>
-                      <span className="landing-card__chip">{landing.demo.jobs.types[demo.type]}</span>
+            {jobItems.slice(0, 4).map((item, index) => {
+              const typeLabel =
+                item.jobType && platform.jobTypes[item.jobType as keyof typeof platform.jobTypes]
+                  ? platform.jobTypes[item.jobType as keyof typeof platform.jobTypes]
+                  : null;
+              return (
+                <Reveal key={item.id} delay={index * 60}>
+                  <Link className="landing-card" href={`/${locale}/jobs/${item.id}` as Route}>
+                    <span className="landing-card__body landing-card__body--pad">
+                      <span className="landing-card__chips">
+                        <span className="landing-card__chip">
+                          {item.employerName ?? `@${item.owner?.username ?? ""}`}
+                        </span>
+                        {typeLabel && <span className="landing-card__chip">{typeLabel}</span>}
+                      </span>
+                      <strong className="landing-card__title" dir="auto">
+                        {item.title}
+                      </strong>
+                      <span className="landing-card__meta">
+                        {item.locationLabel
+                          ? `⌖ ${item.locationLabel}`
+                          : item.employerName
+                            ? item.employerName
+                            : landing.jobs.eyebrow}
+                      </span>
+                      {item.salaryMin !== null && (
+                        <span className="landing-card__price">
+                          {price(item.salaryMin, item.currency, locale)}
+                        </span>
+                      )}
                     </span>
-                    <strong className="landing-card__title" dir="auto">
-                      {landing.demo.jobs.titles[demo.title]}
-                    </strong>
-                    <span className="landing-card__meta">
-                      ⌖ {landing.demo.jobs.locations[demo.location]}
+                    <span className="landing-card__footer">
+                      <span className="landing-card__link">
+                        {t("navigation.jobs")}
+                        <ArrowIcon />
+                      </span>
                     </span>
-                    <Badge variant="neutral" className="landing-card__badge">
-                      {landing.demo.tag}
-                    </Badge>
-                  </span>
-                  <span className="landing-card__footer">
-                    <span className="landing-card__link">
-                      {t("navigation.jobs")}
-                      <ArrowIcon />
-                    </span>
-                  </span>
-                </Link>
-              </Reveal>
-            ))}
+                  </Link>
+                </Reveal>
+              );
+            })}
           </div>
+        ) : (
+          <EmptyState title={landing.empty.title} description={landing.empty.description} />
         )}
         <div className="landing-section__action">
-          <Link className="showcase-button showcase-button--secondary" href={`/${locale}/jobs` as Route}>
+          <Link className="showcase-button showcase-button--outline" href={`/${locale}/jobs` as Route}>
             {landing.jobs.browseAction}
             <ArrowIcon />
           </Link>
         </div>
       </LandingSection>
 
-      <LandingSection id="groups" alt>
-        <SectionHeading
-          eyebrow={landing.groups.eyebrow}
-          title={landing.groups.title}
-          description={landing.groups.description}
-        />
-        <div className="landing-grid">
-          {groupItems.slice(0, 4).map((item, index) => (
-            <Reveal key={item.id} delay={index * 60}>
-              <Link className="landing-card" href={`/${locale}/groups/${item.id}` as Route}>
-                <VisualBlock imageUrl={item.imageUrl} letter={initialOf(item.name)} />
-                <span className="landing-card__body">
-                  <strong className="landing-card__title" dir="auto">
-                    {item.name}
-                  </strong>
-                  <span className="landing-card__meta">
-                    {count(item.memberCount, locale)} {landing.groups.eyebrow}
-                  </span>
-                </span>
-                <span className="landing-card__footer">
-                  <span className="landing-card__link">
-                    {t("navigation.groups")}
-                    <ArrowIcon />
-                  </span>
-                </span>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-        {groupItems.length === 0 && (
-          <div className="landing-grid">
-            {DEMO_GROUPS.map((demo, index) => (
-              <Reveal key={demo.index} delay={index * 60}>
-                <Link className="landing-card" href={`/${locale}/groups` as Route}>
-                  <VisualBlock imageUrl={null} letter={initialOf(landing.demo.groups[demo.index])} />
-                  <span className="landing-card__body">
-                    <strong className="landing-card__title" dir="auto">
-                      {landing.demo.groups[demo.index]}
-                    </strong>
-                    <Badge variant="neutral" className="landing-card__badge">
-                      {landing.demo.tag}
-                    </Badge>
-                    <span className="landing-card__meta">
-                      {count(demo.members, locale)} {landing.groups.eyebrow}
-                    </span>
-                  </span>
-                  <span className="landing-card__footer">
-                    <span className="landing-card__link">
-                      {t("navigation.groups")}
-                      <ArrowIcon />
-                    </span>
-                  </span>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        )}
-        <div className="landing-section__action">
-          <Link className="showcase-button showcase-button--secondary" href={`/${locale}/groups` as Route}>
-            {landing.groups.browseAction}
-            <ArrowIcon />
-          </Link>
-        </div>
-      </LandingSection>
-
-      <LandingSection id="messaging">
-        <div className="landing-messaging">
-          <SectionHeading
-            eyebrow={landing.messaging.eyebrow}
-            title={landing.messaging.title}
-            description={landing.messaging.description}
-          />
-          <Reveal delay={100}>
-            <div className="landing-chat" aria-label={landing.messaging.eyebrow}>
-              <div className="landing-chat__row">
-                <span className="landing-chat__avatar" aria-hidden="true">
-                  {initialOf(landing.demo.post.name)}
-                </span>
-                <span className="landing-chat__bubble landing-chat__bubble--other">
-                  {landing.messaging.demo.a}
-                </span>
-              </div>
-              <div className="landing-chat__row landing-chat__row--own">
-                <span className="landing-chat__bubble landing-chat__bubble--own">
-                  {landing.messaging.demo.b}
-                </span>
-              </div>
-              <div className="landing-chat__row">
-                <span className="landing-chat__avatar landing-chat__avatar--accent" aria-hidden="true">
-                  {initialOf(landing.demo.post.name)}
-                </span>
-                <span className="landing-chat__bubble landing-chat__bubble--other">
-                  {landing.messaging.demo.c}
-                </span>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-        <div className="landing-section__action">
-          <Link className="showcase-button showcase-button--secondary" href={`/${locale}/auth/sign-in` as Route}>
-            {t("navigation.signIn")}
-            <ArrowIcon />
-          </Link>
-        </div>
-      </LandingSection>
-
-      <LandingSection id="unified" alt>
+      <LandingSection id="unified">
         <div className="landing-unified">
           <Reveal>
             <div className="landing-unified__pills" aria-hidden="true">
@@ -812,7 +533,7 @@ async function LandingContent({ locale }: { locale: Locale }) {
           <div className="showcase-actions">
             {user ? (
               <Link
-                className="showcase-button showcase-button--primary"
+                className="showcase-button showcase-button--primary showcase-button--lg"
                 href={`/${locale}/home` as Route}
               >
                 {landing.hero.openApp}
@@ -821,14 +542,14 @@ async function LandingContent({ locale }: { locale: Locale }) {
             ) : (
               <>
                 <Link
-                  className="showcase-button showcase-button--primary"
+                  className="showcase-button showcase-button--primary showcase-button--lg"
                   href={`/${locale}/auth/sign-up` as Route}
                 >
                   {landing.finalCta.primaryAction}
                   <ArrowIcon />
                 </Link>
                 <Link
-                  className="showcase-button showcase-button--secondary"
+                  className="showcase-button showcase-button--secondary showcase-button--lg"
                   href={`/${locale}/auth/sign-in` as Route}
                 >
                   {landing.finalCta.secondaryAction}
@@ -859,14 +580,14 @@ function AboutContent({ locale }: { locale: Locale }) {
                 <p className="landing-hero__description">{landing.about.description}</p>
                 <div className="showcase-actions">
                   <Link
-                    className="showcase-button showcase-button--primary"
+                    className="showcase-button showcase-button--primary showcase-button--lg"
                     href={`/${locale}/auth/sign-up` as Route}
                   >
                     {landing.finalCta.primaryAction}
                     <ArrowIcon />
                   </Link>
                   <Link
-                    className="showcase-button showcase-button--secondary"
+                    className="showcase-button showcase-button--secondary showcase-button--lg"
                     href={`/${locale}/auth/sign-in` as Route}
                   >
                     {landing.finalCta.secondaryAction}
@@ -901,14 +622,14 @@ function AboutContent({ locale }: { locale: Locale }) {
           </div>
           <div className="showcase-actions">
             <Link
-              className="showcase-button showcase-button--primary"
+              className="showcase-button showcase-button--primary showcase-button--lg"
               href={`/${locale}/auth/sign-up` as Route}
             >
               {landing.finalCta.primaryAction}
               <ArrowIcon />
             </Link>
             <Link
-              className="showcase-button showcase-button--secondary"
+              className="showcase-button showcase-button--secondary showcase-button--lg"
               href={`/${locale}/auth/sign-in` as Route}
             >
               {landing.finalCta.secondaryAction}

@@ -53,16 +53,33 @@ export function Avatar({ name, src, alt, size = "md", className, ...props }: Ava
   );
 }
 
+export type CardVariant = "default" | "elevated" | "flush" | "subtle" | "interactive";
+
 export type CardProps = HTMLAttributes<HTMLElement> & {
   as?: "div" | "article" | "section";
   elevated?: boolean;
+  variant?: CardVariant;
 };
 
-export function Card({ as = "div", elevated = false, className, ...props }: CardProps) {
+export function Card({
+  as = "div",
+  elevated = false,
+  variant = "default",
+  className,
+  ...props
+}: CardProps) {
   const Component = as;
+  const resolvedVariant = elevated ? "elevated" : variant;
 
   return (
-    <Component {...props} className={cx("ds-card", elevated && "ds-card--elevated", className)} />
+    <Component
+      {...props}
+      className={cx(
+        "ds-card",
+        resolvedVariant !== "default" && `ds-card--${resolvedVariant}`,
+        className,
+      )}
+    />
   );
 }
 

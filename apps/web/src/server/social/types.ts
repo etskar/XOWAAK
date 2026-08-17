@@ -19,6 +19,7 @@ export type SocialUser = {
   displayName: string;
   bio: string | null;
   avatarMediaId: string | null;
+  avatarUrl: string | null;
   visibility: "public" | "private";
   relationship: Relationship | null;
 };

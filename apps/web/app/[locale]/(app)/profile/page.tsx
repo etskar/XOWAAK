@@ -4,7 +4,7 @@ import { isLocale, type Locale } from "@/config/locales";
 import { requireCurrentUser } from "@/server/auth/session";
 import { getOwnProfile } from "@/server/identity/queries";
 import { getFollowerCount, getFollowingCount } from "@/server/social/queries";
-import { getUserPosts } from "@/server/posts/queries";
+import { getUserPosts, getUserPostsCount } from "@/server/posts/queries";
 import { getProfilePlatformRecords } from "@/server/platform/queries";
 import { ProfileView } from "@/features/profile/profile-view";
 
@@ -29,10 +29,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     redirect(`/${locale}/settings/profile`);
   }
 
-  const [followerCount, followingCount, posts, platform] = await Promise.all([
+  const [followerCount, followingCount, posts, postsCount, platform] = await Promise.all([
     getFollowerCount(profile.id),
     getFollowingCount(profile.id),
     getUserPosts(profile.id, null, 20),
+    getUserPostsCount(profile.id),
     getProfilePlatformRecords(profile.id),
   ]);
 
@@ -45,6 +46,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       followingCount={followingCount}
       viewerId={user.id}
       posts={posts}
+      postsCount={postsCount}
       postsPaginationPath={`/${locale}/profile`}
       platform={platform}
       isOwnProfile

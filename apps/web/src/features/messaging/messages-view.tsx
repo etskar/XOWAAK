@@ -59,6 +59,8 @@ export function MessagesView({
   const [isPending, startTransition] = useTransition();
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [confirmBlock, setConfirmBlock] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   function clearUnread(id: string) {
     setItems((current) =>
@@ -270,6 +272,7 @@ export function MessagesView({
           setDetail(null);
           setSelectedId(items.find((item) => item.id !== selectedId)?.id ?? null);
           setConfirmLeave(false);
+          setConfirmBlock(false);
         });
       });
     });
@@ -442,7 +445,7 @@ export function MessagesView({
                     <button
                       type="button"
                       className="messaging-thread__action"
-                      onClick={block}
+                      onClick={() => setConfirmBlock(true)}
                       disabled={isPending}
                     >
                       {messages.block}
@@ -480,6 +483,52 @@ export function MessagesView({
                     </Button>
                   </div>
                 )}
+                {confirmBlock && (
+                  <div className="messaging-thread__confirm">
+                    <p>{messages.blockConfirm}</p>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      loading={isPending}
+                      isDisabled={isPending}
+                      onPress={block}
+                    >
+                      {messages.block}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => setConfirmBlock(false)}
+                    >
+                      {messages.decline}
+                    </Button>
+                  </div>
+                )}
+                {confirmDeleteId && (
+                  <div className="messaging-thread__confirm">
+                    <p>{messages.deleteMessageConfirm}</p>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      loading={isPending}
+                      isDisabled={isPending}
+                      onPress={() => removeMessage(confirmDeleteId)}
+                    >
+                      {messages.deleteMessage}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => setConfirmDeleteId(null)}
+                    >
+                      {messages.decline}
+                    </Button>
+                  </div>
+                )}
                 <div className="messaging-thread__messages" aria-live="polite">
                   {detail.messages.length === 0 ? (
                     <p>{messages.noMessages}</p>
@@ -507,7 +556,7 @@ export function MessagesView({
                           <button
                             type="button"
                             className="messaging-message__delete"
-                            onClick={() => removeMessage(message.id)}
+                            onClick={() => setConfirmDeleteId(message.id)}
                             disabled={isPending}
                             aria-label={messages.deleteMessage}
                           >

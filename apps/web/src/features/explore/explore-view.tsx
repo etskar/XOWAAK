@@ -14,6 +14,7 @@ import type {
   ServiceRecord,
 } from "@/server/platform/types";
 import { PlatformFeedCard } from "@/features/feed/feed-cards";
+import { AppNavigation } from "@/features/navigation/app-navigation";
 
 type ExploreViewProps = {
   locale: Locale;
@@ -28,7 +29,16 @@ function ViewAllLink({ locale, href }: { locale: Locale; href: string }) {
   const landing = getLandingMessages(locale);
   return (
     <Link className="explore-section__more" href={href as Route}>
-      {landing.marketplace.browseAction} →
+      {landing.marketplace.browseAction}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path d="M3 10h13M11 5l5 5-5 5" />
+      </svg>
     </Link>
   );
 }
@@ -150,10 +160,20 @@ export function ExploreView({
                     </p>
                   </div>
                   <Link
-                    className="feed-card__link"
+                    className="feed-card__link explore-group-card__link"
                     href={`/${locale}/groups/${group.id}` as Route}
                   >
-                    {t("navigation.discover")} →
+                    {t("navigation.discover")}
+                    <svg
+                      aria-hidden="true"
+                      className="explore-group-card__arrow"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M3 10h13M11 5l5 5-5 5" />
+                    </svg>
                   </Link>
                 </Card>
               ))}
@@ -161,6 +181,7 @@ export function ExploreView({
           </section>
         )}
       </Container>
+      {user && <AppNavigation locale={locale} />}
     </main>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
 
-import { Container } from "@/design-system";
+import { Container, EmptyState, ErrorState } from "@/design-system";
 import { isLocale, type Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
 import { createTranslator } from "@/i18n/translate";
@@ -58,20 +58,30 @@ export default async function MarketplacePage({ params, searchParams }: Marketpl
             {app.marketplaceServices}
           </Link>
         </div>
-        {tab === "products" && (
-          <MarketplaceGrid
-            locale={locale}
-            kind="product"
-            items={products.status === "ok" ? products.data : []}
-          />
-        )}
-        {tab === "services" && (
-          <MarketplaceGrid
-            locale={locale}
-            kind="service"
-            items={services.status === "ok" ? services.data : []}
-          />
-        )}
+        {tab === "products" &&
+          (products.status === "error" ? (
+            <ErrorState title={app.commerceFailed} description="" />
+          ) : products.status === "unavailable" ? (
+            <EmptyState title={app.unavailable} description="" />
+          ) : (
+            <MarketplaceGrid
+              locale={locale}
+              kind="product"
+              items={products.status === "ok" ? products.data : []}
+            />
+          ))}
+        {tab === "services" &&
+          (services.status === "error" ? (
+            <ErrorState title={app.commerceFailed} description="" />
+          ) : services.status === "unavailable" ? (
+            <EmptyState title={app.unavailable} description="" />
+          ) : (
+            <MarketplaceGrid
+              locale={locale}
+              kind="service"
+              items={services.status === "ok" ? services.data : []}
+            />
+          ))}
         <div className="marketplace-links">
           <Link href={`/${locale}/products/new` as Route}>{t("navigation.products")}</Link>
           <Link href={`/${locale}/services/new` as Route}>{t("navigation.services")}</Link>

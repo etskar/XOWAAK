@@ -6,6 +6,7 @@ export type {
   BadgeProps,
   BadgeVariant,
   CardProps,
+  CardVariant,
   ContentIconProps,
   SeparatorProps,
 } from "./display";

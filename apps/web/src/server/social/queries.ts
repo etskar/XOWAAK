@@ -1,6 +1,7 @@
 import "server-only";
 
 import { hasSupabasePublicEnv } from "@/config/public-env";
+import { getMediaSignedUrls } from "@/server/media/urls";
 import { createSupabaseServerClient } from "@/server/supabase/client";
 import type { ProfileRecord } from "@/server/identity/types";
 import type { Relationship, SocialListResult, SocialUser } from "@/server/social/types";
@@ -80,6 +81,14 @@ async function getSocialUsers(profileIds: string[], viewerId: string | null) {
   if (error) throw new Error("social_profiles_query_failed");
 
   const byId = new Map((data as ProfileRecord[]).map((profile) => [profile.id, profile]));
+  const avatarIds = [
+    ...new Set(
+      (data ?? [])
+        .map((profile) => (profile.avatar_media_id ? String(profile.avatar_media_id) : null))
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const avatarUrls = await getMediaSignedUrls(avatarIds);
   return Promise.all(
     profileIds.flatMap((id) => {
       const profile = byId.get(id);
@@ -91,6 +100,9 @@ async function getSocialUsers(profileIds: string[], viewerId: string | null) {
           displayName: profile.display_name || profile.username,
           bio: profile.bio,
           avatarMediaId: profile.avatar_media_id,
+          avatarUrl: profile.avatar_media_id
+            ? (avatarUrls.get(String(profile.avatar_media_id)) ?? null)
+            : null,
           visibility: profile.visibility,
           relationship: viewerId ? await getRelationship(viewerId, profile.id) : null,
         }))(),

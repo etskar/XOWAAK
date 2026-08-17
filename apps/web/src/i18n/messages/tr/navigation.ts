@@ -1,4 +1,4 @@
-export const navigationMessages = {
+﻿export const navigationMessages = {
   home: "Ana sayfa",
   about: "XOWAAK hakkında",
   discover: "Keşfet",
@@ -13,6 +13,7 @@ export const navigationMessages = {
   landing: "Genel bakış",
   followRequests: "Takip istekleri",
   createAccount: "Hesap oluştur",
+  openApp: "XOWAAK'i aç",
   switchLanguage: "Dili değiştir",
   productNavigation: "Ürün navigasyonu",
   search: "Ara",

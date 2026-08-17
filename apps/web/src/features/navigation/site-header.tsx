@@ -3,18 +3,14 @@
 import Link from "next/link";
 import type { Route } from "next";
 import type { User } from "@supabase/supabase-js";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { getLocaleConfig, type Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
 import { LocaleSwitcher } from "@/features/localization/locale-switcher";
-import { ThemeToggle } from "@/features/navigation/theme-toggle";
-import { InstallAppButton } from "@/features/pwa/install-app-button";
 import { UserMenu } from "@/features/navigation/user-menu";
 import { MenuRegistryProvider } from "@/features/navigation/menu-registry";
-import { isApplicationPath } from "@/features/navigation/routes";
-import { cx } from "@/design-system/utils/cx";
+import { isAppExperiencePath, isApplicationPath } from "@/features/navigation/routes";
 
 type SiteHeaderProps = {
   locale: Locale;
@@ -36,77 +32,26 @@ function BrandMark() {
 export function SiteHeader({ locale, user, avatarUrl, displayName }: SiteHeaderProps) {
   const pathname = usePathname() ?? `/${locale}`;
   const { t } = createTranslator(locale);
-  const [isOpen, setIsOpen] = useState(false);
   const config = getLocaleConfig(locale);
   const isApp = isApplicationPath(pathname, locale);
-  const isLanding = pathname === `/${locale}`;
   const isAuthenticated = user !== null && user !== undefined;
-  const links = [
-    { href: `/${locale}` as Route, label: t("navigation.landing") },
-    { href: `/${locale}/about` as Route, label: t("navigation.about") },
-    { href: `/${locale}/explore` as Route, label: t("navigation.discover") },
-    { href: `/${locale}/home` as Route, label: t("navigation.home") },
-  ];
+  const showAppChrome = isApp || (isAuthenticated && isAppExperiencePath(pathname, locale));
 
   return (
     <MenuRegistryProvider>
-      <header
-        className={`site-header${isApp ? " site-header--app" : ""}${isLanding ? " site-header--landing" : ""}`}
-      >
+      <header className={`site-header${showAppChrome ? " site-header--app" : " site-header--public"}`}>
         <div className="site-header__inner">
           <Link
             className="site-brand"
-            href={(isApp ? `/${locale}/home` : `/${locale}`) as Route}
+            href={(showAppChrome ? `/${locale}/home` : `/${locale}`) as Route}
             aria-label={config.name}
           >
             <BrandMark />
             <span className="site-brand__word">XOWAAK</span>
           </Link>
 
-          {!isApp && !isLanding && (
-            <nav className="site-nav site-nav--desktop" aria-label={t("navigation.productNavigation")}>
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cx("site-nav__link", pathname === link.href && "site-nav__link--active")}
-                  aria-current={pathname === link.href ? "page" : undefined}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          )}
-
           <div className="site-header__actions">
-            {isLanding ? (
-              <>
-                <LocaleSwitcher locale={locale} compact />
-                {isAuthenticated ? (
-                  <Link
-                    className="site-action site-action--primary"
-                    href={`/${locale}/home` as Route}
-                  >
-                    {t("navigation.home")}
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      className="site-action site-action--quiet"
-                      href={`/${locale}/auth/sign-in` as Route}
-                    >
-                      {t("navigation.signIn")}
-                    </Link>
-                    <Link
-                      className="site-action site-action--primary"
-                      href={`/${locale}/auth/sign-up` as Route}
-                    >
-                      {t("navigation.createAccount")}
-                    </Link>
-                  </>
-                )}
-              </>
-            ) : isApp ? (
+            {showAppChrome ? (
               <UserMenu
                 locale={locale}
                 isAuthenticated={isAuthenticated}
@@ -115,16 +60,14 @@ export function SiteHeader({ locale, user, avatarUrl, displayName }: SiteHeaderP
               />
             ) : (
               <>
-                <InstallAppButton locale={locale} />
                 <LocaleSwitcher locale={locale} compact />
-                <ThemeToggle locale={locale} />
                 {isAuthenticated ? (
-                  <UserMenu
-                    locale={locale}
-                    isAuthenticated={isAuthenticated}
-                    avatarUrl={avatarUrl ?? null}
-                    displayName={displayName ?? null}
-                  />
+                  <Link
+                    className="site-action site-action--primary"
+                    href={`/${locale}/home` as Route}
+                  >
+                    {t("navigation.openApp")}
+                  </Link>
                 ) : (
                   <>
                     <Link
@@ -141,59 +84,9 @@ export function SiteHeader({ locale, user, avatarUrl, displayName }: SiteHeaderP
                     </Link>
                   </>
                 )}
-                <button
-                  className="site-menu-button"
-                  type="button"
-                  aria-expanded={isOpen}
-                  aria-controls="mobile-product-navigation"
-                  aria-label={isOpen ? t("common.closeNavigation") : t("common.openNavigation")}
-                  onClick={() => setIsOpen((current) => !current)}
-                >
-                  <span />
-                  <span />
-                  <span />
-                </button>
               </>
             )}
           </div>
-
-          {!isApp && !isLanding && (
-            <nav
-              id="mobile-product-navigation"
-              className="site-nav site-nav--mobile"
-              data-open={isOpen || undefined}
-              aria-label={t("navigation.productNavigation")}
-            >
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="site-nav__mobile-link"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {!isAuthenticated && (
-                <>
-                  <Link
-                    href={`/${locale}/auth/sign-in` as Route}
-                    className="site-nav__mobile-link"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {t("navigation.signIn")}
-                  </Link>
-                  <Link
-                    href={`/${locale}/auth/sign-up` as Route}
-                    className="site-nav__mobile-link"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {t("navigation.createAccount")}
-                  </Link>
-                </>
-              )}
-            </nav>
-          )}
         </div>
       </header>
     </MenuRegistryProvider>

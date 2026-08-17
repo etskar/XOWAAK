@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { User } from "@supabase/supabase-js";
 
-import { Badge, Card, Container, EmptyState, ErrorState } from "@/design-system";
+import { Avatar, Badge, Card, Container, EmptyState, ErrorState } from "@/design-system";
 import type { Locale } from "@/config/locales";
 import { getAppMessages } from "@/i18n/app-messages";
 import { getPlatformMessages } from "@/i18n/platform-messages";
@@ -23,12 +23,14 @@ import {
   getServices,
 } from "@/server/platform/queries";
 import { GroupChat } from "@/features/platform/group-chat";
+import { GroupJoinButton } from "@/features/platform/group-join";
 import { GroupMembers } from "@/features/platform/group-members";
 import { FavoriteButton } from "@/features/platform/favorite-button";
 import { ShareButton } from "@/features/platform/share-button";
 import { CommerceActionPanel } from "@/features/orders/commerce-action";
 import { PlatformOwnerActions } from "@/features/platform/platform-owner-actions";
 import { BackLink } from "@/features/navigation/back-link";
+import { AppNavigation } from "@/features/navigation/app-navigation";
 
 export type PlatformKind = "products" | "services" | "jobs" | "groups";
 type PlatformRecord = ProductRecord | ServiceRecord | JobRecord | GroupRecord;
@@ -198,6 +200,7 @@ export function PlatformDirectory({
           </div>
         )}
       </Container>
+      {user && <AppNavigation locale={locale} />}
     </main>
   );
 }
@@ -299,6 +302,14 @@ export async function PlatformDetail({
     relatedResult.status === "ok"
       ? relatedResult.data.filter((r) => r.id !== item.id).slice(0, 3)
       : [];
+  const groupMembersResult = isGroup && user ? await getGroupMembers(group.id) : null;
+  const viewerMembership =
+    groupMembersResult?.status === "ok"
+      ? groupMembersResult.data.find((member) => member.isViewer)
+      : undefined;
+  const viewerCanJoin = Boolean(
+    isGroup && user && !isOwner && group.visibility === "public" && !viewerMembership,
+  );
 
   return (
     <main className="platform-page">
@@ -344,6 +355,13 @@ export async function PlatformDetail({
                   kind={kind}
                   id={item.id}
                   listHref={listHref(kind, locale)}
+                />
+              )}
+              {viewerCanJoin && (
+                <GroupJoinButton
+                  groupId={group.id}
+                  label={app.joinGroup}
+                  failedLabel={app.commerceFailed}
                 />
               )}
               {!isGroup && user && owner && (
@@ -393,7 +411,16 @@ export async function PlatformDetail({
             {description && <p className="platform-detail-card__description">{description}</p>}
             {owner && (
               <div className="platform-detail-card__footer">
-                <Link href={`/${locale}/u/${owner.username}` as Route}>@{owner.username}</Link>
+                <Link
+                  className="platform-detail-card__owner"
+                  href={`/${locale}/u/${owner.username}` as Route}
+                >
+                  <Avatar name={owner.displayName} size="sm" />
+                  <span className="platform-detail-card__owner-info">
+                    <strong>{owner.displayName}</strong>
+                    <span>@{owner.username}</span>
+                  </span>
+                </Link>
               </div>
             )}
             {!user && (
@@ -451,7 +478,7 @@ export async function PlatformDetail({
             <GroupMembers
               locale={locale}
               groupId={group.id}
-              result={await getGroupMembers(group.id)}
+              result={groupMembersResult ?? { status: "ok", data: [] }}
               viewerIsOwner={String(group.ownerUserId) === user.id}
             />
             <GroupChat
@@ -465,6 +492,7 @@ export async function PlatformDetail({
           </>
         )}
       </Container>
+      {user && <AppNavigation locale={locale} />}
     </main>
   );
 }

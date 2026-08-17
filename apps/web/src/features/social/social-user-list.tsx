@@ -6,6 +6,7 @@ import type { Locale } from "@/config/locales";
 import { createTranslator } from "@/i18n/translate";
 import { getSocialMessages } from "@/i18n/social-messages";
 import { RelationshipActions } from "@/features/social/relationship-actions";
+import { BackLink } from "@/features/navigation/back-link";
 import type { SocialUser } from "@/server/social/types";
 
 type SocialUserListProps = {
@@ -34,7 +35,7 @@ export function SocialUserList({
               href={`/${locale}/u/${item.username}` as Route}
               className="social-user-row__identity"
             >
-              <Avatar name={item.displayName} size="md" />
+              <Avatar name={item.displayName} src={item.avatarUrl ?? undefined} size="md" />
               <span>
                 <strong dir="auto">{item.displayName}</strong>
                 <span dir="ltr">@{item.username}</span>
@@ -82,7 +83,7 @@ export function SocialListPage({
     <main className="social-list-page" data-locale={locale}>
       <Container size="md">
         <div className="social-list-page__topline">
-          <Link href={`/${locale}/u/${profileUsername}` as Route}>{t("common.backToHome")}</Link>
+          <BackLink locale={locale} fallback={`/${locale}/u/${profileUsername}`} />
           <Badge variant="primary">
             {resource === "followers" ? social.pages.followers : social.pages.following}
           </Badge>

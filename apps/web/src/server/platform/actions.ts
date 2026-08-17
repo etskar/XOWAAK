@@ -24,6 +24,27 @@ export type PlatformErrorCode =
 export type PlatformActionResult =
   { ok: true; id: string } | { ok: false; code: PlatformErrorCode };
 
+const groupIdSchema = z.object({ groupId: z.string().uuid() });
+
+export async function joinGroup(input: unknown): Promise<PlatformActionResult> {
+  const parsed = groupIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, code: "validation" };
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.rpc("join_group", {
+      target_group_id: parsed.data.groupId,
+    });
+    return error
+      ? { ok: false, code: errorCode(error) }
+      : { ok: true, id: parsed.data.groupId };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
 async function requirePlatformCreator() {
   if (!hasSupabasePublicEnv()) return { user: null, code: "unavailable" as const };
   const user = await getCurrentUser();

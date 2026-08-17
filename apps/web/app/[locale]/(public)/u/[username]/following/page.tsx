@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/server/auth/session";
 import { getProfileByUsername } from "@/server/identity/queries";
 import { getFollowing } from "@/server/social/queries";
 import { SocialListPage } from "@/features/social/social-user-list";
+import { AppNavigation } from "@/features/navigation/app-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -47,17 +48,20 @@ export default async function FollowingPage({ params, searchParams }: FollowingP
   const result = await getFollowing(profile.id, viewer?.id ?? null, page, 20);
 
   return (
-    <SocialListPage
-      locale={locale}
-      items={result.items}
-      emptyTitle={social.pages.noFollowing}
-      emptyDescription={messages.profile.publicTitle}
-      title={social.pages.following}
-      description={messages.profile.publicTitle}
-      profileUsername={profile.username}
-      resource="following"
-      page={result.page}
-      hasMore={result.hasMore}
-    />
+    <>
+      <SocialListPage
+        locale={locale}
+        items={result.items}
+        emptyTitle={social.pages.noFollowing}
+        emptyDescription={messages.profile.publicTitle}
+        title={social.pages.following}
+        description={messages.profile.publicTitle}
+        profileUsername={profile.username}
+        resource="following"
+        page={result.page}
+        hasMore={result.hasMore}
+      />
+      {viewer && <AppNavigation locale={locale} />}
+    </>
   );
 }

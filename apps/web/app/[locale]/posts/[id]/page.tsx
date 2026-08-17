@@ -8,6 +8,7 @@ import { Container } from "@/design-system";
 import { getCurrentUser } from "@/server/auth/session";
 import { PostCard } from "@/features/posts/post-card";
 import { BackLink } from "@/features/navigation/back-link";
+import { AppNavigation } from "@/features/navigation/app-navigation";
 import { getPost } from "@/server/posts/queries";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +62,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           />
         </div>
       </Container>
+      {user && <AppNavigation locale={locale} />}
     </main>
   );
 }

@@ -5,7 +5,9 @@ export const landingMessages = {
     hero: {
       eyebrow: "One space for people, products, and work",
       title: "Meet, share, and trade — in one place.",
-      description: "Posts, products, services, jobs, and groups in one calm place.",
+      description: "Products, services, jobs, groups, and conversations in one calm place.",
+      lead: "Meet, share, and trade",
+      phrases: ["products.", "services.", "jobs.", "ideas."],
       primaryAction: "Create account",
       secondaryAction: "Sign in",
       openApp: "Open XOWAAK",
@@ -13,13 +15,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "What XOWAAK offers",
       title: "Everything you need, in one calm place.",
-      description: "Six connected surfaces. One identity. No noise.",
+      description: "Start with products, services, and jobs — in one calm place.",
       items: {
-        social: {
-          label: "Social",
-          title: "Share and discover",
-          description: "Publish posts and follow the people who matter.",
-        },
         marketplace: {
           label: "Marketplace",
           title: "Buy and sell",
@@ -35,23 +32,7 @@ export const landingMessages = {
           title: "Find work",
           description: "Apply to opportunities with one message.",
         },
-        groups: {
-          label: "Groups",
-          title: "Join communities",
-          description: "Gather around shared interests and places.",
-        },
-        messaging: {
-          label: "Messaging",
-          title: "Talk directly",
-          description: "Private conversations, from hello to done.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Social",
-      title: "A feed that feels human.",
-      description: "Post text and photos, and see what your people share — with the privacy you control.",
-      exploreAction: "Explore public posts",
     },
     marketplace: {
       eyebrow: "Marketplace",
@@ -71,22 +52,6 @@ export const landingMessages = {
       description: "Published jobs with a direct application path to the person hiring.",
       browseAction: "Browse all jobs",
     },
-    groups: {
-      eyebrow: "Groups",
-      title: "Communities that fit.",
-      description: "Public and private groups for the people, places, and interests in your world.",
-      browseAction: "Browse all groups",
-    },
-    messaging: {
-      eyebrow: "Messaging",
-      title: "Conversations that get things done.",
-      description: "Talk with sellers, providers, and applicants directly — before and after you agree.",
-      demo: {
-        a: "Hi! Is this still available?",
-        b: "Yes, it is.",
-        c: "Great — I'll take it.",
-      },
-    },
     unified: {
       eyebrow: "One experience",
       title: "One account for all of it.",
@@ -97,6 +62,10 @@ export const landingMessages = {
       description: "Create an account and step into the full experience in seconds.",
       primaryAction: "Create account",
       secondaryAction: "Sign in",
+    },
+    empty: {
+      title: "Nothing here yet",
+      description: "This space is ready for its first listing.",
     },
     about: {
       eyebrow: "About XOWAAK",
@@ -124,57 +93,14 @@ export const landingMessages = {
       tagline: "A considered digital space for identity and connection.",
       description: "Posts, marketplace, services, jobs, groups, and messaging — one calm platform.",
     },
-    demo: {
-      tag: "Demo",
-      products: {
-        0: "Wireless earbuds",
-        1: "Mechanical keyboard",
-        2: "Canvas tote bag",
-      },
-      services: {
-        0: "Logo design",
-        1: "Text proofreading",
-        2: "Home cleaning",
-      },
-      jobs: {
-        titles: {
-          0: "Delivery driver",
-          1: "Community manager",
-          2: "Graphic designer",
-        },
-        employers: {
-          0: "Sunrise Logistics",
-          1: "Studio One",
-          2: "Design & Co.",
-        },
-        locations: {
-          0: "Riyadh",
-          1: "Remote",
-          2: "Cairo",
-        },
-        types: {
-          0: "Full time",
-          1: "Remote",
-          2: "Freelance",
-        },
-      },
-      groups: {
-        0: "Creative photographers",
-        1: "Startup founders",
-        2: "City runners",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Just published a new photo from the rooftop — the whole city at sunset. What do you think?",
-      },
-    },
   },
   ar: {
     hero: {
       eyebrow: "مساحة واحدة للناس والمنتجات والعمل",
       title: "تشارك، تشتري، وتعمل — في مكان واحد.",
-      description: "منشورات، منتجات، خدمات، وظائف، ومجموعات في مكان واحد هادئ.",
+      description: "منتجات، خدمات، وظائف، مجموعات، ومحادثات في مكان واحد هادئ.",
+      lead: "تشارك، تشتري، وتعمل",
+      phrases: ["المنتجات.", "الخدمات.", "الوظائف.", "الأفكار."],
       primaryAction: "إنشاء حساب",
       secondaryAction: "تسجيل الدخول",
       openApp: "افتح XOWAAK",
@@ -182,13 +108,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "ماذا تقدم XOWAAK",
       title: "كل ما تحتاجه، في مكان واحد هادئ.",
-      description: "ست مساحات مترابطة. هوية واحدة. بلا ضجيج.",
+      description: "ابدأ بالمنتجات والخدمات والوظائف — في مكان واحد هادئ.",
       items: {
-        social: {
-          label: "اجتماعي",
-          title: "انشر واكتشف",
-          description: "انشر محتواك وتابع من يهمّك.",
-        },
         marketplace: {
           label: "السوق",
           title: "اشترِ وبِع",
@@ -204,23 +125,7 @@ export const landingMessages = {
           title: "اعثر على عمل",
           description: "قدّم على الفرص برسالة واحدة.",
         },
-        groups: {
-          label: "المجموعات",
-          title: "انضم إلى المجتمعات",
-          description: "اجتمع حول الاهتمامات والأماكن المشتركة.",
-        },
-        messaging: {
-          label: "الرسائل",
-          title: "تحدث مباشرة",
-          description: "محادثات خاصة، من البداية إلى الإنجاز.",
-        },
       },
-    },
-    social: {
-      eyebrow: "اجتماعي",
-      title: "منشورات تشعر بأنها إنسانية.",
-      description: "انشر النصوص والصور، وشاهد ما يشاركه الناس — مع خصوصية تتحكم بها.",
-      exploreAction: "استكشف المنشورات العامة",
     },
     marketplace: {
       eyebrow: "السوق",
@@ -240,22 +145,6 @@ export const landingMessages = {
       description: "وظائف منشورة مع مسار تقديم مباشر إلى صاحب العمل.",
       browseAction: "تصفح كل الوظائف",
     },
-    groups: {
-      eyebrow: "المجموعات",
-      title: "مجتمعات تناسبك.",
-      description: "مجموعات عامة وخاصة للأشخاص والأماكن والاهتمامات في عالمك.",
-      browseAction: "تصفح كل المجموعات",
-    },
-    messaging: {
-      eyebrow: "الرسائل",
-      title: "محادثات تُنجز الأمور.",
-      description: "تحدث مع البائعين ومقدمي الخدمات والمتقدمين مباشرة — قبل الاتفاق وبعده.",
-      demo: {
-        a: "مرحبًا! هل هذا متاح؟",
-        b: "نعم، متاح.",
-        c: "ممتاز — سآخذه.",
-      },
-    },
     unified: {
       eyebrow: "تجربة واحدة",
       title: "حساب واحد لكل شيء.",
@@ -266,6 +155,10 @@ export const landingMessages = {
       description: "أنشئ حسابًا وادخل إلى التجربة الكاملة خلال ثوانٍ.",
       primaryAction: "إنشاء حساب",
       secondaryAction: "تسجيل الدخول",
+    },
+    empty: {
+      title: "لا شيء هنا بعد",
+      description: "هذه المساحة جاهزة لأول إضافة فيها.",
     },
     about: {
       eyebrow: "عن XOWAAK",
@@ -293,57 +186,14 @@ export const landingMessages = {
       tagline: "مساحة رقمية مدروسة للهوية والتواصل.",
       description: "منشورات، سوق، خدمات، وظائف، مجموعات، ورسائل — منصة واحدة هادئة.",
     },
-    demo: {
-      tag: "تجريبي",
-      products: {
-        0: "سماعات لاسلكية",
-        1: "لوحة مفاتيح ميكانيكية",
-        2: "حقيبة قماشية",
-      },
-      services: {
-        0: "تصميم شعار",
-        1: "تدقيق لغوي",
-        2: "تنظيف منزلي",
-      },
-      jobs: {
-        titles: {
-          0: "سائق توصيل",
-          1: "مدير مجتمع",
-          2: "مصمم جرافيك",
-        },
-        employers: {
-          0: "شروق للخدمات اللوجستية",
-          1: "استوديو واحد",
-          2: "شركة تصميم",
-        },
-        locations: {
-          0: "الرياض",
-          1: "عن بُعد",
-          2: "القاهرة",
-        },
-        types: {
-          0: "دوام كامل",
-          1: "عن بُعد",
-          2: "مستقل",
-        },
-      },
-      groups: {
-        0: "مصورون مبدعون",
-        1: "مؤسسون ناشئون",
-        2: "عدّاؤو المدينة",
-      },
-      post: {
-        name: "سارة",
-        username: "sara",
-        text: "نشرت للتو صورة جديدة من السطح — المدينة كلها وقت الغروب. ما رأيك؟",
-      },
-    },
   },
   es: {
     hero: {
       eyebrow: "Un solo espacio para personas, productos y trabajo",
       title: "Comparte, compra y trabaja — en un solo lugar.",
-      description: "Publicaciones, productos, servicios, empleos y grupos en un solo lugar.",
+      description: "Productos, servicios, empleos, grupos y conversaciones en un solo lugar.",
+      lead: "Comparte, compra y trabaja",
+      phrases: ["productos.", "servicios.", "empleos.", "ideas."],
       primaryAction: "Crear cuenta",
       secondaryAction: "Iniciar sesión",
       openApp: "Abrir XOWAAK",
@@ -351,13 +201,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "Qué ofrece XOWAAK",
       title: "Todo lo que necesitas, en un solo lugar sereno.",
-      description: "Seis superficies conectadas. Una identidad. Sin ruido.",
+      description: "Empieza con productos, servicios y empleos — en un solo lugar sereno.",
       items: {
-        social: {
-          label: "Social",
-          title: "Comparte y descubre",
-          description: "Publica contenido y sigue a las personas que importan.",
-        },
         marketplace: {
           label: "Mercado",
           title: "Compra y vende",
@@ -373,23 +218,7 @@ export const landingMessages = {
           title: "Encuentra trabajo",
           description: "Postúlate a oportunidades con un solo mensaje.",
         },
-        groups: {
-          label: "Grupos",
-          title: "Únete a comunidades",
-          description: "Reúnete en torno a intereses y lugares compartidos.",
-        },
-        messaging: {
-          label: "Mensajería",
-          title: "Habla directamente",
-          description: "Conversaciones privadas, del saludo al acuerdo.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Social",
-      title: "Un feed que se siente humano.",
-      description: "Publica textos y fotos, y mira lo que comparte tu gente — con la privacidad que tú controlas.",
-      exploreAction: "Explorar publicaciones públicas",
     },
     marketplace: {
       eyebrow: "Mercado",
@@ -409,22 +238,6 @@ export const landingMessages = {
       description: "Empleos publicados con una vía directa de postulación a quien contrata.",
       browseAction: "Ver todos los empleos",
     },
-    groups: {
-      eyebrow: "Grupos",
-      title: "Comunidades a tu medida.",
-      description: "Grupos públicos y privados para las personas, los lugares y los intereses de tu mundo.",
-      browseAction: "Ver todos los grupos",
-    },
-    messaging: {
-      eyebrow: "Mensajería",
-      title: "Conversaciones que hacen las cosas.",
-      description: "Habla con vendedores, proveedores y postulantes directamente — antes y después del acuerdo.",
-      demo: {
-        a: "¡Hola! ¿Sigue disponible?",
-        b: "Sí, lo está.",
-        c: "¡Genial — lo tomo!",
-      },
-    },
     unified: {
       eyebrow: "Una experiencia",
       title: "Una sola cuenta para todo.",
@@ -435,6 +248,10 @@ export const landingMessages = {
       description: "Crea una cuenta y entra a la experiencia completa en segundos.",
       primaryAction: "Crear cuenta",
       secondaryAction: "Iniciar sesión",
+    },
+    empty: {
+      title: "Nada por aquí todavía",
+      description: "Este espacio está listo para su primera publicación.",
     },
     about: {
       eyebrow: "Acerca de XOWAAK",
@@ -462,57 +279,14 @@ export const landingMessages = {
       tagline: "Un espacio digital considerado para identidad y conexión.",
       description: "Publicaciones, mercado, servicios, empleos, grupos y mensajería — una plataforma serena.",
     },
-    demo: {
-      tag: "Demo",
-      products: {
-        0: "Auriculares inalámbricos",
-        1: "Teclado mecánico",
-        2: "Bolsa de lona",
-      },
-      services: {
-        0: "Diseño de logotipo",
-        1: "Corrección de textos",
-        2: "Limpieza del hogar",
-      },
-      jobs: {
-        titles: {
-          0: "Conductor de reparto",
-          1: "Community manager",
-          2: "Diseñador gráfico",
-        },
-        employers: {
-          0: "Logística Amanecer",
-          1: "Estudio Uno",
-          2: "Diseño & Co.",
-        },
-        locations: {
-          0: "Riad",
-          1: "Remoto",
-          2: "El Cairo",
-        },
-        types: {
-          0: "Tiempo completo",
-          1: "Remoto",
-          2: "Freelance",
-        },
-      },
-      groups: {
-        0: "Fotógrafos creativos",
-        1: "Fundadores de startups",
-        2: "Corredores urbanos",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Acabo de publicar una foto nueva desde la azotea — la ciudad entera al atardecer. ¿Qué opinas?",
-      },
-    },
   },
   fr: {
     hero: {
       eyebrow: "Un seul espace pour les gens, les produits et le travail",
       title: "Partagez, achetez, travaillez — au même endroit.",
-      description: "Publications, produits, services, emplois et groupes au même endroit.",
+      description: "Produits, services, emplois, groupes et conversations au même endroit.",
+      lead: "Partagez, achetez, travaillez",
+      phrases: ["des produits.", "des services.", "des emplois.", "des idées."],
       primaryAction: "Créer un compte",
       secondaryAction: "Se connecter",
       openApp: "Ouvrir XOWAAK",
@@ -520,13 +294,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "Ce que propose XOWAAK",
       title: "Tout ce qu'il vous faut, dans un seul espace apaisé.",
-      description: "Six espaces connectés. Une identité. Zéro bruit.",
+      description: "Commencez par les produits, les services et les emplois — au même endroit.",
       items: {
-        social: {
-          label: "Social",
-          title: "Partagez et découvrez",
-          description: "Publiez et suivez les personnes qui comptent.",
-        },
         marketplace: {
           label: "Marketplace",
           title: "Achetez et vendez",
@@ -542,23 +311,7 @@ export const landingMessages = {
           title: "Trouvez du travail",
           description: "Postulez aux offres en un seul message.",
         },
-        groups: {
-          label: "Groupes",
-          title: "Rejoignez des communautés",
-          description: "Rassemblez-vous autour d'intérêts et de lieux communs.",
-        },
-        messaging: {
-          label: "Messagerie",
-          title: "Parlez directement",
-          description: "Des conversations privées, du bonjour à la conclusion.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Social",
-      title: "Un fil qui semble humain.",
-      description: "Publiez textes et photos, et voyez ce que partagent les vôtres — avec la confidentialité que vous contrôlez.",
-      exploreAction: "Explorer les publications publiques",
     },
     marketplace: {
       eyebrow: "Marketplace",
@@ -578,22 +331,6 @@ export const landingMessages = {
       description: "Des offres publiées avec un parcours de candidature direct vers l'employeur.",
       browseAction: "Voir tous les emplois",
     },
-    groups: {
-      eyebrow: "Groupes",
-      title: "Des communautés qui vous ressemblent.",
-      description: "Des groupes publics et privés pour les personnes, les lieux et les centres d'intérêt de votre monde.",
-      browseAction: "Voir tous les groupes",
-    },
-    messaging: {
-      eyebrow: "Messagerie",
-      title: "Des conversations qui aboutissent.",
-      description: "Parlez aux vendeurs, prestataires et candidats directement — avant et après l'accord.",
-      demo: {
-        a: "Bonjour ! Est-ce toujours disponible ?",
-        b: "Oui, toujours.",
-        c: "Parfait — je le prends !",
-      },
-    },
     unified: {
       eyebrow: "Une expérience",
       title: "Un seul compte pour tout.",
@@ -604,6 +341,10 @@ export const landingMessages = {
       description: "Créez un compte et entrez dans l'expérience complète en quelques secondes.",
       primaryAction: "Créer un compte",
       secondaryAction: "Se connecter",
+    },
+    empty: {
+      title: "Rien pour l'instant",
+      description: "Cet espace est prêt pour sa première publication.",
     },
     about: {
       eyebrow: "À propos de XOWAAK",
@@ -631,57 +372,14 @@ export const landingMessages = {
       tagline: "Un espace numérique pensé pour l'identité et le lien.",
       description: "Publications, marketplace, services, emplois, groupes et messagerie — une plateforme apaisée.",
     },
-    demo: {
-      tag: "Démo",
-      products: {
-        0: "Écouteurs sans fil",
-        1: "Clavier mécanique",
-        2: "Sac en toile",
-      },
-      services: {
-        0: "Création de logo",
-        1: "Relecture de textes",
-        2: "Ménage à domicile",
-      },
-      jobs: {
-        titles: {
-          0: "Livreur",
-          1: "Community manager",
-          2: "Designer graphique",
-        },
-        employers: {
-          0: "Logistique Aurore",
-          1: "Studio Un",
-          2: "Design & Co.",
-        },
-        locations: {
-          0: "Riyad",
-          1: "À distance",
-          2: "Le Caire",
-        },
-        types: {
-          0: "Temps plein",
-          1: "À distance",
-          2: "Freelance",
-        },
-      },
-      groups: {
-        0: "Photographes créatifs",
-        1: "Fondateurs de startups",
-        2: "Coureurs urbains",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Je viens de publier une photo depuis le toit — toute la ville au coucher du soleil. Qu'en pensez-vous ?",
-      },
-    },
   },
   de: {
     hero: {
       eyebrow: "Ein Raum für Menschen, Produkte und Arbeit",
       title: "Teilen, kaufen, arbeiten — an einem Ort.",
-      description: "Beiträge, Produkte, Dienste, Jobs und Gruppen an einem ruhigen Ort.",
+      description: "Produkte, Dienste, Jobs, Gruppen und Gespräche an einem ruhigen Ort.",
+      lead: "Teilen, kaufen, arbeiten",
+      phrases: ["Produkte.", "Dienste.", "Jobs.", "Ideen."],
       primaryAction: "Konto erstellen",
       secondaryAction: "Anmelden",
       openApp: "XOWAAK öffnen",
@@ -689,13 +387,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "Was XOWAAK bietet",
       title: "Alles, was du brauchst — an einem ruhigen Ort.",
-      description: "Sechs verbundene Bereiche. Eine Identität. Kein Lärm.",
+      description: "Starte mit Produkten, Diensten und Jobs — an einem ruhigen Ort.",
       items: {
-        social: {
-          label: "Social",
-          title: "Teilen und entdecken",
-          description: "Veröffentliche Beiträge und folge den Menschen, die zählen.",
-        },
         marketplace: {
           label: "Marktplatz",
           title: "Kaufen und verkaufen",
@@ -711,23 +404,7 @@ export const landingMessages = {
           title: "Arbeit finden",
           description: "Bewirb dich mit einer Nachricht auf Angebote.",
         },
-        groups: {
-          label: "Gruppen",
-          title: "Gemeinschaften beitreten",
-          description: "Komm zusammen über gemeinsame Interessen und Orte.",
-        },
-        messaging: {
-          label: "Nachrichten",
-          title: "Direkt sprechen",
-          description: "Private Gespräche, vom Hallo bis zum Abschluss.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Social",
-      title: "Ein Feed, das sich menschlich anfühlt.",
-      description: "Teile Texte und Fotos und sieh, was deine Leute teilen — mit der Privatsphäre, die du bestimmst.",
-      exploreAction: "Öffentliche Beiträge entdecken",
     },
     marketplace: {
       eyebrow: "Marktplatz",
@@ -747,22 +424,6 @@ export const landingMessages = {
       description: "Veröffentlichte Jobs mit direktem Bewerbungsweg zur einstellenden Person.",
       browseAction: "Alle Jobs ansehen",
     },
-    groups: {
-      eyebrow: "Gruppen",
-      title: "Gemeinschaften, die passen.",
-      description: "Öffentliche und private Gruppen für die Menschen, Orte und Interessen deiner Welt.",
-      browseAction: "Alle Gruppen ansehen",
-    },
-    messaging: {
-      eyebrow: "Nachrichten",
-      title: "Gespräche, die Dinge erledigen.",
-      description: "Sprich direkt mit Verkäufern, Anbietern und Bewerbern — vor und nach der Einigung.",
-      demo: {
-        a: "Hallo! Ist das noch verfügbar?",
-        b: "Ja, ist es.",
-        c: "Super — ich nehme es!",
-      },
-    },
     unified: {
       eyebrow: "Eine Erfahrung",
       title: "Ein Konto für alles.",
@@ -773,6 +434,10 @@ export const landingMessages = {
       description: "Erstelle ein Konto und tauche in Sekunden in die volle Erfahrung ein.",
       primaryAction: "Konto erstellen",
       secondaryAction: "Anmelden",
+    },
+    empty: {
+      title: "Noch nichts hier",
+      description: "Dieser Raum ist bereit für seinen ersten Eintrag.",
     },
     about: {
       eyebrow: "Über XOWAAK",
@@ -800,57 +465,14 @@ export const landingMessages = {
       tagline: "Ein bewusster digitaler Raum für Identität und Verbindung.",
       description: "Beiträge, Marktplatz, Dienstleistungen, Jobs, Gruppen und Nachrichten — eine ruhige Plattform.",
     },
-    demo: {
-      tag: "Demo",
-      products: {
-        0: "Kabellose Kopfhörer",
-        1: "Mechanische Tastatur",
-        2: "Canvas-Tasche",
-      },
-      services: {
-        0: "Logo-Design",
-        1: "Textkorrektur",
-        2: "Hausreinigung",
-      },
-      jobs: {
-        titles: {
-          0: "Lieferfahrer",
-          1: "Community Manager",
-          2: "Grafikdesigner",
-        },
-        employers: {
-          0: "Sunrise Logistik",
-          1: "Studio Eins",
-          2: "Design & Co.",
-        },
-        locations: {
-          0: "Riad",
-          1: "Remote",
-          2: "Kairo",
-        },
-        types: {
-          0: "Vollzeit",
-          1: "Remote",
-          2: "Freiberuflich",
-        },
-      },
-      groups: {
-        0: "Kreative Fotografen",
-        1: "Startup-Gründer",
-        2: "Stadtläufer",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Gerade ein neues Foto vom Dach veröffentlicht — die ganze Stadt bei Sonnenuntergang. Was meint ihr?",
-      },
-    },
   },
   tr: {
     hero: {
       eyebrow: "İnsanlar, ürünler ve iş için tek bir alan",
       title: "Paylaş, al, çalış — hepsi tek yerde.",
-      description: "Gönderiler, ürünler, hizmetler, işler ve gruplar tek bir sakin yerde.",
+      description: "Ürünler, hizmetler, işler, gruplar ve sohbetler tek bir sakin yerde.",
+      lead: "Paylaş, al, çalış",
+      phrases: ["ürünler.", "hizmetler.", "işler.", "fikirler."],
       primaryAction: "Hesap oluştur",
       secondaryAction: "Giriş yap",
       openApp: "XOWAAK'i aç",
@@ -858,13 +480,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "XOWAAK neler sunuyor",
       title: "İhtiyacın olan her şey, tek bir sakin yerde.",
-      description: "Altı bağlantılı alan. Tek kimlik. Gürültü yok.",
+      description: "Ürünler, hizmetler ve işlerle başlayın — tek bir sakin yerde.",
       items: {
-        social: {
-          label: "Sosyal",
-          title: "Paylaş ve keşfet",
-          description: "İçerik paylaş, önem verdiğin insanları takip et.",
-        },
         marketplace: {
           label: "Pazar",
           title: "Al ve sat",
@@ -880,23 +497,7 @@ export const landingMessages = {
           title: "İş bul",
           description: "Tek mesajla fırsatlara başvur.",
         },
-        groups: {
-          label: "Gruplar",
-          title: "Topluluklara katıl",
-          description: "Ortak ilgi alanları ve yerler etrafında bir araya gel.",
-        },
-        messaging: {
-          label: "Mesajlaşma",
-          title: "Doğrudan konuş",
-          description: "Merhabadan anlaşmaya, özel sohbetler.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Sosyal",
-      title: "İnsana yakın bir akış.",
-      description: "Metin ve fotoğraf paylaş, sevdiklerinin paylaşımlarını gör — kontrol sende olan gizlilikle.",
-      exploreAction: "Genel gönderileri keşfet",
     },
     marketplace: {
       eyebrow: "Pazar",
@@ -916,22 +517,6 @@ export const landingMessages = {
       description: "İşverene doğrudan başvuru yolu sunan yayınlanmış işler.",
       browseAction: "Tüm işleri gör",
     },
-    groups: {
-      eyebrow: "Gruplar",
-      title: "Sana uyan topluluklar.",
-      description: "Dünyandaki insanlar, yerler ve ilgi alanları için açık ve özel gruplar.",
-      browseAction: "Tüm grupları gör",
-    },
-    messaging: {
-      eyebrow: "Mesajlaşma",
-      title: "İşleri halleden sohbetler.",
-      description: "Satıcılar, sağlayıcılar ve adaylarla anlaşmadan önce ve sonra doğrudan konuş.",
-      demo: {
-        a: "Merhaba! Bu hâlâ mevcut mu?",
-        b: "Evet, mevcut.",
-        c: "Süper — alıyorum!",
-      },
-    },
     unified: {
       eyebrow: "Tek deneyim",
       title: "Hepsi için tek hesap.",
@@ -942,6 +527,10 @@ export const landingMessages = {
       description: "Hesap oluştur ve saniyeler içinde tüm deneyime adım at.",
       primaryAction: "Hesap oluştur",
       secondaryAction: "Giriş yap",
+    },
+    empty: {
+      title: "Henüz bir şey yok",
+      description: "Bu alan ilk ilanı için hazır.",
     },
     about: {
       eyebrow: "XOWAAK hakkında",
@@ -969,57 +558,14 @@ export const landingMessages = {
       tagline: "Kimlik ve bağlantı için düşünülmüş bir dijital alan.",
       description: "Gönderiler, pazar, hizmetler, işler, gruplar ve mesajlaşma — tek bir sakin platform.",
     },
-    demo: {
-      tag: "Demo",
-      products: {
-        0: "Kablosuz kulaklık",
-        1: "Mekanik klavye",
-        2: "Kanvas çanta",
-      },
-      services: {
-        0: "Logo tasarımı",
-        1: "Metin düzeltme",
-        2: "Ev temizliği",
-      },
-      jobs: {
-        titles: {
-          0: "Kurye şoförü",
-          1: "Topluluk yöneticisi",
-          2: "Grafik tasarımcı",
-        },
-        employers: {
-          0: "Şafak Lojistik",
-          1: "Stüdyo Bir",
-          2: "Tasarım & Co.",
-        },
-        locations: {
-          0: "Riyad",
-          1: "Uzaktan",
-          2: "Kahire",
-        },
-        types: {
-          0: "Tam zamanlı",
-          1: "Uzaktan",
-          2: "Serbest",
-        },
-      },
-      groups: {
-        0: "Yaratıcı fotoğrafçılar",
-        1: "Girişim kurucuları",
-        2: "Şehir koşucuları",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Az önce çatıdan yeni bir fotoğraf paylaştım — gün batımında koca şehir. Ne düşünüyorsunuz?",
-      },
-    },
   },
   pt: {
     hero: {
       eyebrow: "Um só espaço para pessoas, produtos e trabalho",
       title: "Compartilhe, compre, trabalhe — em um só lugar.",
-      description: "Publicações, produtos, serviços, empregos e grupos em um só lugar.",
+      description: "Produtos, serviços, empregos, grupos e conversas em um só lugar.",
+      lead: "Compartilhe, compre, trabalhe",
+      phrases: ["produtos.", "serviços.", "empregos.", "ideias."],
       primaryAction: "Criar conta",
       secondaryAction: "Entrar",
       openApp: "Abrir XOWAAK",
@@ -1027,13 +573,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "O que a XOWAAK oferece",
       title: "Tudo o que você precisa, em um lugar tranquilo.",
-      description: "Seis áreas conectadas. Uma identidade. Sem ruído.",
+      description: "Comece com produtos, serviços e empregos — em um só lugar.",
       items: {
-        social: {
-          label: "Social",
-          title: "Compartilhe e descubra",
-          description: "Publique e siga as pessoas que importam.",
-        },
         marketplace: {
           label: "Marketplace",
           title: "Compre e venda",
@@ -1049,23 +590,7 @@ export const landingMessages = {
           title: "Encontre trabalho",
           description: "Candidate-se às oportunidades com uma mensagem.",
         },
-        groups: {
-          label: "Grupos",
-          title: "Participe de comunidades",
-          description: "Reúna-se em torno de interesses e lugares em comum.",
-        },
-        messaging: {
-          label: "Mensagens",
-          title: "Fale diretamente",
-          description: "Conversas privadas, do olá ao acordo.",
-        },
       },
-    },
-    social: {
-      eyebrow: "Social",
-      title: "Um feed que parece humano.",
-      description: "Publique textos e fotos e veja o que os seus compartilham — com a privacidade que você controla.",
-      exploreAction: "Explorar publicações públicas",
     },
     marketplace: {
       eyebrow: "Marketplace",
@@ -1085,22 +610,6 @@ export const landingMessages = {
       description: "Empregos publicados com caminho direto de candidatura para quem contrata.",
       browseAction: "Ver todos os empregos",
     },
-    groups: {
-      eyebrow: "Grupos",
-      title: "Comunidades que combinam com você.",
-      description: "Grupos públicos e privados para as pessoas, os lugares e os interesses do seu mundo.",
-      browseAction: "Ver todos os grupos",
-    },
-    messaging: {
-      eyebrow: "Mensagens",
-      title: "Conversas que resolvem as coisas.",
-      description: "Fale com vendedores, profissionais e candidatos diretamente — antes e depois do acordo.",
-      demo: {
-        a: "Olá! Isso ainda está disponível?",
-        b: "Sim, está.",
-        c: "Ótimo — vou levar!",
-      },
-    },
     unified: {
       eyebrow: "Uma experiência",
       title: "Uma conta para tudo.",
@@ -1111,6 +620,10 @@ export const landingMessages = {
       description: "Crie uma conta e entre na experiência completa em segundos.",
       primaryAction: "Criar conta",
       secondaryAction: "Entrar",
+    },
+    empty: {
+      title: "Nada por aqui ainda",
+      description: "Este espaço está pronto para a primeira publicação.",
     },
     about: {
       eyebrow: "Sobre a XOWAAK",
@@ -1138,57 +651,14 @@ export const landingMessages = {
       tagline: "Um espaço digital pensado para identidade e conexão.",
       description: "Publicações, marketplace, serviços, empregos, grupos e mensagens — uma plataforma tranquila.",
     },
-    demo: {
-      tag: "Demo",
-      products: {
-        0: "Fones sem fio",
-        1: "Teclado mecânico",
-        2: "Bolsa de lona",
-      },
-      services: {
-        0: "Design de logo",
-        1: "Revisão de textos",
-        2: "Limpeza doméstica",
-      },
-      jobs: {
-        titles: {
-          0: "Motorista de entregas",
-          1: "Gestor de comunidade",
-          2: "Designer gráfico",
-        },
-        employers: {
-          0: "Logística Amanhecer",
-          1: "Estúdio Um",
-          2: "Design & Co.",
-        },
-        locations: {
-          0: "Riade",
-          1: "Remoto",
-          2: "Cairo",
-        },
-        types: {
-          0: "Tempo integral",
-          1: "Remoto",
-          2: "Freelance",
-        },
-      },
-      groups: {
-        0: "Fotógrafos criativos",
-        1: "Fundadores de startups",
-        2: "Corredores urbanos",
-      },
-      post: {
-        name: "Sara",
-        username: "sara",
-        text: "Acabei de publicar uma foto nova do terraço — a cidade inteira ao pôr do sol. O que acham?",
-      },
-    },
   },
   zh: {
     hero: {
       eyebrow: "一个空间，汇聚人、商品与工作",
       title: "分享、购买、工作——尽在一处。",
-      description: "动态、商品、服务、职位与群组，汇聚在一个宁静的空间。",
+      description: "商品、服务、职位、群组与对话，汇聚在一个宁静的空间。",
+      lead: "分享、购买、工作",
+      phrases: ["商品。", "服务。", "职位。", "创意。"],
       primaryAction: "创建账户",
       secondaryAction: "登录",
       openApp: "打开 XOWAAK",
@@ -1196,13 +666,8 @@ export const landingMessages = {
     offers: {
       eyebrow: "XOWAAK 提供什么",
       title: "你所需的一切，尽在一个安静之地。",
-      description: "六个相连的板块。一个身份。没有噪音。",
+      description: "从商品、服务和职位开始——尽在一个宁静的空间。",
       items: {
-        social: {
-          label: "社交",
-          title: "分享与发现",
-          description: "发布内容，关注重要的人。",
-        },
         marketplace: {
           label: "集市",
           title: "买卖交易",
@@ -1218,23 +683,7 @@ export const landingMessages = {
           title: "寻找工作",
           description: "一条消息即可申请机会。",
         },
-        groups: {
-          label: "群组",
-          title: "加入社区",
-          description: "围绕共同的兴趣和地点相聚。",
-        },
-        messaging: {
-          label: "消息",
-          title: "直接交流",
-          description: "从问候到达成，全程私密对话。",
-        },
       },
-    },
-    social: {
-      eyebrow: "社交",
-      title: "一个有人情味的信息流。",
-      description: "发布文字和照片，看看你关心的人分享了什么——隐私由你掌控。",
-      exploreAction: "浏览公开动态",
     },
     marketplace: {
       eyebrow: "集市",
@@ -1254,22 +703,6 @@ export const landingMessages = {
       description: "公开的职位，直接向招聘方申请。",
       browseAction: "查看全部职位",
     },
-    groups: {
-      eyebrow: "群组",
-      title: "适合你的社区。",
-      description: "面向你世界中的人、地方与兴趣的公开和私密群组。",
-      browseAction: "查看全部群组",
-    },
-    messaging: {
-      eyebrow: "消息",
-      title: "让事情办成的对话。",
-      description: "直接与卖家、服务者和申请者沟通——无论达成前后。",
-      demo: {
-        a: "你好！这个还有货吗？",
-        b: "有的。",
-        c: "太好了——我要了！",
-      },
-    },
     unified: {
       eyebrow: "同一体验",
       title: "一个账户，统管一切。",
@@ -1280,6 +713,10 @@ export const landingMessages = {
       description: "创建账户，几秒钟内进入完整体验。",
       primaryAction: "创建账户",
       secondaryAction: "登录",
+    },
+    empty: {
+      title: "暂无内容",
+      description: "这个空间已就绪，等待第一条内容。",
     },
     about: {
       eyebrow: "关于 XOWAAK",
@@ -1306,51 +743,6 @@ export const landingMessages = {
     footer: {
       tagline: "为身份与连接而思考的数字空间。",
       description: "动态、集市、服务、职位、群组与消息——一个安静的平台。",
-    },
-    demo: {
-      tag: "演示",
-      products: {
-        0: "无线耳机",
-        1: "机械键盘",
-        2: "帆布托特包",
-      },
-      services: {
-        0: "标志设计",
-        1: "文稿校对",
-        2: "家庭保洁",
-      },
-      jobs: {
-        titles: {
-          0: "配送司机",
-          1: "社区运营",
-          2: "平面设计师",
-        },
-        employers: {
-          0: "晨光物流",
-          1: "一号工作室",
-          2: "设计公司",
-        },
-        locations: {
-          0: "利雅得",
-          1: "远程",
-          2: "开罗",
-        },
-        types: {
-          0: "全职",
-          1: "远程",
-          2: "自由职业",
-        },
-      },
-      groups: {
-        0: "创意摄影师",
-        1: "创业创始人",
-        2: "城市跑者",
-      },
-      post: {
-        name: "萨拉",
-        username: "sara",
-        text: "刚在屋顶发了一张新照片——整个城市沐浴在日落中。你们觉得怎么样？",
-      },
     },
   },
 } as const;

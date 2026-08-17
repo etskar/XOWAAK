@@ -2,7 +2,7 @@ import type { Locale } from "@/config/locales";
 import { messages } from "@/i18n/messages";
 
 interface MessageTree {
-  [key: string]: string | MessageTree;
+  [key: string]: string | readonly string[] | MessageTree;
 }
 
 type LeafKeys<T extends MessageTree> = {

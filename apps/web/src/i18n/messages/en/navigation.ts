@@ -1,4 +1,4 @@
-export const navigationMessages = {
+﻿export const navigationMessages = {
   home: "Home",
   about: "About XOWAAK",
   discover: "Discover",
@@ -13,6 +13,7 @@ export const navigationMessages = {
   landing: "Overview",
   followRequests: "Follow requests",
   createAccount: "Create account",
+  openApp: "Open XOWAAK",
   switchLanguage: "Switch language",
   productNavigation: "Product navigation",
   search: "Search",

@@ -10,9 +10,9 @@ export function AdminDashboard({ locale }: { locale: Locale }) {
   const landing = getLandingMessages(locale);
   const { t } = createTranslator(locale);
   const areas = [
-    landing.offers.items.social,
     landing.offers.items.marketplace,
     landing.offers.items.services,
+    landing.offers.items.jobs,
   ];
 
   return (

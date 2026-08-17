@@ -115,6 +115,23 @@ export async function markNotificationRead(notificationId: string): Promise<Mess
   }
 }
 
+export async function markAllNotificationsRead(): Promise<MessagingActionResult> {
+  if (!hasSupabasePublicEnv()) return { ok: false, code: "unavailable" };
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, code: "unauthenticated" };
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("recipient_id", user.id)
+      .is("read_at", null);
+    return error ? { ok: false, code: errorCode(error) } : { ok: true, data: undefined };
+  } catch {
+    return { ok: false, code: "error" };
+  }
+}
+
 const conversationIdSchema = z.object({ conversationId: z.string().uuid() });
 
 export async function markConversationRead(input: unknown): Promise<MessagingActionResult> {

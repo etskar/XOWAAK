@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { FormEvent } from "react";
@@ -198,9 +200,21 @@ export function ProfileForm({ locale, messages, profile, unavailable }: ProfileF
           isDisabled={unavailable || isPending}
           inputProps={{ name: "location", autoComplete: "address-level2", type: "text" }}
         />
-        <Button type="submit" loading={isPending} isDisabled={unavailable || isPending}>
-          {messages.profile.save}
-        </Button>
+        <div className="settings-form__actions">
+          <Button type="submit" loading={isPending} isDisabled={unavailable || isPending}>
+            {messages.profile.save}
+          </Button>
+          <Link
+            className="showcase-button showcase-button--quiet"
+            href={
+              (profile
+                ? `/${locale}/u/${profile.username}`
+                : `/${locale}/settings`) as Route
+            }
+          >
+            {messages.common.cancel}
+          </Link>
+        </div>
         {status && (
           <p
             className="settings-status"

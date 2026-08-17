@@ -1,5 +1,84 @@
 # XOWAAK — Artifacts & Findings
 
+## Stage: Phase 2 — Public Website / Landing Experience Redesign — Complete
+
+### What was built
+
+Polished the entire public website (landing + public discovery/detail/auth pages) on top of the Phase 1 design system, following the reference (imgur) for general visual principles only — clean composition, strong hierarchy, content-first layout, polished cards, simple navigation, professional spacing, clear CTAs, mobile-first responsiveness. XOWAAK keeps its own brand and architecture; nothing was copied.
+
+- **Public header & footer** — already met the target in the earlier landing phase and were kept: public header = brand (→ landing) + locale switcher + "Sign in"/"Create account", or "Open XOWAAK" when authenticated; no hamburger/dark-mode/install/search. Footer stays light (brand, tagline, locale switcher, About/Discover + Sign in/Create account, copyright) with no internal navigation.
+- **Hero** — kept (already compact, rotating-word headline with sr-only fallback + reduced-motion handling, real-data floating cards, no fake stats/testimonials).
+- **Landing content cards** (`showcase-page.tsx` + `showcase.css`):
+  - Product cards now show a category chip and fall back to the owner's `@username` when no location exists (was: section eyebrow text).
+  - Job cards fall back to the employer name when no location exists.
+  - Discovery CTAs are no longer identical: Marketplace → `showcase-button--primary` (high contrast), Services → `secondary`, Jobs → new `showcase-button--outline` (border-action border, transparent fill, primary hover) — all inside the same Phase 1 token/button language.
+- **Explore page** (`explore-view.tsx` + `globals.css`): replaced text arrows ("→") with inline SVG arrows that flip in RTL; "Browse all" links are now inline-flex with proper gap; group card link uses the same arrow treatment.
+- **Detail pages** (`platform-view.tsx` + `globals.css`): one shared visual language across products/services/jobs/groups already existed (visual header + kind badge + chips + action panel + description + related content); this phase added a polished owner footer — `Avatar` + display name + `@username` linked to the public profile — replacing the bare text link.
+- **Back control**: detail pages, public profiles, and the public followers/following pages now use the shared `BackLink` (chevron icon + localized label, browser-history aware, RTL-flipped) instead of bare text links; removed dead `.platform-back-link` and `.social-list-page__topline a` CSS. `common.backToHome` remains used by not-found/error/route-placeholder/admin/settings pages.
+- **Auth pages**: already minimal (identifier/password with show-hide toggle, name/username/email/password on sign-up, necessary links only); no changes required — verified in EN + AR.
+- **Real-data behavior**: landing, directories, explore, details, and profiles render only real DB records (published, non-deleted); every list falls back to a localized empty state; no fake content, stats, or users exist anywhere. (This environment's database contains real seed records, so live cards render; with an empty database the empty states appear instead.)
+- **RTL**: arrows flip correctly in all new controls (landing card links, section CTAs, explore arrows, back chevron); Arabic heading typography from Phase 1 applies on every public page; verified `dir="rtl"` on all `/ar` pages.
+- **Cleanup**: removed dead public CSS — `.landing-card__badge`, `.landing-hero__note`, `.landing-hero__note-dot`, `.landing-section--cta`, `.platform-back-link` (all verified unused in components). Left internal-app dead selectors alone (`.site-nav--desktop` etc. belong to app CSS). The two remaining "→" text arrows live in internal components (`post-media.tsx`, `search-bar.tsx`) — out of Phase 2 scope.
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings.
+- `npx vitest run` — 15 files / 41 tests passed.
+- `npm run build` — compiled; 291 pages generated.
+- Production runtime (`next start`), after ensuring the old dev server was fully killed (first check hit a stale listener on port 3100 — re-verified against the new build):
+  - `/en`, `/ar` (landing: public header, hero, offers, marketplace/services/jobs with real cards, unified, CTA, footer), `/en/about`, `/ar/about` — 200.
+  - `/en|ar/auth/sign-in`, `/en|ar/auth/sign-up` — 200 with auth card + password toggle.
+  - `/en|ar/products|services|jobs|groups`, `/en|ar/explore` — 200, real sections, no empty state.
+  - Detail pages with real IDs (product EN+AR, job EN, group EN) — 200, back control present, actions/related/sign-in card present.
+  - Unknown-record detail IDs — 200 with in-page localized empty state (not a 404); `/en|ar/home` — 307 to sign-in (expected).
+  - Public profile (`/en/u/prompt4primary`) — 200 with back control, hero, tabs, metrics.
+  - Public followers/following (`/en/u/prompt4primary/followers`, `/ar/u/prompt4primary/following`) — 200, RTL correct, back control present.
+  - Built CSS contains the new selectors (`showcase-button--outline`, `explore-section__more`, `platform-detail-card__owner`, RTL arrow flips) and no longer contains the removed dead rules.
+
+### Remaining limitations
+
+- Real browser viewport testing (320/375/390/430/tablet/desktop) was verified structurally (grid breakpoints, full-width buttons, hidden decorative hero cards, `overflow-x: clip` + `min-width: 320px` present) but not via an automated browser suite in this environment.
+- `getLocationRecords` and `searchPlatform` hardcode `/en/...` hrefs — they are used by the authenticated map/search pages, so they were left untouched per Phase 2 scope (internal app).
+- Playwright e2e suite still requires a running server + Supabase credentials to execute.
+
+## Stage: Phase 1 — Unified Design System + Reference-Inspired UI Foundation — Complete
+
+### What was built
+
+A foundation-only phase (no page redesigns, no backend changes) that unifies and sharpens the existing visual system with principles inspired by the reference website (imgur): clean, content-focused, professional, balanced, generous spacing, strong typography, simple navigation, polished lightweight interactions. Nothing was copied from the reference — XOWAAK keeps its own brand (green/cyan/indigo gradient, brand-ink/lime) and all existing architecture.
+
+- **Color system** (`src/design-system/tokens/tokens.css`):
+  - New semantic tokens: `--color-text-strong`, `--color-surface-inset` (inset surfaces: search bars, subtle panels), `--color-border-action` (stronger interactive borders), and on-color tokens for feedback: `--color-on-success/on-warning/on-danger/on-info` (white in light mode, brand-ink in dark mode).
+  - **Contrast fixes**: destructive buttons in dark mode previously rendered light-error text on a light background (invisible) — now `--color-on-danger` is used; outline buttons use `--color-border-action` (neutral-400) instead of the too-close neutral-300; ghost-button hover is a neutral 7% tint (was `--color-surface-elevated` = invisible on white surfaces); user-menu hover likewise uses a text tint instead of `--color-background`.
+  - Light + dark theme blocks both updated; theme functionality (appearance settings + localStorage) untouched.
+- **Typography** (`tokens.css` + `globals.css` + `components.css`):
+  - Single-family system: `--font-family-display` now resolves to the sans stack (was Arial-only), with dedicated tracking tokens `--font-letter-heading: -0.02em` and `--font-letter-display: -0.03em` applied to `.ds-text-display/h1/h2/h3/h4` and global `h1–h4`.
+  - Responsive heading clamps reduced (no giant mobile headings): display `clamp(2rem, 6vw, 3.5rem)`, h1 `clamp(1.75rem, 4.5vw, 2.875rem)`, h2 `clamp(1.5rem, 3.5vw, 2.25rem)`, h3 `clamp(1.25rem, 2.5vw, 1.75rem)`, h4 `1.125rem`.
+  - Font-weight tokens added (`--font-weight-regular…extrabold`).
+  - **Arabic (RTL)**: `[lang="ar"]` resets letter-spacing to 0 and relaxes heading line-heights (1.3 for display/h1, 1.4 for h2–h4) for readable diacritics.
+- **Button system** (`components.css`): all seven variants present (primary/secondary/outline/ghost/destructive + icon-only + loading/disabled states already in `button.tsx`). Phase 1 refinements: destructive text contrast fix, outline/ghost hover visibility, icon buttons now square (`width` = `--button-height-*`), pressed/active feedback via `data-pressed`, hover/active/focus-visible/disabled states on every variant.
+- **Card system** (`display.tsx` + `components.css`): new variants exposed through the `Card` component — `elevated` (existing), plus `flush` (media cards, no padding), `subtle` (tinted panel), and `interactive` (hover lift + border tint + focus-visible ring). `CardVariant` type exported from the design-system barrel.
+- **Inputs/menus/tabs**: input/textarea caret color set to primary, hover border now `--color-border-action`; menu/listbox items gained a keyboard `data-focus-visible` ring; tabs got a hover state; switches already RTL-aware.
+- **Interaction language**: subtle transitions use the existing motion tokens; `@media (prefers-reduced-motion: reduce)` extended to cards and tabs; global reduced-motion override already present in `globals.css` covers everything.
+- **Navigation foundation** (`navigation.css`): `.site-action` gained transitions + press feedback (`scale(0.97)`), quiet action hover now has a visible tint, primary action hover gets a primary glow; search bar uses the new inset surface with a hover border; header remains sticky with blur, public vs app modes unchanged and distinct.
+- **No i18n changes** (no new user-facing strings), no new dependencies, no JS added (CSS-only + one prop on `Card`).
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings.
+- `npx vitest run` — 15 files / 41 tests passed (design-system component tests green after the `Card` API change).
+- `npm run build` — compiled; 291 pages generated; all routes present.
+- Runtime smoke with `next start` (production build): `/en`, `/ar` (lang=ar + dir=rtl), `/en/about`, `/en/explore`, `/en/auth/sign-in`, `/en/auth/sign-up`, `/en/products`, `/ar/products`, `/en/services`, `/en/jobs`, `/en/groups`, `/en/posts/[id]`, `/en/u/example`, `/ar/u/example` — all 200; `/en/home`, `/en/settings`, `/en/messages`, `/ar/home` — 307 to sign-in.
+- Built CSS inspected: new tokens (`--color-border-action`, `--color-surface-inset`, `--color-on-danger`), `[lang=ar]` rules, `.ds-card--interactive`, and `.ds-button--sm.ds-icon-button` all present; dark-theme block intact.
+
+### Known limitations / follow-ups
+
+- No web fonts are loaded (system stack only) — a future phase could add `next/font` (needs network at build).
+- E2E Playwright suite updated in earlier phases but not run in this environment (requires a running server + Supabase credentials).
+- The landing hero keeps its own tuned clamp (intentionally large display heading, not token-driven).
+
 ## Stage: Public Landing Website — Complete
 
 ### What was built
@@ -187,6 +266,32 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 
 ---
 
+## Stage: Landing Website UI/UX Refinement — Complete
+
+### What was built
+
+- **Hero redesign** (`showcase-page.tsx` + `showcase.css`): premium compact hero — eyebrow badge, `RotatingHeadline` (static `lead` + CSS-only rotating phrase across 4 words in each locale, 10 s cycle with shimmer gradient; `aria-hidden` on the animated spans + a single `sr-only` full sentence so the heading's accessible name is stable), shorter description, oversized gradient CTAs (`showcase-button--lg`, arrow slide, RTL-aware), and a new `HeroVisual` composition — glass stage with the brand mark + wordmark + "Products · Services · Jobs" pills, plus floating real cards (product with thumb/title/price, job with employer/location chips, service with provider) that render only when real records exist; all motion (float, rotating, reveals) disabled under `prefers-reduced-motion`.
+- **Posts/Groups/Messaging/demo removed from the public homepage**: `landing-messages.ts` no longer ships `social`/`groups`/`messaging` sections or the `demo` fallback block (all 8 locales); the homepage now surfaces Marketplace → Services → Jobs only, each rendering real records or a localized `EmptyState` (`landing.empty.title/description`, ×8 locales) when a dataset is empty. The Offers grid was trimmed to 3 tiles with scroll links to `#marketplace` / `#services` / `#jobs`.
+- **Unified public header** (`site-header.tsx` + `navigation.css`): every non-app page (landing, about, explore, public marketplace + detail, groups, posts/[id], u/*, auth) now uses one clean header — brand → `/{locale}`, compact `LocaleSwitcher`, and either "Open XOWAAK" (→ `/home`, signed-in) or "Sign in" + "Create account". Nav links, hamburger, theme toggle and install button are gone from public pages (`site-header--public` vs `site-header--app`); mobile keeps the primary action visible at ≤30rem. `ThemeToggle`/`InstallAppButton` components remain unused by the header (appearance settings still manage theme for signed-in users).
+- **Route classification refined** (`routes.ts`): `isApplicationPath` now treats public marketplace listing/detail routes (`/products`, `/services`, `/jobs`, `/groups`, `/products/[id]`, …), `explore`, `u/*`, `about` and auth as public (footer + public header), while keeping `home/search/messages/…` and create/edit routes (`/posts/new`, `/{kind}/[id]/edit`) as app routes.
+- **i18n**: `navigation.openApp` added ×8 locales; hero `lead` + `phrases` (4 items each) and `empty` block added; `offers.items` trimmed to 3 (descriptions updated per locale). `MessageTree` in `translate.ts` widened to accept `readonly string[]` leaves (for `phrases`).
+- **Back navigation preserved**: `BackLink` (used by product/service/job/group detail + post pages) unchanged; detail pages keep `router.back()` with localized fallback.
+- **E2E smoke spec updated** to the new public header/hero (accessible heading name, no theme toggle / hamburger on public pages, marketplace browse routes render publicly, no sign-in redirect).
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings.
+- `npx vitest run` — 15 files / 41 tests passed (one transient worker-start timeout on `design-system.test.tsx` re-ran green in isolation).
+- `npm run build` — compiled + 291 pages generated; all routes present.
+- Runtime smoke checks with `next start` (production build): `/en`, `/ar` (dir=rtl, Arabic strings byte-exact, rotating headline + sr-only sentence present), `/en/about`, `/en/explore`, `/en/products|services|jobs|groups` (public header + footer), `/en/posts/[id]`, `/en/u/example` (LTR+RTL), `/en/auth/sign-in`, `/en/auth/sign-up` — all 200; `/en/home`, `/ar/home` redirect to sign-in (307); real product/service/job cards render from seeded data; `landing-empty` states absent only because data exists.
+
+### Known limitations / follow-ups
+
+- Hero floating cards and section grids depend on seeded data; empty datasets show the new localized empty state instead of demo content (demo fallback removed by design).
+- `ThemeToggle`/`InstallAppButton` are no longer referenced by the header; they remain available for app-side surfaces if needed.
+- Playwright e2e suite updated but not executed in this environment (requires a running server + Supabase credentials).
+
 ## Stage: Phase 5 Refinements (Header/Auth/Landing/Search/Create-Edit-Delete/Channels/Messaging/Profile) — Complete
 
 ### What was built
@@ -227,3 +332,92 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 
 - The `groups` / channel / muting behavior is inactive until migration 10 is applied in the Supabase project (user ran it from the SQL Editor).
 - PWA icons still the default mark (no image tooling in this environment).
+
+---
+
+## Stage: Phase 3 — Authenticated Application Redesign — Complete
+
+### What was built
+
+- **Theme persistence across reloads** (`app/[locale]/layout.tsx`): the hardcoded `data-theme="light"` was removed and replaced with a tiny inline `<head>` script that resolves the stored `xowaak-theme` (set by `AppearanceForm`/`ThemeToggle`) or the OS `prefers-color-scheme` and sets `data-theme` before React hydrates (`suppressHydrationWarning` on `<html>`). Dark mode now survives page reloads; the script guards on `matchMedia` availability and try/catch.
+- **Bottom navigation on public platform pages for signed-in users**: new `isAppExperiencePath()` in `src/features/navigation/routes.ts` classifies public platform discovery (`products/services/jobs/groups` lists + details), `explore`, `posts/[id]`, `u/[username]` and `followers/following` as app-like experiences. `AppNavigation` now renders for authenticated users at the end of `PlatformDirectory`, `PlatformDetail`, `ExploreView`, `posts/[id]`, the public profile page and both social list pages (guests see none of this — verified). The root layout fetches the user once and hides the public footer on those pages for signed-in users only (guests keep the full public footer). The site header mirrors the same rule (`site-header.tsx`): signed-in users on those pages get the full app header (brand → `/home` + `UserMenu` with avatar/profile/notifications/settings), while guests keep the public header + locale switcher — so the authenticated experience is consistent end to end. Page bottom paddings already clear the fixed nav (`platform-page`, `feed-page`, `profile-page`, `social-list-page`); `.explore-page` bottom padding was raised to `clamp(4.5rem, 9vw, 7rem)`.
+- **`posts/new` styling gap fixed**: `.posts-new-page` had no CSS at all; it now gets `min-height: 100vh` + the standard app-surface `padding-block` and a `margin-block-start` on its card so the composer clears the sticky header and the fixed bottom nav.
+- **User menu entry point for notifications** (`user-menu.tsx`): added Notifications item → `/{locale}/notifications` using the existing `navigation.notifications` key (present in all 8 locales); popover now uses a 97% glass surface so content never shows through.
+- **Settings back navigation** (`settings-shell.tsx`): the plain "Back to XOWAAK" link on the settings topline was replaced with the shared `BackLink` (history-aware, fallback `/{locale}/home`), matching every other app surface and never sending users to the public landing site.
+- **CSS fixes and polish**:
+  - `.app-shell` rule added (`min-height: 100dvh`); `.app-shell__content` reserves `calc(4.75rem + env(safe-area-inset-bottom))` so the fixed nav never overlaps content on notched devices.
+  - Hardcoded colors tokenized: kind badges (`.platform-card__kind`/`.platform-detail-card__kind`/`.feed-card__kind`) now use `--color-overlay` (light `rgb(13 22 29/64%)` → dark `rgb(0 0 0/72%)`); `.fab__backdrop` uses `color-mix(in srgb, var(--color-overlay) 60%, transparent)` with a plain fallback; `.fab__menu` matches the user-menu 97% glass surface.
+  - `.app-bottom-nav__item` gained color/background transitions; `app-bottom-nav__label` and active states unchanged.
+  - Search input was already `1rem` (16px) — no zoom-on-focus fix needed.
+- **Dead CSS removed** (every selector verified against all `.tsx/.ts` sources, including dynamically built class names; design-system and `[lang="ar"]` usages re-checked before removal): `.auth-layout`, `.auth-aside` + children, `.auth-card__toolbar`, `.auth-card__mark` (shared rule split — `.product-state-card__mark` kept, it is used by error/not-found/showcase), `.feed-page__links*`, `.feed-context-card*`, `.app-search-card*`, `.profile-posts`, `.profile-platform-section`, and from `navigation.css` the unused desktop/mobile `.site-nav*` system, `.site-menu-button` and `.site-header__search` (including their `@media` blocks). Kept deliberately: `.auth-card`, `.auth-status--*` (built as `auth-status--${status.kind}`), `.feed-card--job/service` (built as `feed-card--${kind}`), `.platform-map-marker--*`/`.platform-map-list__dot--*` (built from `item.kind`), `ds-text-h4` (used by `[lang="ar"]` typography selectors).
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings.
+- `npx vitest run` — 15 files / 41 tests passed.
+- `npm run build` — compiled successfully (all routes present, incl. new conditional app-nav imports on public pages).
+- Runtime smoke checks with `next start` (production build, port 3100):
+  - Public pages 200 with real content in EN + AR (`dir="rtl"`): `/products`, `/services`, `/jobs`, `/groups`, `/explore`, `/u/prompt4primary` + `/followers` + `/following`, product/service/job/group details with real IDs.
+  - Middleware-protected app routes redirect (307) for guests: `/home`, `/notifications`, `/settings`, `/messages`.
+  - `/orders`, `/marketplace`, `/profile` render the loading shell then redirect from the `(app)` layout — pre-existing streaming behavior, unchanged by this stage.
+  - `<html lang dir>` no longer carries a hardcoded `data-theme`; the theme script (`xowaak-theme`) is present in `<head>`.
+  - Built CSS: `.app-shell{min-height:100dvh}`, safe-area content padding, `background:var(--color-overlay)` kind badges, `@supports (color:color-mix(...))` fallback pairs for the backdrop/popovers, new explore padding, `.posts-new-page` padding block; zero occurrences of the 10 removed selector groups.
+  - Guest on public platform pages: public header + footer present, no bottom nav, sign-in/sign-up actions unchanged.
+  - Follow-up pass: header now renders the app branch (UserMenu) for signed-in users on app-like public pages; `.posts-new-page` styling added — both verified in the production build (tsc/eslint/build re-run green, guest responses byte-identical).
+
+### Known limitations / follow-ups
+
+- Signed-in rendering of the new bottom nav / footer logic could not be exercised end-to-end (no session credentials in this environment); logic is server-gated on `getCurrentUser()` and the guest path was verified byte-for-byte.
+- `posts/[id]` remains a public route outside the `(app)` group (guests reach it from public profiles); signed-in users now get the bottom nav and BackLink there, but the page does not use the app shell padding (its own `feed-page` padding clears the nav).
+- `isAppExperiencePath` treats all `u/*`, `posts/*` and platform segments as app-like for signed-in users; any future public-only marketing sub-pages under those prefixes will need an exception.
+- No browser-automated viewport suite was run (requires a running server + Supabase credentials); visual spot checks used the production server responses above.
+
+---
+
+## Stage: Phase 4 — Functional UX, Social Interactions & Final Product Polish — Complete
+
+### What was built
+
+- **Avatars in follower/following lists** (`src/server/social/queries.ts` + `src/features/social/social-user-list.tsx`): `SocialUser` gained `avatarUrl`; `getSocialUsers` batches `avatar_media_id`s through `getMediaSignedUrls` (same pattern as `getConversations`). Rows now render `<Avatar src>` images instead of initials-only. Works for followers, following, pending requests and blocked lists (all share `getSocialUsers`).
+- **Real published-post count on profile tabs** (`src/server/posts/queries.ts` + `ProfileView` + both profile pages): new `getUserPostsCount(authorId)` (`count: exact, head: true`, `status = 'published'`); the profile page (`(app)/profile` and public `u/[username]`) passes it through and the Posts tab badge now shows the true count instead of the hardcoded `0` (verified 28 in runtime).
+- **Notifications center** (`src/features/messaging/notifications-view.tsx` + `src/server/messaging/actions.ts`):
+  - New `markAllNotificationsRead` action (updates `read_at` for all unread rows of the viewer) + "Mark all read" button in the page header (only when unread > 0).
+  - Kind-aware navigation labels: the link text now depends on `kind` — follow → "View profile", message → "Open chat", group → "Open group", like/comment/share → "View post", system → "View" (new i18n keys `markAllRead`, `openPost`, `openGroup`, `view` in all 8 locales).
+  - Softer realtime: `window.location.reload()` replaced with `router.refresh()`; the view resyncs from the refreshed `initial` prop using React's render-time state adjustment pattern (no setState-in-effect; passes the `react-hooks/set-state-in-effect` lint rule).
+- **Messaging confirmations & readability** (`src/features/messaging/messages-view.tsx` + CSS):
+  - Delete-own-message now requires confirmation (the previously unused `deleteMessageConfirm` key is now used).
+  - Blocking a user now requires confirmation (`blockConfirm` key added ×8); both use the existing inline `messaging-thread__confirm` panel pattern with a destructive confirm button and decline.
+  - Message bubbles got `overflow-wrap: anywhere` so long unbroken strings no longer overflow the bubble.
+- **Orders & applications** (`src/features/orders/orders-view.tsx`):
+  - Destructive status changes now open a confirmation `Dialog` (decline/cancel for orders, reject/withdraw for applications; accept/complete/shortlist/hire stay one-click).
+  - Failures are no longer silent: a `role="alert"` error line (`orders-view__error`) shows `commerceFailed` when an update fails.
+  - New i18n keys `confirmDecline`, `confirmCancel`, `confirmReject`, `confirmWithdraw` in all 8 locales.
+  - `commerce-action.tsx` error line gained `role="alert"`.
+- **Marketplace error states** (`app/[locale]/(app)/marketplace/page.tsx`): products/services grids no longer silently coerce failures to `[]` — `error` renders `ErrorState`, `unavailable` renders `EmptyState`.
+- **Cancel link in Edit Profile** (`src/features/profile/profile-form.tsx`): a quiet "Cancel" link next to Save returns to the user's own profile (`/u/{username}`, falling back to settings when no profile is available); new `.settings-form__actions` row CSS.
+- **Additive database migration** `supabase/migrations/20260817000000_phase4_polish.sql` (apply manually via SQL Editor, like previous stages; not applied in this workspace):
+  - `notify_follow()` trigger (`after insert or update of status` on `follows`, firing only on transitions into `accepted`) inserts a `follow` notification for the recipient with `target_path = /u/<follower>`; gated by `is_notification_enabled(recipient, 'follow')`. Covers both public follows (insert as accepted) and private-account accepts (status update).
+  - `join_group(target_group_id)` RPC (`security definer`, `revoke/grant` pattern matching `create_group_invitation`): allows any authenticated user to join `status = 'active'` + `visibility = 'public'` groups; rejects when an `active`/`invited`/`removed` membership already exists; reactivates a `left` membership; notifies the owner (kind `group`) unless it is the owner themselves. RLS is untouched.
+- **Join button on public groups** (`src/features/platform/group-join.tsx` + `platform-view.tsx` + `src/server/platform/actions.ts`): new `joinGroup` server action calling the RPC; `PlatformDetail` computes viewer membership from the already-fetched `getGroupMembers` result and renders `GroupJoinButton` for authenticated non-members on public groups (owners and guests see nothing new; sign-in card unchanged). On success the page refreshes and the member UI (members + chat) appears.
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npx eslint . --max-warnings=0` — 0 errors / 0 warnings (incl. `react-hooks/set-state-in-effect`, which rejected the first realtime-sync implementation and forced the render-time adjustment pattern).
+- `npx vitest run` — 15 files / 41 tests passed.
+- `npm run build` — compiled successfully (291 pages, all routes present).
+- Runtime smoke checks with `next start` (production build, port 3100):
+  - Public pages 200 in EN + AR (`dir="rtl"`): `/products`, `/services`, `/jobs`, `/groups`, `/explore`, `/u/prompt4primary`, product/service/job/group details; followers/following pages now render `<img>` avatars (signed URLs) instead of bare initials.
+  - Profile tabs show real counts in EN and AR (`28,19,12,11,10` = posts/products/services/jobs/groups for the seed user) — posts count was previously hardcoded 0.
+  - Middleware-protected routes still 307 for guests (`/notifications`, `/messages`); `/marketplace`, `/orders` keep the pre-existing loading-shell → redirect.
+  - Guest on group detail: sign-in card present, no join button (join is authenticated-only by design).
+  - Built CSS contains: `overflow-wrap:anywhere` on message bubbles, `.settings-form__actions`, `.orders-view__error`, `.group-join` (+ `role="alert"` markup present in responses).
+
+### Known limitations / follow-ups
+
+- The two new database objects (`notify_follow` trigger, `join_group` RPC) live in an additive migration that must be applied via the Supabase SQL Editor; until applied, follow notifications are not emitted and the join button will surface an error on click (the action maps RPC failures to the generic failure message).
+- Signed-in flows (mark all read, join, delete/block confirmations, orders confirm dialogs) could not be exercised end-to-end without session credentials; guest paths and server logic were verified; optimistic/refresh behavior follows existing patterns already in use.
+- Realtime subscription on the notifications page still listens to all `notifications` INSERTs (any recipient) and refreshes — RLS filters the refetched data, so this is correct but slightly noisier than a filtered channel.
+- No toast system was introduced (the product-wide inline `role="status"/"alert"` pattern is used consistently); recent searches remain unsupported (out of scope).
+- No browser-automated viewport suite was run (requires a running server + Supabase credentials); visual spot checks used the production server responses above.

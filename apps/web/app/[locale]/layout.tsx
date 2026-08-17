@@ -9,8 +9,9 @@ import { getSiteMetadata } from "@/config/metadata";
 import { createTranslator } from "@/i18n/translate";
 import { SiteFooter } from "@/features/navigation/site-header";
 import { SiteHeaderContainer } from "@/features/navigation/site-header-container";
-import { isApplicationPath } from "@/features/navigation/routes";
+import { isAppExperiencePath } from "@/features/navigation/routes";
 import { PwaRegister } from "@/features/pwa/pwa-register";
+import { getCurrentUser } from "@/server/auth/session";
 import "../globals.css";
 
 export const viewport: Viewport = {
@@ -52,10 +53,19 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const { t } = createTranslator(locale);
   const headerStore = await headers();
   const pathname = headerStore.get("x-xowaak-pathname") ?? "";
-  const isAppPage = isApplicationPath(pathname, locale);
+  const isAppExperience = isAppExperiencePath(pathname, locale);
+  const user = await getCurrentUser();
+  const showPublicFooter = !isAppExperience || !user;
 
   return (
-    <html lang={locale} dir={getDirection(locale)} data-theme="light">
+    <html lang={locale} dir={getDirection(locale)} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("xowaak-theme");var d=t==="dark"||(t!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){document.documentElement.dataset.theme="light"}})();`,
+          }}
+        />
+      </head>
       <body>
         <a className="skip-link" href="#main-content">
           {t("common.skipToContent")}
@@ -66,7 +76,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             <SiteHeaderContainer locale={locale} />
           </Suspense>
           <div id="main-content">{children}</div>
-          {!isAppPage && (
+          {showPublicFooter && (
             <Suspense fallback={null}>
               <SiteFooter locale={locale} />
             </Suspense>
