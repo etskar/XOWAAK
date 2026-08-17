@@ -421,3 +421,30 @@ All new keys added to `app-messages.ts`, `auth-messages.ts`, `identity-messages.
 - Realtime subscription on the notifications page still listens to all `notifications` INSERTs (any recipient) and refreshes â€” RLS filters the refetched data, so this is correct but slightly noisier than a filtered channel.
 - No toast system was introduced (the product-wide inline `role="status"/"alert"` pattern is used consistently); recent searches remain unsupported (out of scope).
 - No browser-automated viewport suite was run (requires a running server + Supabase credentials); visual spot checks used the production server responses above.
+## Stage: Production Deployment & Infrastructure Sync — Complete
+
+### Root cause (why the live site showed an old version)
+
+1. **Production alias was hijacked by redeployments of an old commit.** A deployment of the new commit (a6a7837) had been built and aliased to production 2h earlier, but two redeployments of old deployments (meta `originalDeploymentId`, 28m/18m before the sync) rebuilt commit 533fe07 last. Vercel assigns the production aliases to the *most recently created* deployment, so `xowaak.vercel.app` reverted to the old code.
+2. **Deployment protection (SSO login wall) hid every vercel.app URL.** Project setting `ssoProtection: {"deploymentType":"all_except_custom_domains"}` made all `*.vercel.app` deployments respond with Vercel's "Login - Vercel" page (`X-Matched-Path: /login`) instead of the app — even the new build.
+3. **`xowaak.com` has no DNS records** (third-party registrar, nameservers not pointed at Vercel; `Resolve-DnsName` returns nothing) — the custom domain cannot serve the site until DNS is configured at the registrar.
+
+### Fixes applied
+
+- **Promoted the correct deployment:** `vercel redeploy` of the a6a7837 deployment + alias reassignment — `xowaak.vercel.app` / `xowaak-etskar1.vercel.app` / `xowaak-git-main-etskar1.vercel.app` now map to the latest build.
+- **Disabled SSO protection** (PATCH project settings, `ssoProtection: null`) — deployments are public again; anonymous visitors now receive the real app.
+- **GitHub Actions workflow** `.github/workflows/supabase-migrations.yml` — on every push to `main`: typecheck + lint + tests + build (`@xowaak/web`), then `supabase link --project-ref jareawpuydpcudytcebl` + `supabase db push` (applies only pending migrations, using migration history). Requires two repository secrets: `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` (must be added by the owner; nothing secret is committed).
+
+### Verification
+
+- Git: branch `main`, commit `a6a7837` (feat: complete phases 3-4 …), pushed to `https://github.com/etskar/XOWAAK.git`; `git rev-parse HEAD` == `origin/main`; working tree clean after commit.
+- Vercel: project `etskar1/xowaak` (`prj_J9mvfPn2R6yakoIoI1PwzEZsMvk4`), root dir `apps/web`, framework Next.js, git integration connected to `etskar/XOWAAK` with production branch `main`; automatic deployments enabled (webhook builds confirmed).
+- Production now serves the a6a7837 build: title "Meet, share, and trade - in one place. - XOWAAK"; built CSS contains Phase-3/4 markers (`.app-bottom-nav`, `.group-join`, `settings-form__actions`, `overflow-wrap:anywhere`); anonymous GETs: `/en`, `/en/auth/sign-in`, `/en/explore`, `/en/jobs`, `/en/groups`, `/en/about`, `/en/products`, `/en/services`, `/en/marketplace` = 200; protected routes (`/en/home`, `/en/messages`, `/en/settings`, `/en/notifications`) = 307 for guests.
+- Supabase: project `jareawpuydpcudytcebl` (XOWAAK) — all 19 migrations in sync (local == remote), including `20260817000000_phase4_polish.sql`; remote functions `join_group` + trigger `follows_notify_follow` verified present via `supabase db query --linked`.
+- Local checks: `tsc --noEmit` 0, `eslint` 0/0, vitest 15 files/41 tests, `next build` OK.
+
+### Remaining limitations (manual steps for the owner)
+
+- **`xowaak.com` DNS:** at the third-party registrar add: apex A record `76.76.21.21` and `www` CNAME `cname.vercel-dns.com` (or point nameservers to Vercel in the Vercel dashboard). Until then the custom domain is not reachable.
+- **GitHub Actions secrets:** add `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` (owner-only) or the migration job will be skipped/fail on first run.
+- Never click "Redeploy" on old deployments from the Vercel dashboard — a redeploy of an older commit silently becomes the new production.
