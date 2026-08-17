@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { appConfig } from "@/config/app";
 import { getDirection, isLocale, locales, type Locale } from "@/config/locales";
@@ -82,6 +83,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             </Suspense>
           )}
         </div>
+        <SpeedInsights />
       </body>
     </html>
   );
